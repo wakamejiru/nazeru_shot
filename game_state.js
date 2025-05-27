@@ -1,33 +1,38 @@
+// game_state.js
 // ゲーム関連の文字列や，各画像のパスや，キャラクター情報を管理するファイル
+// ここで作成したものはキャラ一覧などの情報表示で使用する
+// この情報は上書きはしない
+// ゲームプレイ中はPlayerクラスでコピーしたものを変異させる
 
 // Player側のクラスを管理する
 
-// AVATERのクラス
-// キャラクターネーム
-const characters_type_enum = Object.freeze({
-  characters_none: "NONE",
-  characters_Type1: "Type1",
+// --- Enums ---
+export const CharacterTypeEnum = Object.freeze({
+  NONE: "NONE",
+  TYPE_1: "Type1",
+  // TYPE_2: "Type2",
 });
 
-const skill_type_enum = Object.freeze({
-  skill_none: "MONE", // NONE 
-  skill_Type1: "skill_1", // 回復
+export const SkillTypeEnum = Object.freeze({
+  NONE: "NONE", // タイプミス修正: MONE -> NONE
+  SKILL_1: "skill_1", // 回復
 });
 
-const ult_type_enum = Object.freeze({
-  ult_none: "NONE", // NONE
-  ult_Type1: "ult_1", // 一定時間無敵
+export const UltTypeEnum = Object.freeze({
+  NONE: "NONE",
+  ULT_1: "ult_1", // 一定時間無敵
 });
 
-const main_bulled_enum = Object.freeze({
-  main_bulled_None: "NONE", // NONE
-  main_bulled_Type1: "m_bulled_1", // 通常弾
+export const MainBulletEnum = Object.freeze({
+  NONE: "NONE",
+  M_BULLET_1: "m_bullet_1", // 通常弾
 });
 
-const sub_bulled_enum = Object.freeze({
-  sub_bulled_none: "NONE", // NONE
-  sub_bulled_Type1: "s_bulled_1", // サブウェポン
+export const SubBulletEnum = Object.freeze({
+  NONE: "NONE",
+  S_BULLET_1: "s_bullet_1", // サブウェポン
 });
+
 
 // キャラクター情報から作成する
 // 一番上から名前
@@ -43,47 +48,65 @@ const sub_bulled_enum = Object.freeze({
 // S通常弾2の情報 // ない場合はデフォルト
 // S通常弾3の情報 // ない場合はデフォルト
 // S通常弾4の情報 // ない場合はデフォルト
-let character_info_list = {
-    "Type1":
+// S通常弾5の情報 // ない場合はデフォルト
+export const  character_info_list = {
+    [CharacterTypeEnum.NONE]:
+    {
+        charachter_name:"NONE",
+        avatar_image_key:"",
+        character_radius:0,
+        character_spped:0,
+        character_maxhp:0,
+        character_skill1: skill_info_list[SkillTypeEnum.NONE],
+        character_ULT: ult_info_list[UltTypeEnum.NONE],
+        character_m_bullet1: main_bulled_info_list[MainBulletEnum.NONE],
+        character_m_bullet2: main_bulled_info_list[MainBulletEnum.NONE],
+        character_s_bullet1: sub_bulled_info_list[SubBulletEnum.NONE],
+        character_s_bullet2: sub_bulled_info_list[SubBulletEnum.NONE],
+        character_s_bullet3: sub_bulled_info_list[SubBulletEnum.NONE],
+        character_s_bullet4: sub_bulled_info_list[SubBulletEnum.NONE],
+        character_s_bullet5: sub_bulled_info_list[SubBulletEnum.NONE]
+    },
+    [CharacterTypeEnum.TYPE_1]:
     {
         charachter_name:"タイプ1",
-        avatar_image_path:"image\avatar\avatar1.svg",
+        avatar_image_key:"avatarType1",
         character_radius:1.0,
         character_spped:50,
         character_maxhp:100,
-        character_skill1: skill_info_list[skill_type_enum.skill_Type1],
-        character_ULT: ult_info_list[ult_type_enum.ult_Type1],
-        character_m_bullet1: main_bulled_info_list[main_bulled_enum.main_bulled_Type1],
-        character_m_bullet2: main_bulled_info_list[main_bulled_enum.main_bulled_none],
-        character_s_bullet1: sub_bulled_info_list[sub_bulled_enum.sub_bulled_Type1],
-        character_s_bullet2: sub_bulled_info_list[sub_bulled_enum.sub_bulled_Type1], 
-        character_s_bullet3: sub_bulled_info_list[sub_bulled_enum.sub_bulled_none],
-        character_s_bullet4: sub_bulled_info_list[sub_bulled_enum.sub_bulled_none],
-        character_s_bullet5: sub_bulled_info_list[sub_bulled_enum.sub_bulled_none]
+        character_skill1: skill_info_list[SkillTypeEnum.skill_Type1],
+        character_ULT: ult_info_list[UltTypeEnum.ult_Type1],
+        character_m_bullet1: main_bulled_info_list[MainBulletEnum.M_BULLET_1],
+        character_m_bullet2: main_bulled_info_list[MainBulletEnum.NONE],
+        character_s_bullet1: sub_bulled_info_list[SubBulletEnum.S_BULLET_1],
+        character_s_bullet2: sub_bulled_info_list[SubBulletEnum.S_BULLET_1], // 左右反転を忘れない
+        character_s_bullet3: sub_bulled_info_list[SubBulletEnum.NONE],
+        character_s_bullet4: sub_bulled_info_list[SubBulletEnum.NONE],
+        character_s_bullet5: sub_bulled_info_list[SubBulletEnum.NONE]
     }
 };
 
 
-let skill_info_list = {
-    "NONE":
+export const  skill_info_list = {
+    [SkillTypeEnum.NONE]:
     {
         // NONEの場合無視
 
     },
-    "skill_1":
+    [SkillTypeEnum.SKILL_1]:
     {
-        skill_name:"タイプ1",
+        skill_name:"スキル1",
         // 効果秒数などをほかのと共通項目はここに書く
     }
 };
 
-let ult_info_list = {
-    "NONE":
+export const  ult_info_list = {
+    [UltTypeEnum.NONE]:
     {
         // NONEの場合無視
 
     },
-    "ult_1":
+    [UltTypeEnum.ULT_1]:
     {
         skill_name:"タイプ1",
         // 効果秒数などをほかのと共通項目はここに書く
@@ -92,16 +115,16 @@ let ult_info_list = {
 };
 
 // この情報でインスタンスを作るときに左右対称に設置できるようにする(リバースモード)
-let main_bulled_info_list = {
-    "NONE":
+export const  main_bulled_info_list = {
+    [MainBulletEnum.NONE]:
     {
         // NONEの場合無視
 
     },
-    "m_bulled_1":
+    [MainBulletEnum.M_BULLET_1]:
     {
-        skill_name:"メインウエポン1",
-        ball_image_path: "image\canon\cirlce1.svg",
+        ballet_name:"メインウエポン1",
+        ball_image_key: "bulletTypeA",
         x_speed:0,
         y_speed:-2000,
         accel_x:0,
@@ -117,16 +140,16 @@ let main_bulled_info_list = {
 };
   
 // この情報でインスタンスを作るときに左右対称に設置できるようにする(リバースモード)
-let sub_bulled_info_list = {
-    "NONE":
+export const  sub_bulled_info_list = {
+    [SubBulletEnum.NONE]:
     {
         // NONEの場合無視
 
     },
-    "s_bulled_1":
+    [SubBulletEnum.S_BULLET_1]:
     {
-        skill_name:"サブウエポン1",
-        ball_image_path: "image\canon\cirlce1.svg",
+        ballet_name:"サブウエポン1",
+        ball_image_key: "bulletTypeA",
         x_speed:100,
         y_speed:-3500,
         accel_x:0,
@@ -141,31 +164,8 @@ let sub_bulled_info_list = {
     }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// letをつかってプレイヤーを作成する
-// 必ず使うときは初期化が必要
-
-
+// AssetManagerで使う画像パスのリストもここに定義しても良い
+export const imageAssetPaths = Object.freeze({
+    avatarType1: "image\avatar\avatar1.svg",
+    bulletTypeA: "image\canon\cirlce1.svg",
+});
