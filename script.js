@@ -15,6 +15,13 @@ const ENEMY_SIZE = 40;
 const PLAYER_BULLET_SPEED = 7; // プレイヤーの弾の速度
 const PLAYER_BULLET_COOLDOWN = 10; // プレイヤーの弾の発射間隔 (フレーム)
 
+// HPバーの設定
+const HP_BAR_HEIGHT = 10; // HPバーの太さ（高さ）
+const PLAYER_HP_BAR_WIDTH = 100; // プレイヤーHPバーの横幅
+
+const PLAYER_BULLET_DAMAGE = 20; // プレイヤーの弾のダメージ
+const ENEMY_BULLET_DAMAGE = 10;  // 敵の弾のダメージ
+
 // プレイヤーオブジェクト
 let player = {
     x: canvas.width / 2 - PLAYER_SIZE / 2,
@@ -24,7 +31,9 @@ let player = {
     dx: 0,
     dy: 0,
     color: 'skyblue',
-	bulletCooldownTimer: 0 // プレイヤーの弾発射クールダウン用タイマー
+	bulletCooldownTimer: 0, // プレイヤーの弾発射クールダウン用タイマー
+    maxHp: 100, // 最大HP
+    hp: 100      // 現在のHP
 };
 
 // 敵オブジェクト
@@ -36,7 +45,9 @@ let enemy = {
     color: 'red',
     bulletAngle: 0, // 弾の発射角度
     bulletTimer: 0, // 弾の発射間隔タイマー
-    bulletInterval: 20 // 弾の発射間隔 (フレーム数)
+    bulletInterval: 20, // 弾の発射間隔 (フレーム数)
+	maxHp: 500,  // 追加: 最大HP (例として大きめの値)
+    hp: 500       // 追加: 現在のHP
 };
 
 // 弾を格納する配列
@@ -99,6 +110,48 @@ function drawPlayerBullets() {
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
     });
 }
+
+function drawPlayerHpBar() {
+    const barX = 10; // 左端からのマージン
+    const barY = canvas.height - HP_BAR_HEIGHT - 10; // 下端からのマージン
+    const currentHpWidth = (player.hp / player.maxHp) * PLAYER_HP_BAR_WIDTH;
+
+    // HPバー背景
+    ctx.fillStyle = 'grey';
+    ctx.fillRect(barX, barY, PLAYER_HP_BAR_WIDTH, HP_BAR_HEIGHT);
+
+    // 現在のHP
+    ctx.fillStyle = 'green';
+    if (player.hp / player.maxHp < 0.3) { // HPが30%未満なら赤色に
+        ctx.fillStyle = 'red';
+    }
+    ctx.fillRect(barX, barY, currentHpWidth > 0 ? currentHpWidth : 0, HP_BAR_HEIGHT); // HPが0未満にならないように
+
+    // HPバー枠線 (任意)
+    ctx.strokeStyle = 'white';
+    ctx.strokeRect(barX, barY, PLAYER_HP_BAR_WIDTH, HP_BAR_HEIGHT);
+}
+
+// 追加: 敵のHPバー描画
+function drawEnemyHpBar() {
+    const barX = 0; // キャンバスの左端
+    const barY = 0; // キャンバスの上端
+    const barWidth = canvas.width; // キャンバスの幅いっぱい
+    const currentHpWidth = (enemy.hp / enemy.maxHp) * barWidth;
+
+    // HPバー背景 (敵のHPバーなので少し暗めの赤など)
+    ctx.fillStyle = '#500000'; // 暗い赤
+    ctx.fillRect(barX, barY, barWidth, HP_BAR_HEIGHT);
+
+    // 現在のHP
+    ctx.fillStyle = 'red'; // 明るい赤
+    ctx.fillRect(barX, barY, currentHpWidth > 0 ? currentHpWidth : 0, HP_BAR_HEIGHT);
+
+    // HPバー枠線 (任意)
+    // ctx.strokeStyle = 'black';
+    // ctx.strokeRect(barX, barY, barWidth, HP_BAR_HEIGHT);
+}
+
 
 // プレイヤーの移動処理
 function movePlayer() {
@@ -193,6 +246,7 @@ function enemyShoot() {
 // 敵の弾の移動と画面外判定
 function moveEnemyBullets() {
     bullets = bullets.filter(bullet => {
+		if (bullet.isHit) return false; // 当たった弾は消す
         bullet.update(); // 各弾の独自の更新ロジックを呼び出す
         return bullet.x > -bullet.radius && bullet.x < canvas.width + bullet.radius &&
                bullet.y > -bullet.radius && bullet.y < canvas.height + bullet.radius &&
@@ -203,6 +257,7 @@ function moveEnemyBullets() {
 // 追加: プレイヤーの弾の移動と画面外判定
 function movePlayerBullets() {
     playerBullets = playerBullets.filter(bullet => {
+		if (bullet.isHit) return false; // 当たった弾は消す
         bullet.y -= bullet.speed; // 上に移動
         return bullet.y + bullet.height > 0; // 画面上部から出たら消去
     });
@@ -210,47 +265,102 @@ function movePlayerBullets() {
 
 // 当たり判定 (プレイヤーと敵の弾)
 function checkCollisions() {
+    if (isGameOver || isGameWin) return; // ゲーム終了時は当たり判定しない
+
+    // 1. 敵の弾とプレイヤーの当たり判定
     bullets.forEach(bullet => {
-        // 円と矩形の当たり判定 (簡易版)
+        if (bullet.isHit) return; // 既に当たった弾は無視
+
+        // 円(弾)と矩形(プレイヤー)の当たり判定 (既存のロジックを流用)
         const distX = Math.abs(bullet.x - player.x - player.width / 2);
         const distY = Math.abs(bullet.y - player.y - player.height / 2);
 
-        if (distX > (player.width / 2 + bullet.radius)) { return; }
-        if (distY > (player.height / 2 + bullet.radius)) { return; }
-
-        if (distX <= (player.width / 2)) {
-            gameOver();
-            return;
+        let hit = false;
+        if (distX <= (player.width / 2) && distY <= (player.height / 2)) { // 中心点が矩形内
+            hit = true;
+        } else if (distX <= (player.width / 2) && distY <= (player.height / 2 + bullet.radius)) { // 上下辺
+             if (distY <= (player.height / 2)) hit = true;
+        } else if (distY <= (player.height / 2) && distX <= (player.width / 2 + bullet.radius) ) { // 左右辺
+             if (distX <= (player.width / 2)) hit = true;
+        } else {
+            // 角との判定
+            const dxCorner = distX - player.width / 2;
+            const dyCorner = distY - player.height / 2;
+            if (dxCorner * dxCorner + dyCorner * dyCorner <= (bullet.radius * bullet.radius)) {
+                hit = true;
+            }
         }
-        if (distY <= (player.height / 2)) {
-            gameOver();
-            return;
-        }
 
-        const dx = distX - player.width / 2;
-        const dy = distY - player.height / 2;
-        if (dx * dx + dy * dy <= (bullet.radius * bullet.radius)) {
-            gameOver();
+        if (hit) {
+            player.hp -= ENEMY_BULLET_DAMAGE;
+            bullet.isHit = true; // 弾に当たったフラグを立てる
+            console.log(`プレイヤーHP: ${player.hp}/${player.maxHp}`);
+
+            if (player.hp <= 0) {
+                player.hp = 0; // HPがマイナスにならないように
+                gameOver();
+                return; // ゲームオーバーなので以降の判定は不要
+            }
+        }
+    });
+
+
+	// 2. プレイヤーの弾と敵の当たり判定
+    playerBullets.forEach(pBullet => {
+        if (pBullet.isHit) return; // 既に当たった弾は無視
+        if (!enemy || enemy.hp <= 0) return; // 敵が存在しない、または既にHP0なら判定しない
+
+        // 矩形(プレイヤー弾)と矩形(敵)の当たり判定
+        if (
+            pBullet.x < enemy.x + enemy.width &&
+            pBullet.x + pBullet.width > enemy.x &&
+            pBullet.y < enemy.y + enemy.height &&
+            pBullet.y + pBullet.height > enemy.y
+        ) {
+            enemy.hp -= PLAYER_BULLET_DAMAGE;
+            pBullet.isHit = true; // 弾に当たったフラグを立てる
+            console.log(`敵HP: ${enemy.hp}/${enemy.maxHp}`);
+
+            if (enemy.hp <= 0) {
+                enemy.hp = 0; // HPがマイナスにならないように
+                // ここで敵を画面から消す処理などを入れても良い (今回は勝利判定のみ)
+                gameWin();
+                return; // 勝利なので以降の判定は不要
+            }
         }
     });
 }
 
+let isGameOver = false; // 追加: ゲームオーバー状態フラグ
+let isGameWin = false;  // 追加: ゲーム勝利状態フラグ
+
 // ゲームオーバー処理
 function gameOver() {
-    // alert('ゲームオーバー！');
-    console.log("ゲームオーバー！"); // コンソールに出力
-    // ゲームをリセットするか、停止する
-    // ここでは簡単のため、ゲームループを停止する例 (実際にはもっと丁寧な処理が必要)
-    cancelAnimationFrame(animationFrameId); // animationFrameId を保持しておく必要がある
+   if (isGameOver) return; // 既にゲームオーバーなら何もしない
+    isGameOver = true;
+    console.log("ゲームオーバー！");
+    cancelAnimationFrame(animationFrameId);
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.font = '40px Arial';
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
     ctx.fillText('ゲームオーバー', canvas.width / 2, canvas.height / 2);
-    // document.location.reload(); // ページをリロードしてリセット (簡易)
 }
 
+// ゲーム勝利処理
+function gameWin() {
+    if (isGameWin) return; // 既に勝利なら何もしない
+    isGameWin = true;
+    console.log("勝利！");
+    cancelAnimationFrame(animationFrameId);
+    ctx.fillStyle = 'rgba(0, 128, 0, 0.7)'; // 緑っぽい背景
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.font = '60px Arial';
+    ctx.fillStyle = 'yellow';
+    ctx.textAlign = 'center';
+    ctx.fillText('勝利！', canvas.width / 2, canvas.height / 2);
+}
 
 // 描画のクリア
 function clearCanvas() {
@@ -261,6 +371,11 @@ let animationFrameId; // ゲームループのIDを保持
 
 // ゲームループ
 function gameLoop() {
+	if (isGameOver || isGameWin) { // ゲーム終了時はループの主要な更新を停止
+        requestAnimationFrame(gameLoop); // 終了画面の描画は継続するためループ自体は呼び続けることも考慮
+                                      // もし完全に停止でよければここも条件分岐
+        return;
+    }
     clearCanvas();
 
     movePlayer();
@@ -270,9 +385,16 @@ function gameLoop() {
 	movePlayerBullets();  // プレイヤーの弾移動
 
     drawPlayer();
-    drawEnemy();
+	
+	if (enemy.hp > 0) { // 敵のHPがある場合のみ描画 (任意)
+        drawEnemy();
+    }
+
     drawBullets();
 	drawPlayerBullets();
+
+    drawPlayerHpBar(); // 追加: プレイヤーHPバー描画
+    drawEnemyHpBar();  // 追加: 敵HPバー描画
 
     checkCollisions();
 
