@@ -47,7 +47,18 @@ let enemy = {
     bulletTimer: 0, // 弾の発射間隔タイマー
     bulletInterval: 20, // 弾の発射間隔 (フレーム数)
 	maxHp: 500,  // 追加: 最大HP (例として大きめの値)
-    hp: 500       // 追加: 現在のHP
+    hp: 500,       // 追加: 現在のHP
+
+	// --- 移動用プロパティ (追加) ---
+    speed: 1, // 敵の移動速度
+    moveDirectionX: 0, // 現在のX軸移動方向 (-1:左, 0:停止, 1:右)
+    moveDirectionY: 0, // 現在のY軸移動方向 (-1:上, 0:停止, 1:下)
+    moveChangeTimer: 0, // 方向転換までのタイマー
+    moveChangeInterval: 120, // 方向転換する間隔 (フレーム数, 約2秒)
+    moveAreaTopY: 0,
+    moveAreaBottomY: canvas.height / 5 - ENEMY_SIZE, // 敵の下端が画面1/5ラインに収まるように
+    moveAreaLeftX: 0,
+    moveAreaRightX: canvas.width - ENEMY_SIZE // 敵の右端がキャンバス右端に収まるように
 };
 
 // 弾を格納する配列
@@ -150,6 +161,57 @@ function drawEnemyHpBar() {
     // HPバー枠線 (任意)
     // ctx.strokeStyle = 'black';
     // ctx.strokeRect(barX, barY, barWidth, HP_BAR_HEIGHT);
+}
+
+// 敵の移動処理
+function moveEnemy() {
+    if (!enemy || enemy.hp <= 0) return; // 敵が存在しないかHP0なら動かさない
+
+    // 方向転換タイマー処理
+    enemy.moveChangeTimer--;
+    if (enemy.moveChangeTimer <= 0) {
+        // 新しいランダムな移動方向を設定
+        enemy.moveDirectionX = Math.floor(Math.random() * 3) - 1; // -1, 0, 1 のいずれか
+        enemy.moveDirectionY = Math.floor(Math.random() * 3) - 1; // -1, 0, 1 のいずれか
+
+        // XとYが両方0だと完全に停止するので、どちらかは動くようにする (任意)
+        if (enemy.moveDirectionX === 0 && enemy.moveDirectionY === 0) {
+            if (Math.random() < 0.5) {
+                enemy.moveDirectionX = Math.random() < 0.5 ? -1 : 1;
+            } else {
+                enemy.moveDirectionY = Math.random() < 0.5 ? -1 : 1;
+            }
+        }
+        enemy.moveChangeTimer = enemy.moveChangeInterval; // タイマーリセット
+    }
+
+    // X軸の移動
+    let nextX = enemy.x + enemy.moveDirectionX * enemy.speed;
+    // X軸の範囲チェックと調整
+    if (nextX < enemy.moveAreaLeftX) {
+        nextX = enemy.moveAreaLeftX;
+        enemy.moveDirectionX *= -1; // 左端に当たったら右へ反転 (または新しいランダム方向へ)
+        enemy.moveChangeTimer = 0; // 即座に方向転換を促す
+    } else if (nextX > enemy.moveAreaRightX) {
+        nextX = enemy.moveAreaRightX;
+        enemy.moveDirectionX *= -1; // 右端に当たったら左へ反転
+        enemy.moveChangeTimer = 0;
+    }
+    enemy.x = nextX;
+
+    // Y軸の移動
+    let nextY = enemy.y + enemy.moveDirectionY * enemy.speed;
+    // Y軸の範囲チェックと調整
+    if (nextY < enemy.moveAreaTopY) {
+        nextY = enemy.moveAreaTopY;
+        enemy.moveDirectionY *= -1; // 上端に当たったら下へ反転
+        enemy.moveChangeTimer = 0;
+    } else if (nextY > enemy.moveAreaBottomY) {
+        nextY = enemy.moveAreaBottomY;
+        enemy.moveDirectionY *= -1; // 下端に当たったら上へ反転
+        enemy.moveChangeTimer = 0;
+    }
+    enemy.y = nextY;
 }
 
 
@@ -379,6 +441,7 @@ function gameLoop() {
     clearCanvas();
 
     movePlayer();
+	moveEnemy();
     enemyShoot(); // 敵が常に弾を撃つ
 	playerShoot(); // プレイヤーも常に球を打つ
     moveEnemyBullets();
