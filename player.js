@@ -2,7 +2,7 @@
 // ★★★ プレイヤー クラスの定義 ★★★
 // ==================================================================
 import { Bullet_PRAYER } from './bullet_prayer.js'; // Bulletクラスもインポート
-
+import { GAME_STATUS } from './game_status.js'; // Bulletクラスもインポート
 
 
 // 画像の初期化を行う
@@ -16,41 +16,40 @@ export class Player {
     // charactername キャラネーム
     // image_list  初期化した画像のリスト   
     // options その他設定値   
-    constructor(x, y, canvas, charactername, image_list, options = {}) {
+    constructor(character_type, asset_manager, canvas)
+    {
 
-        this.x = x; // Playerの位置X
-        this.y = y; // Playerの位置Y
+        // 初期値は中央
+        this.x = (this.canvas.width/2); // Playerの位置X
+        this.y = (this.canvas.width/2); // Playerの位置Y
         
-        // 当たり判定は円形とする
-        this.radius = options.radius !== undefined ? options.radius : 2;
         this.canvas = canvas; // canvasオブジェクト
-        
-        this.speed = options.speed !== undefined ? options.speed : 300; //  Playerの移動速度
-        this.dx = 0; // 移動方向ベクトルX (-1, 0, 1)
-        this.dy = 0; // 移動方向ベクトルY (-1, 0, 1)
-        this.color = options.color !== undefined ? options.color : 'skyblue'; // Playerの色
-        this.maxHp = options.maxHp !== undefined ? options.maxHp : 100; // PlayerのHP
-        this.hp = this.maxHp; // 現在のPlayerのHP
+        this.character_type = character_type; // 例: CharacterTypeEnum.TYPE_1 の「値」("Type1")
+        this.asset_manager = asset_manager;   // 画像などのアセットを管理
+
+        // game_state.js からキャラクターの基本データを取得
+        const stats = characterInfoList[this.characterType];
+
+        if (!stats) {
+            console.error(`リスト外が入った要確認`);
+        } else {
+            // 固定値で入れているのでエラーチェックは行わない
+            this.radius = stats.character_radius;
+            this.baseSpeed = stats.baseSpeed || 300;
+            this.maxHp = stats.maxHp || 100;
+            this.color = options.color || stats.color || 'skyblue'; // optionsで上書き可能、なければstats、それもなければデフォルト
+            this.avatarImageKey = stats.avatar_image_key;
+            this.mainBulletDefineKey = stats.mainBulletKeys ? stats.mainBulletKeys[0] : null; // 例: 最初のメイン弾
+            this.subBulletDefineKeys = stats.subBulletKeys || [];
+            this.skillKey = stats.skillKey;
+            this.ultKey = stats.ultKey;
+        }
+        this.hp = this.maxHp;
+
         
         this.charactername = charactername; // // キャラクターネーム
         this.avatar = 
     }
-
-
-    decide_Avatar(charactername, image_list)
-    {
-        avatar = 
-         switch(charactername)
-        {
-            case characters_Type.characters_Type1:
-                break;
-        }
-
-
-    }
-
-
-
 
     // ブラウザの解像度比に合わせて動作を変える
     updateScale(newScaleFactor, newCanvas)
