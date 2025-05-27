@@ -7,8 +7,11 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 // キャンバスのサイズ設定
-canvas.width = 700;
-canvas.height = 900;
+const BASE_WIDTH = 600;  // ゲームの基準幅
+const BASE_HEIGHT = 800; // ゲームの基準高さ
+let currentWidth = BASE_WIDTH;
+let currentHeight = BASE_HEIGHT;
+let scaleFactor = 1;     // 現在のスケールファクター
 
 // HPバーの設定
 const HP_BAR_HEIGHT = 10; // HPバーの太さ（高さ）
@@ -17,11 +20,11 @@ const PLAYER_HP_BAR_WIDTH = 100; // プレイヤーHPバーの横幅
 // --- インスタンス生成 ---
 let player = new Player(canvas.width / 2 - 10, canvas.height - 40, canvas, { 
     color: 'blue', maxHp: 150, bulletDamage: 30, bulletColor: 'rgba(0, 150, 255, 0.6)',
-    bulletSpeed: 1000, bulletDamage: 3, bulletInterval: 0.05, bulletSpreadCount: 30
+    bulletSpeed: 1000, bulletSpeedX: 0,  bulletDamage: 3, bulletInterval: 0.05, bulletSpreadCount: 30
 });
 let enemy = new Enemy(canvas.width / 2 - 20, 50, canvas, {
     width: 60, height: 60, color: 'purple', maxHp: 1000, speed: 30,
-    bulletSpeed: 170, bulletDamage: 20, bulletInterval: 0.3, bulletSpreadCount: 30
+    bulletSpeedY: 170,bulletSpeedX: 0, bulletDamage: 20, bulletInterval: 0.3, bulletSpreadCount: 30
 });
 
 // 弾を格納する配列
@@ -53,6 +56,44 @@ document.addEventListener('keyup', (e) => {
         keys[' '] = false;
     }
 });
+
+// 画面リサイズ処理関数
+function resizeGame() {
+    const aspectRatio = BASE_WIDTH / BASE_HEIGHT;
+    let newWindowWidth = window.innerWidth;
+    let newWindowHeight = window.innerHeight;
+    const windowAspectRatio = newWindowWidth / newWindowHeight;
+
+    if (windowAspectRatio > aspectRatio) {
+        // ウィンドウがゲームよりも横長の場合、高さを基準に合わせる
+        currentHeight = newWindowHeight;
+        currentWidth = currentHeight * aspectRatio;
+        scaleFactor = currentHeight / BASE_HEIGHT;
+    } else {
+        // ウィンドウがゲームよりも縦長（または同じ比率）の場合、幅を基準に合わせる
+        currentWidth = newWindowWidth;
+        currentHeight = currentWidth / aspectRatio;
+        scaleFactor = currentWidth / BASE_WIDTH;
+    }
+
+    canvas.width = currentWidth;
+    canvas.height = currentHeight;
+
+    // CSSで中央揃えにする場合（例）
+    canvas.style.position = 'absolute';
+    canvas.style.left = (window.innerWidth - currentWidth) / 2 + 'px';
+    canvas.style.top = (window.innerHeight - currentHeight) / 2 + 'px';
+
+    // TODO: 必要であれば、既存のゲームオブジェクトの位置やサイズを再計算
+    // (ただし、各オブジェクトが描画時や更新時にスケールファクターやcanvas.{width|height}を
+    //  参照するようになっていれば、ここでの大規模な再計算は不要な場合も多い)
+    if (player) {
+        player.updateScale(scaleFactor, canvas); // Playerクラスにスケール更新メソッドを追加する例
+    }
+    if (enemy) {
+        enemy.updateScale(scaleFactor, canvas);   // Enemyクラスにスケール更新メソッドを追加する例
+    }
+}
 
 
 // 弾の描画
@@ -96,40 +137,48 @@ function checkCollisions() {
 
     // 1. 敵の弾(円形)とプレイヤー(矩形)の当たり判定
     bullets.forEach(bullet => {
-        if (bullet.isHit || player.hp <= 0 || !bullet.isCircle) return; // 円形弾のみ対象とする例
+        if (isGameOver || isGameWin) return; // 円形弾のみ対象とする例
         // (以前の円と矩形の当たり判定ロジックをここに記述、bullet.radius, player.width, player.height を使用)
-        // 簡単な例:
-            // 衝突条件の判定
-        const didCollide = (function() {
-            let closestX = Math.max(player.x, Math.min(bullet.x, player.x + player.width));
-            let closestY = Math.max(player.y, Math.min(bullet.y, player.y + player.height));
+        if (bullet.isCircle) { // 敵の弾は円形と仮定
+            const scaledBulletRadius = bullet.getBaseRadius() * scaleFactor;
+            const scaledPlayerWidth = player.getBaseWidth() * scaleFactor;
+            const scaledPlayerHeight = player.getBaseHeight() * scaleFactor;
 
-            const distanceX = bullet.x - closestX;
-            const distanceY = bullet.y - closestY;
-            const distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+            const didCollide = (function() {
+                let closestX = Math.max(player.x, Math.min(bullet.x, player.x + scaledPlayerWidth));
+                let closestY = Math.max(player.y, Math.min(bullet.y, player.y + scaledPlayerHeight));
+                const distanceX = bullet.x - closestX;
+                const distanceY = bullet.y - closestY;
+                const distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+                return distanceSquared < (scaledBulletRadius * scaledBulletRadius);
+            })();
+        
 
-            return distanceSquared < (bullet.radius * bullet.radius);
-        })();
-
-        if (didCollide) { // ★★★ ここが衝突条件の結果です ★★★
-            player.hp -= bullet.damage;
-            bullet.isHit = true;
-            if (player.hp <= 0) {
-                player.hp = 0;
-                gameOver();
-                return; // gameOverが呼ばれたらこのforEachループ内の処理はこれ以上不要
+            if (didCollide) { // ★★★ ここが衝突条件の結果です ★★★
+                player.hp -= bullet.damage;
+                bullet.isHit = true;
+                if (player.hp <= 0) {
+                    player.hp = 0;
+                    gameOver();
+                    return; // gameOverが呼ばれたらこのforEachループ内の処理はこれ以上不要
+                }
             }
         }
     });
 
     // 2. プレイヤーの弾(矩形)と敵(矩形)の当たり判定
     playerBullets.forEach(pBullet => {
-        if (pBullet.isHit || !enemy || enemy.hp <= 0 || pBullet.isCircle) return; // 矩形弾のみ対象とする例
+        if (pBullet.isHit || !enemy || enemy.hp <= 0) return;
         if (!pBullet.isCircle && enemy) { // プレイヤー弾(矩形)と敵(矩形)
-                    if (pBullet.x - pBullet.width/2 < enemy.x + enemy.width &&
-                        pBullet.x + pBullet.width/2 > enemy.x &&
-                        pBullet.y - pBullet.height/2 < enemy.y + enemy.height &&
-                        pBullet.y + pBullet.height/2 > enemy.y) {
+            const scaledPBulletWidth = pBullet.getBaseWidth() * scaleFactor;
+            const scaledPBulletHeight = pBullet.getBaseHeight() * scaleFactor;
+            const scaledEnemyWidth = enemy.getBaseWidth() * scaleFactor;
+            const scaledEnemyHeight = enemy.getBaseHeight() * scaleFactor;
+
+            if (pBullet.x - scaledPBulletWidth/2 < enemy.x + scaledEnemyWidth &&
+                pBullet.x + scaledPBulletWidth/2 > enemy.x &&
+                pBullet.y - scaledPBulletHeight/2 < enemy.y + scaledEnemyHeight &&
+                pBullet.y + scaledPBulletHeight/2 > enemy.y) {
                         enemy.hp -= pBullet.damage;
                         pBullet.isHit = true;
                         if (enemy.hp <= 0) { enemy.hp = 0; gameWin(); return; }
@@ -219,4 +268,8 @@ function gameLoop(currentTime) {
 
     animationFrameId = requestAnimationFrame(gameLoop);
 }
+
+// --- 初期化処理 ---
+window.addEventListener('resize', resizeGame);
+resizeGame(); // 初期ロード時にも実行
 requestAnimationFrame(gameLoop); // 最初の呼び出し

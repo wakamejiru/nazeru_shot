@@ -45,6 +45,31 @@ export class Enemy {
         this.targetY = y;
         this.setNewTarget(); // setNewTargetにもcanvasを渡して初期目標を設定
     }
+    getScaledWidth() { return this.width * this.currentScaleFactor; }
+    getScaledHeight() { return this.height * this.currentScaleFactor; }
+    getScaledSpeed() { return this.speed * this.currentScaleFactor; }
+    getScaledBulletSpeedX() { return this.bulletSpeedX * this.currentScaleFactor; }
+    getScaledBulletSpeedY() { return this.bulletSpeedY * this.currentScaleFactor; }
+    getScaledBulletWidth() { return this.bulletWidth * this.currentScaleFactor; }
+    getScaledBulletHeight() { return this.BulletHeight * this.currentScaleFactor; }
+    // ブラウザの解像度比に合わせて動作を変える
+    updateScale(newScaleFactor, newCanvas) {
+        // 以前のスケールに対する現在の相対位置を計算
+        const relativeX = this.x / (this.canvas.width || BASE_WIDTH); // 0除算を避ける
+        const relativeY = this.y / (this.canvas.height || BASE_HEIGHT);
+
+        this.currentScaleFactor = newScaleFactor;
+        this.canvas = newCanvas; // 新しいcanvasの参照（主にwidth/height）
+
+        // 新しいcanvasサイズに基づいて位置を再設定
+        this.x = relativeX * this.canvas.width;
+        this.y = relativeY * this.canvas.height;
+
+        // 境界チェックなどで位置を補正
+        this.x = Math.max(0, Math.min(this.x, this.canvas.width - this.getScaledWidth()));
+        this.y = Math.max(0, Math.min(this.y, this.canvas.height - this.getScaledHeight()));
+
+    }
 
     setNewTarget() {
         // 移動範囲の再計算 (canvas.height や自身のサイズに依存するため)
