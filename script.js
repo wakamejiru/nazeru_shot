@@ -17,6 +17,17 @@ let scaleFactor = 1;     // 現在のスケールファクター
 const HP_BAR_HEIGHT = 10; // HPバーの太さ（高さ）
 const PLAYER_HP_BAR_WIDTH = 100; // プレイヤーHPバーの横幅
 
+
+
+
+
+
+
+
+
+
+
+
 // --- インスタンス生成 ---
 let player = new Player(canvas.width / 2 - 10, canvas.height - 40, canvas, { 
     color: 'blue', maxHp: 150, bulletDamage: 30, bulletColor: 'rgba(0, 150, 255, 0.6)',
@@ -26,6 +37,13 @@ let enemy = new Enemy(canvas.width / 2 - 20, 50, canvas, {
     width: 60, height: 60, color: 'purple', maxHp: 1000, speed: 30,
     bulletSpeedY: 170,bulletSpeedX: 0, bulletDamage: 20, bulletInterval: 0.3, bulletSpreadCount: 30
 });
+
+
+
+
+
+
+
 
 // 弾を格納する配列
 let bullets = []; // 敵の弾
@@ -56,6 +74,16 @@ document.addEventListener('keyup', (e) => {
         keys[' '] = false;
     }
 });
+
+function handleResize() {
+    // ウィンドウサイズが変わったときに行いたい処理をここに書く
+    console.log("ウィンドウサイズが変更されました！");
+    console.log("新しい幅:", window.innerWidth, "新しい高さ:", window.innerHeight);
+
+    // 例えば、ここでキャンバスのサイズを調整する関数を呼び出す
+    // resizeGame(); // ← あなたのゲームのキャンバスリサイズ関数
+}
+
 
 // 画面リサイズ処理関数
 function resizeGame() {
@@ -270,6 +298,7 @@ function gameLoop(currentTime) {
 }
 
 // --- 初期化処理 ---
-window.addEventListener('resize', resizeGame);
+// リサイズしたときに自動的にリスナーが走る
+window.addEventListener('resize', handleResize);
 resizeGame(); // 初期ロード時にも実行
 requestAnimationFrame(gameLoop); // 最初の呼び出し
