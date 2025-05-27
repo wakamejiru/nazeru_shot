@@ -26,8 +26,9 @@ export class Bullet {
 
         // 追尾用 (将来の拡張用)
         this.target = options.target || null; // 追尾対象 (Player や Enemy インスタンスなど)
-        this.trackingStrength = options.trackingStrength || 0; // 追尾の強さ (0なら追尾しない)
-        this.maxSpeed = options.maxSpeed || Math.sqrt(this.vx**2 + this.vy**2) || 5; // 追尾時の最大速度など
+        this.trackingStrength = options.trackingStrength !== undefined ?  options.trackingStrength : 0; // 追尾の強さ (0なら追尾しない)
+        this.maxSpeed = options.maxSpeed !== undefined ? options.maxSpeed : 300; // ピクセル/秒
+
 
         // 方向変化用 (将来の拡張用)
         this.turnRate = options.turnRate || 0; // 旋回率 (ラジアン/フレーム)
@@ -35,14 +36,15 @@ export class Bullet {
         this.currentPatternTime = 0;
     }
 
-    update(targetPlayer) {
+    update(deltaTime, targetPlayer) {
         if (this.isHit) return;
 
         // 1. 追尾処理 (将来的に実装)
         if (this.target && this.trackingStrength > 0) { // targetPlayerの代わりにthis.targetを使う
-            const actualTarget = this.target; // コンストラクタでセットされたターゲット
-            const targetDx = actualTarget.x + (actualTarget.width ? actualTarget.width / 2 : 0) - this.x;
-            const targetDy = actualTarget.target.y + (actualTarget.target.height ? actualTarget.target.height / 2 : 0) - this.y;
+            const targetCenterX = this.target.x + (this.target.width ? this.target.width / 2 : 0);
+            const targetCenterY = this.target.y + (this.target.height ? this.target.height / 2 : 0);
+            const targetDx = targetCenterX - this.x;
+            const targetDy = targetCenterY - this.y;
             const angleToTarget = Math.atan2(targetDy, targetDx);
 
             // 現在の進行方向の角度
@@ -54,48 +56,53 @@ export class Bullet {
             while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
             while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
 
-            // 追尾強度に基づいて旋回
-            let turnStep = this.trackingStrength * (Math.PI / 180); // 例: trackingStrengthが1なら1度/フレーム
-            if (Math.abs(angleDiff) < turnStep) {
-                currentAngle = angleToTarget;
-            } else {
-                currentAngle += Math.sign(angleDiff) * turnStep;
-            }
-            const speedMagnitude = Math.sqrt(this.vx**2 + this.vy**2) || this.maxSpeed; // 現在の速度か最大速度
+            // trackingStrength を「1秒間にどれだけターゲットに近づくか」の割合とするか、
+            // 「1秒間に回転できる最大ラジアン」とするかで挙動が変わります。
+            // ここでは「1秒間に angleDiff の trackingStrength 分だけ角度を補正する」イメージ
+            let effectiveTurn = angleDiff * this.trackingStrength * deltaTime; // trackingStrengthが割合の場合
+            // もしくは、最大旋回角速度として trackingStrength をラジアン/秒で定義する場合
+            // let maxTurnThisFrame = this.trackingStrength * deltaTime;
+            // let effectiveTurn = Math.max(-maxTurnThisFrame, Math.min(maxTurnThisFrame, angleDiff));
+
+            currentAngle += effectiveTurn;
+
+            const speedMagnitude = Math.sqrt(this.vx**2 + this.vy**2) || this.maxSpeed;
+
             this.vx = Math.cos(currentAngle) * speedMagnitude;
             this.vy = Math.sin(currentAngle) * speedMagnitude;
         }
 
 		// 2. 加加速度による加速度の変化
-		this.ax += this.jx;
-		this.ay += this.jy;
+		this.ax += this.jx * deltaTime;
+		this.ay += this.jy * deltaTime;
 		
         // 3. 加速度による速度変化
-        this.vx += this.ax;
-        this.vy += this.ay;
+        this.vx += this.ax * deltaTime;
+        this.vy += this.ay * deltaTime;
 
         // (オプション) 最大速度制限
         const currentSpeedSq = this.vx**2 + this.vy**2;
-        if (currentSpeedSq > this.maxSpeed**2 && this.maxSpeed > 0) {
+        if (this.maxSpeed > 0 && currentSpeedSq > this.maxSpeed**2 ) {
              const currentSpeed = Math.sqrt(currentSpeedSq);
              this.vx = (this.vx / currentSpeed) * this.maxSpeed;
              this.vy = (this.vy / currentSpeed) * this.maxSpeed;
         }
 
 
-        // 4. 時間経過による方向変化 (旋回など、将来的に実装)
+        // 4. 時間経過による方向変化 (自律旋回など、将来的に実装)
         if (this.turnRate !== 0) {
-            const cos = Math.cos(this.turnRate);
-            const sin = Math.sin(this.turnRate);
-            const newVx = this.vx * cos - this.vy * sin;
-            const newVy = this.vx * sin + this.vy * cos;
+            const angleChange = this.turnRate * deltaTime;
+            const cosVal = Math.cos(angleChange);
+            const sinVal = Math.sin(angleChange);
+            const newVx = this.vx * cosVal - this.vy * sinVal;
+            const newVy = this.vx * sinVal + this.vy * cosVal;
             this.vx = newVx;
             this.vy = newVy;
         }
 
         // 5. 位置更新
-        this.x += this.vx;
-        this.y += this.vy;
+        this.x += this.vx * deltaTime;
+        this.y += this.vy * deltaTime;
     }
 
     draw(ctx) {

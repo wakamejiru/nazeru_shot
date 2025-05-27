@@ -4,20 +4,20 @@
 
 export class Enemy {
     constructor(x, y, canvas, options = {}) {
-        // ... (Enemyクラスのコンストラクタ内容はそのまま) ...
         this.x = x;
         this.y = y;
+        this.canvas = canvas;
         this.width = options.width !== undefined ? options.width : 40;
         this.height = options.height !== undefined ? options.height : 40;
-        this.speed = options.speed !== undefined ? options.speed : 1;
+        this.speed = options.speed !== undefined ? options.speed : 60;
         this.color = options.color !== undefined ? options.color : 'red';
         this.maxHp = options.maxHp !== undefined ? options.maxHp : 500;
         this.hp = this.maxHp;
         
         // 弾の性能
         this.bulletRadius = options.bulletRadius !== undefined ? options.bulletRadius : 5;
-        this.bulletSpeed = options.bulletSpeed !== undefined ? options.bulletSpeed : 2.5;
-        this.bulletInterval = options.bulletInterval !== undefined ? options.bulletInterval : 25;
+        this.bulletSpeed = options.bulletSpeed !== undefined ? options.bulletSpeed : 500;
+        this.bulletInterval = options.bulletInterval !== undefined ? options.bulletInterval : 0.4;
         this.bulletDamage = options.bulletDamage !== undefined ? options.bulletDamage : 15;
         this.bulletColor = options.bulletColor !== undefined ? options.bulletColor : 'yellow';
         this.bulletHP = options.bulletHP !== undefined ? options.bulletHP : 1; // 弾の体力
@@ -29,85 +29,100 @@ export class Enemy {
         this.moveDirectionX = 0;
         this.moveDirectionY = 0;
         this.moveChangeTimer = 0;
-        this.moveChangeInterval = options.moveChangeInterval !== undefined ? options.moveChangeInterval : 100;
+        this.moveChangeInterval = options.moveChangeInterval !== undefined ? options.moveChangeInterval : 2.0;
         this.moveAreaTopY = 0;
-        // ★★★ ここで canvas を使って正しく初期化 ★★★
-        this.moveAreaBottomY = canvas.height / 5 - this.height;
+        this.moveAreaBottomY = this.canvas.height / 5 - this.height;
         this.moveAreaLeftX = 0;
-        this.moveAreaRightX = canvas.width - this.width;
-        // ★★★ 初期化ここまで ★★★
+        this.moveAreaRightX = this.canvas.width - this.width;
+        // 初期化ここまで
 
         // 停止時間（フレーム数）
-        this.waitDuration  = options.waitDuration  !== undefined ?  options.waitDuration  : 60;
-        this.waitTimer  = 0;
+        this.waitDuration  = options.waitDuration  !== undefined ?  options.waitDuration  : 2;
+        this.waitTimer  = options.waitTimer !== undefined ? options.waitTimer : 1;
 
         // 移動ターゲット座標 (初期値は自身の位置)
         this.targetX = x;
         this.targetY = y;
-        this.setNewTarget(canvas); // setNewTargetにもcanvasを渡して初期目標を設定
+        this.setNewTarget(); // setNewTargetにもcanvasを渡して初期目標を設定
     }
 
-    setNewTarget(canvas) {
+    setNewTarget() {
         // 移動範囲の再計算 (canvas.height や自身のサイズに依存するため)
-        this.moveAreaBottomY = canvas.height / 5 - this.height;
-        this.moveAreaRightX = canvas.width - this.width;
+        this.moveAreaBottomY = this.canvas.height / 5 - this.height;
+        this.moveAreaRightX = this.canvas.width - this.width;
         this.targetX = this.moveAreaLeftX + Math.random() * (this.moveAreaRightX - this.moveAreaLeftX);
         this.targetY = this.moveAreaTopY + Math.random() * ((this.moveAreaBottomY - this.moveAreaTopY));
     }
 
 
     // 敵の移動ロジック
-    // 依存する外部変数 (canvas, player) はメソッドの引数で受け取る
-    move(canvas) {
+    move(deltaTime) {
         if (this.hp <= 0) return;
         
-        // 移動範囲の再計算 (canvas.height や自身のサイズに依存するため)
-        this.moveAreaBottomY = canvas.height / 5 - this.height;
-        this.moveAreaRightX = canvas.width - this.width;
-
-        // ... (Enemyクラスのmoveメソッド内容はそのまま、ただし this.moveArea... の値を使う) ...
-        this.moveChangeTimer--;
-        if (this.moveChangeTimer <= 0) {
-            this.moveDirectionX = Math.floor(Math.random() * 3) - 1;
-            this.moveDirectionY = Math.floor(Math.random() * 3) - 1;
-            if (this.moveDirectionX === 0 && this.moveDirectionY === 0) {
-                if (Math.random() < 0.5) this.moveDirectionX = Math.random() < 0.5 ? -1 : 1;
-                else this.moveDirectionY = Math.random() < 0.5 ? -1 : 1;
-            }
-            this.moveChangeTimer = this.moveChangeInterval;
-        }
-        let nextX = this.x + this.moveDirectionX * this.speed;
-        if (nextX < this.moveAreaLeftX) { nextX = this.moveAreaLeftX; this.moveDirectionX *= -1; this.moveChangeTimer = 0; }
-        else if (nextX > this.moveAreaRightX) { nextX = this.moveAreaRightX; this.moveDirectionX *= -1; this.moveChangeTimer = 0; }
-        this.x = nextX;
-        let nextY = this.y + this.moveDirectionY * this.speed;
-        if (nextY < this.moveAreaTopY) { nextY = this.moveAreaTopY; this.moveDirectionY *= -1; this.moveChangeTimer = 0; }
-        else if (nextY > this.moveAreaBottomY) { nextY = this.moveAreaBottomY; this.moveDirectionY *= -1; this.moveChangeTimer = 0; }
-        this.y = nextY;
-    }
-
-    shoot(enemyBulletsArray, BulletClass, playerInstance) { // 依存するものを引数で
-        if (this.hp <= 0 || this.bulletTimer > 0) {
-            if(this.bulletTimer > 0) this.bulletTimer--;
+        if (this.waitTimer > 0) {
+            this.waitTimer -= deltaTime;
+            if (this.waitTimer < 0) this.waitTimer = 0;
             return;
         }
-        this.bulletTimer = this.bulletInterval;
+        this.moveChangeTimer -= deltaTime;
+        if (this.moveChangeTimer <= 0) {
+            this.setNewTarget();
+            this.moveChangeTimer = this.moveChangeInterval;
+        }
+
+
+        const dx = this.targetX - this.x;
+        const dy = this.targetY - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < (this.speed * deltaTime) || distance === 0) { // 1フレームの移動量より近いか、既に到達
+            this.x = this.targetX;
+            this.y = this.targetY;
+            this.waitTimer = this.waitDuration;
+            return;
+        }
+
+        const moveX = (dx / distance) * this.speed * deltaTime;
+        const moveY = (dy / distance) * this.speed * deltaTime;
+
+        this.x += moveX;
+        this.y += moveY;
+    }
+
+     shoot(enemyBulletsArray, BulletClass, playerInstance, deltaTime) { // deltaTime は直接使わないが、クールダウンはdeltaTimeで管理
+        if (this.hp <= 0) return;
+
+        if (this.bulletTimer > 0) { // ★ クールダウン中かチェック
+            this.bulletTimer -= deltaTime; // ★ クールダウンタイマーを減算
+            if (this.bulletTimer < 0) this.bulletTimer = 0;
+            return;
+        }
+        this.bulletTimer = this.bulletInterval; // ★ クールダウン再セット
+
         const startX = this.x + this.width / 2;
         const startY = this.y + this.height / 2;
-        const shootPattern = "default_spread";
+        const shootPattern = "default_spread"; // 将来的に変更可能
 
         if (shootPattern === "default_spread") {
             const angleStep = (Math.PI * 2) / this.bulletSpreadCount;
             for (let i = 0; i < this.bulletSpreadCount; i++) {
                 const angle = this.bulletAngle + i * angleStep;
                 const bulletOptions = {
-                    vx: Math.cos(angle) * this.bulletSpeed, vy: Math.sin(angle) * this.bulletSpeed,
-                    radius: this.bulletRadius, isCircle: true, color: this.bulletColor,
-                    damage: this.bulletDamage, life: this.bulletHP, maxSpeed: this.bulletSpeed
+                    vx: Math.cos(angle) * this.bulletSpeed, // ピクセル/秒
+                    vy: Math.sin(angle) * this.bulletSpeed, // ピクセル/秒
+                    radius: this.bulletRadius,
+                    isCircle: true,
+                    color: this.bulletColor,
+                    damage: this.bulletDamage,
+                    life: this.bulletHP,
+                    maxSpeed: this.bulletSpeed,
+                    // ax, ay, jx, jy なども必要ならここで設定
+                    target: playerInstance, // 追尾する場合
+                    trackingStrength: 0.0 // 0なら追尾しない。追尾させる場合は0より大きい値
                 };
                 enemyBulletsArray.push(new BulletClass(startX, startY, bulletOptions));
             }
-            this.bulletAngle += Math.PI / 36;
+            this.bulletAngle += (Math.PI / 180) * 200 * deltaTime; // 例: 1秒間に200度回転
         }
         // --- ここから将来的な拡張のための発射パターン例 (コメントアウト) ---
         /*
@@ -152,15 +167,17 @@ export class Enemy {
     }
 
     // 敵のHPバー描画ロジック
-    drawHpBar(ctx, canvas, HP_BAR_HEIGHT) {
-        if (this.hp <= 0 && this.maxHp <=0) return; // HP0の敵はバー表示しない (maxHp <=0 は初期化失敗など考慮)
+    drawHpBar(ctx, HP_BAR_HEIGHT_PARAM) {
+        if (this.hp <= 0 && (!this.maxHp || this.maxHp <=0)) return;
         const barX = 0;
         const barY = 0;
-        const barWidth = canvas.width;
-        const currentHpWidth = (this.hp / this.maxHp) * barWidth;
+        const barWidth = this.canvas.width;
+        const currentHpPercentage = this.maxHp > 0 ? (this.hp / this.maxHp) : 0;
+        const currentHpWidth = currentHpPercentage * barWidth;
+
         ctx.fillStyle = '#500000';
-        ctx.fillRect(barX, barY, barWidth, HP_BAR_HEIGHT);
+        ctx.fillRect(barX, barY, barWidth, HP_BAR_HEIGHT_PARAM);
         ctx.fillStyle = 'red';
-        ctx.fillRect(barX, barY, currentHpWidth > 0 ? currentHpWidth : 0, HP_BAR_HEIGHT);
+        ctx.fillRect(barX, barY, currentHpWidth > 0 ? currentHpWidth : 0, HP_BAR_HEIGHT_PARAM);
     }
 }

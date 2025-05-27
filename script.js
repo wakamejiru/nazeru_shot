@@ -7,20 +7,21 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 // キャンバスのサイズ設定
-canvas.width = 600;
-canvas.height = 800;
+canvas.width = 700;
+canvas.height = 900;
 
 // HPバーの設定
 const HP_BAR_HEIGHT = 10; // HPバーの太さ（高さ）
 const PLAYER_HP_BAR_WIDTH = 100; // プレイヤーHPバーの横幅
 
 // --- インスタンス生成 ---
-let player = new Player(canvas.width / 2 - 10, canvas.height - 40, {
-    color: 'blue', maxHp: 150, bulletDamage: 30, bulletColor: 'rgba(0, 150, 255, 0.6)'
+let player = new Player(canvas.width / 2 - 10, canvas.height - 40, canvas, { 
+    color: 'blue', maxHp: 150, bulletDamage: 30, bulletColor: 'rgba(0, 150, 255, 0.6)',
+    bulletSpeed: 1000, bulletDamage: 3, bulletInterval: 0.05, bulletSpreadCount: 30
 });
 let enemy = new Enemy(canvas.width / 2 - 20, 50, canvas, {
-    width: 60, height: 60, color: 'purple', maxHp: 1000, speed: 0.5,
-    bulletSpeed: 3, bulletDamage: 20, bulletInterval: 15, bulletSpreadCount: 16
+    width: 60, height: 60, color: 'purple', maxHp: 1000, speed: 30,
+    bulletSpeed: 170, bulletDamage: 20, bulletInterval: 0.3, bulletSpreadCount: 30
 });
 
 // 弾を格納する配列
@@ -64,10 +65,10 @@ function drawPlayerBullets(ctx) {
 }
 
 // 敵の弾の移動と画面外判定
-function moveEnemyBullets() {
+function moveEnemyBullets(deltaTime, playerInstance) {
     bullets = bullets.filter(bullet => {
         if (bullet.isHit) return false;
-        bullet.update(player); // 追尾対象としてplayerインスタンスを渡す例
+        bullet.update(deltaTime, playerInstance); // 追尾対象としてplayerインスタンスを渡す例
         // 画面外判定などは bullet.x, bullet.y, bullet.radius/width/height を使う
         return bullet.x > - (bullet.isCircle ? bullet.radius : bullet.width/2) &&
                bullet.x < canvas.width + (bullet.isCircle ? bullet.radius : bullet.width/2) &&
@@ -78,10 +79,10 @@ function moveEnemyBullets() {
 }
 
 // プレイヤーの弾の移動と画面外判定
-function movePlayerBullets() {
+function movePlayerBullets(deltaTime, playerInstance) {
     playerBullets = playerBullets.filter(bullet => {
         if (bullet.isHit) return false;
-        bullet.update(); // プレイヤー弾が追尾しないなら引数なし
+        bullet.update(deltaTime, playerInstance); // プレイヤー弾が追尾しないなら引数なし
         const b = bullet;
         return b.x + b.width/2 > 0 && b.x - b.width/2 < canvas.width &&
                b.y + b.height/2 > 0 && b.y - b.height/2 < canvas.height &&
@@ -151,7 +152,7 @@ function gameOver() {
     ctx.font = '40px Arial';
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
-    ctx.fillText('ゲームオーバー', canvas.width / 2, canvas.height / 2);
+    ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
 }
 
 // ゲーム勝利処理
@@ -174,31 +175,48 @@ function clearCanvas() {
 }
 
 let animationFrameId; // ゲームループのIDを保持
+// 画面のリフレッシュレート違いによる問題を解消
+let lastTime = 0;
 
-// ゲームループ
-function gameLoop() {
-    if (isGameOver || isGameWin) return;
+function gameLoop(currentTime) {
+    if (isGameOver || isGameWin) {
+        requestAnimationFrame(gameLoop); // 終了画面のためループを続ける場合
+        return;
+    }
+
+    if (!lastTime) { // 最初のフレームの初期化
+        lastTime = currentTime;
+        requestAnimationFrame(gameLoop);
+        return;
+    }
+    const deltaTime = (currentTime - lastTime) / 1000; // 秒単位
+    lastTime = currentTime;
+
+    // ゼロ除算や極端なdeltaTimeを防ぐ（ブラウザがバックグラウンドになった場合など）
+    const clampedDeltaTime = Math.min(deltaTime, 0.1); // 例: 最大0.1秒に制限
+
     clearCanvas();
 
-    player.move(keys, canvas); // keysとcanvasを渡す
-    if (enemy) enemy.move(canvas);    // canvasを渡す
+    player.move(keys, clampedDeltaTime);
+    if (enemy) enemy.move(clampedDeltaTime);
 
-    player.shoot(playerBullets, Bullet); // playerBullets配列とBulletクラスそのものを渡す
-    if (enemy) enemy.shoot(bullets, Bullet, player); // bullets配列、Bulletクラス、追尾対象playerを渡す
+    player.shoot(playerBullets, Bullet, enemy, clampedDeltaTime); // deltaTimeは直接不要（クールダウンはmoveで処理）
+    if (enemy) enemy.shoot(bullets, Bullet, player, clampedDeltaTime); // 追尾用にplayer, タイマー更新用にdeltaTime
 
-    moveEnemyBullets();    // playerインスタンスはbullet.update内で参照される(ようにした前提)
-    movePlayerBullets();
+    moveEnemyBullets(clampedDeltaTime, player); // 追尾対象としてplayerを渡す
+    movePlayerBullets(clampedDeltaTime, enemy);
 
     player.draw(ctx);
     if (enemy) enemy.draw(ctx);
 
-    drawEnemyBullets(ctx); // グローバル関数を呼ぶ
-    drawPlayerBullets(ctx);  // グローバル関数を呼ぶ
+    drawEnemyBullets(ctx);
+    drawPlayerBullets(ctx);
 
-    player.drawHpBar(ctx, canvas, HP_BAR_HEIGHT, PLAYER_HP_BAR_WIDTH);
-    if (enemy) enemy.drawHpBar(ctx, canvas, HP_BAR_HEIGHT);
+    player.drawHpBar(ctx, HP_BAR_HEIGHT, PLAYER_HP_BAR_WIDTH);
+    if (enemy) enemy.drawHpBar(ctx, HP_BAR_HEIGHT);
 
-    checkCollisions();
+    checkCollisions(); // deltaTimeは通常不要
+
     animationFrameId = requestAnimationFrame(gameLoop);
 }
-gameLoop();
+requestAnimationFrame(gameLoop); // 最初の呼び出し
