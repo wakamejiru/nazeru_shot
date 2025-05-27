@@ -35,13 +35,14 @@ export class Bullet {
         this.currentPatternTime = 0;
     }
 
-    update() {
+    update(targetPlayer) {
         if (this.isHit) return;
 
         // 1. 追尾処理 (将来的に実装)
-        if (this.target && this.trackingStrength > 0) {
-            const targetDx = this.target.x + (this.target.width ? this.target.width / 2 : 0) - this.x;
-            const targetDy = this.target.y + (this.target.height ? this.target.height / 2 : 0) - this.y;
+        if (this.target && this.trackingStrength > 0) { // targetPlayerの代わりにthis.targetを使う
+            const actualTarget = this.target; // コンストラクタでセットされたターゲット
+            const targetDx = actualTarget.x + (actualTarget.width ? actualTarget.width / 2 : 0) - this.x;
+            const targetDy = actualTarget.target.y + (actualTarget.target.height ? actualTarget.target.height / 2 : 0) - this.y;
             const angleToTarget = Math.atan2(targetDy, targetDx);
 
             // 現在の進行方向の角度
@@ -97,15 +98,15 @@ export class Bullet {
         this.y += this.vy;
     }
 
-    draw() {
+    draw(ctx) {
         if (this.isHit) return;
         ctx.fillStyle = this.color;
         if (this.isCircle) {
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
             ctx.fill();
-            ctx.closePath();
         } else {
+           // 矩形弾の描画は中心基準に修正
             ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
         }
     }
