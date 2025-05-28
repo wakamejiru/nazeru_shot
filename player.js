@@ -29,10 +29,9 @@ export class Player {
         // game_status.js からキャラクターの基本データを取得
         const status = character_info_list[this.character_type];
 
-        if (!status) {
-            console.error(`リスト外が入った要確認`);
-        } else {
+        if (!status) {			
             console.error(`Player Constructor: Character type "${this.character_type}" not found. Using defaults.`);
+        } else {
             
 			// 固定値で入れているのでエラーチェックは行わない
 			this.character_name = status.charachter_name;
@@ -379,6 +378,7 @@ export class Player {
         const scaledHeight = this.canvas.height;
 
         if (this.sprite) {
+			console.log("キャラクター描画中");
             // プレイヤーのx,yを左上基準として画像を描画
             ctx.drawImage(this.sprite, this.x, this.y, scaledWidth, scaledHeight);
         } else {

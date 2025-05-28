@@ -291,7 +291,7 @@ function gameLoop(currentTime) {
     player.move(keys, clampedDeltaTime);
     //if (enemy) enemy.move(clampedDeltaTime);
 
-    player.shoot(playerBullets, Bullet, enemy, clampedDeltaTime); // deltaTimeは直接不要（クールダウンはmoveで処理）
+    //player.shoot(playerBullets, Bullet, enemy, clampedDeltaTime); // deltaTimeは直接不要（クールダウンはmoveで処理）
     //if (enemy) enemy.shoot(bullets, Bullet, player, clampedDeltaTime); // 追尾用にplayer, タイマー更新用にdeltaTime
 
     //moveEnemyBullets(clampedDeltaTime, player); // 追尾対象としてplayerを渡す
