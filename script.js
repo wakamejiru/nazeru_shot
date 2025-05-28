@@ -94,15 +94,14 @@ const keys = {
     ArrowDown: false,
     ArrowLeft: false,
     ArrowRight: false,
-	' ': false // スペースキー (キー名は ' ' または 'Space'、ブラウザにより異なる場合があるので注意)
+	' ': false, // スペースキー (キー名は ' ' または 'Space'、ブラウザにより異なる場合があるので注意)
+    'z': false, // 'z'キーの状態を追加 (小文字で統一)
 };
 
 // キーダウンイベント
 document.addEventListener('keydown', (e) => {
     if (keys.hasOwnProperty(e.key)) {
         keys[e.key] = true;
-    } else if (e.key === ' ') { // 'Spacebar' となるブラウザもあるため、' ' もしくは e.code === 'Space' で判定するとより確実
-        keys[' '] = true;
     } else if (keyToCharacterType.hasOwnProperty(e.key)) { // ★ 数字キーの処理を追加
         const newCharacterTypeKey = keyToCharacterType[e.key];
         const targetCharacterType = newCharacterTypeKey; 
@@ -120,8 +119,6 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('keyup', (e) => {
     if (keys.hasOwnProperty(e.key)) {
         keys[e.key] = false;
-    } else if (e.key === ' ') {
-        keys[' '] = false;
     }
 });
 
@@ -379,7 +376,7 @@ function gameLoop(currentTime) {
     player.move(keys, clampedDeltaTime);
     //if (enemy) enemy.move(clampedDeltaTime);
 
-    player.shoot(playerBullets, player, clampedDeltaTime);
+    player.shoot(keys, playerBullets, player, clampedDeltaTime);
 
     //if (enemy) enemy.shoot(bullets, Bullet, player, clampedDeltaTime); // 追尾用にplayer, タイマー更新用にdeltaTime
 

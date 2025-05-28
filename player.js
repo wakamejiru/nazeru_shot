@@ -70,6 +70,9 @@ export class Player {
 			this.s_bullet4_key = status.character_s_bullet4;
 			this.s_bullet5_key = status.character_s_bullet5;
         }
+
+		this.slowMoveFactor = 0.2; // 低速移動モードの倍率
+
         this.hp = this.maxHp;
 
 		// アバター画像（スプライト）を設定
@@ -305,7 +308,11 @@ export class Player {
 
         this.dx = 0;
         this.dy = 0;
-
+		// 現在の適用速度を決定
+        let currentAppliedSpeed = this.speed;
+        if (keys['z']) { // 'z' キーが押されていれば低速にする
+            currentAppliedSpeed = this.speed * this.slowMoveFactor;
+        }
 		
 		let drawn_width_half = this.sprite_base_draw_width / 2;
 		let drawn_height_half = this.sprite_base_draw_height / 2;
@@ -319,8 +326,8 @@ export class Player {
         let moveX = 0;
         let moveY = 0;
         if (magnitude > 0) {
-            moveX = (this.dx / magnitude) * this.speed * deltaTime;
-            moveY = (this.dy / magnitude) * this.speed * deltaTime;
+            moveX = (this.dx / magnitude) * currentAppliedSpeed * deltaTime;
+            moveY = (this.dy / magnitude) * currentAppliedSpeed * deltaTime;
         }
 
 		
@@ -338,15 +345,19 @@ export class Player {
 
 	// main弾のインスタンスを作成する
 	// bulletのwaittimeは外でやる
-	createBulletInstance(playerBulletsArray, bulletinfos, enemyInstance)
+	createBulletInstance(keys, playerBulletsArray, bulletinfos, enemyInstance)
 	{	
 		// 中心描画に変更
-		const AvatorDrawX = this.x;
+		let AvatorDrawX = this.x;
 		const AvatorDrawY = this.y - this.sprite_draw_height / 2;
 
-		const startX = AvatorDrawX + bulletinfos.start_x_pos;
+		let startX = AvatorDrawX + bulletinfos.start_x_pos;
 		
 		const startY = AvatorDrawY + bulletinfos.start_y_pos - bulletinfos.bullet_height / 2;
+
+
+
+
 
 		const bulletOptions = {
 			vx: bulletinfos.x_speed,
@@ -375,11 +386,22 @@ export class Player {
 			sine_decay_rate: bulletinfos.sine_decay_rate,
 		};
 
+				// Zが押されていた場合集中するような処理をとる
+		if (keys['z']) {
+            if(bulletinfos.sine_wave_enabled == true)
+			{
+				bulletOptions.sine_decay_rate =1.5;
+			}else
+			{
+				startX = AvatorDrawX + (bulletinfos.start_x_pos / 3);
+			}
+        }
+
 		playerBulletsArray.push(new Bullet(startX, startY, this.asset_manager, bulletOptions));
 	}
 
 	// sub弾のインスタンスを作成する
-    shoot(playerBulletsArray, enemyInstance, deltaTime) {
+    shoot(keys, playerBulletsArray, enemyInstance, deltaTime) {
 
         if (this.hp <= 0) return;
 
@@ -395,7 +417,7 @@ export class Player {
 			}else
 			{
 				// m_bullet1が打てる
-				this.createBulletInstance(playerBulletsArray, this.m_bullet1infos, enemyInstance);
+				this.createBulletInstance(keys, playerBulletsArray, this.m_bullet1infos, enemyInstance);
 				this.waittime_mbullet1 = this.m_bullet1infos.rate; // クールダウン再セット
 			}
 		}
@@ -408,7 +430,7 @@ export class Player {
 			}else
 			{
 				// m_bullet1が打てる
-				this.createBulletInstance(playerBulletsArray, this.m_bullet2infos, enemyInstance);
+				this.createBulletInstance(keys, playerBulletsArray, this.m_bullet2infos, enemyInstance);
 				this.waittime_mbullet2 = this.m_bullet2infos.rate; // クールダウン再セット
 			}
 		}
@@ -421,7 +443,7 @@ export class Player {
 				}else
 				{
 					// m_bullet1が打てる
-					this.createBulletInstance(playerBulletsArray, this.s_bullet1infos, enemyInstance);
+					this.createBulletInstance(keys, playerBulletsArray, this.s_bullet1infos, enemyInstance);
 					this.waittime_sbullet1 = this.s_bullet1infos.rate; // クールダウン再セット
 				}
 		}
@@ -434,7 +456,7 @@ export class Player {
 			}else
 			{
 				// m_bullet2が打てる
-				this.createBulletInstance(playerBulletsArray, this.s_bullet2infos, enemyInstance);
+				this.createBulletInstance(keys, playerBulletsArray, this.s_bullet2infos, enemyInstance);
 				this.waittime_sbullet2 = this.s_bullet2infos.rate; // クールダウン再セット
 			}
 		}
@@ -448,7 +470,7 @@ export class Player {
 			}else
 			{
 				// m_bullet3が打てる
-				this.createBulletInstance(playerBulletsArray, this.s_bullet3infos, enemyInstance);
+				this.createBulletInstance(keys, playerBulletsArray, this.s_bullet3infos, enemyInstance);
 				this.waittime_sbullet3 = this.s_bullet3infos.rate; // クールダウン再セット
 			}
 		}
@@ -461,7 +483,7 @@ export class Player {
 			}else
 			{
 				// m_bullet4が打てる
-				this.createBulletInstance(playerBulletsArray, this.s_bullet4infos, enemyInstance);
+				this.createBulletInstance(keys, playerBulletsArray, this.s_bullet4infos, enemyInstance);
 				this.waittime_sbullet4 = this.s_bullet4infos.rate; // クールダウン再セット
 			}
 		}
@@ -474,7 +496,7 @@ export class Player {
 			}else
 			{
 				// m_bullet5が打てる
-				this.createBulletInstance(playerBulletsArray, this.s_bullet5infos, enemyInstance);
+				this.createBulletInstance(keys, playerBulletsArray, this.s_bullet5infos, enemyInstance);
 				this.waittime_sbullet5 = this.s_bullet5infos.rate; // クールダウン再セット
 			}	
 		}
