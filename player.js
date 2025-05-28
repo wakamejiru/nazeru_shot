@@ -201,6 +201,7 @@ export class Player {
 			
 			this.m_bullet1infos.bullet_width = main_bulled_info_list[this.m_bullet1_key].bullet_width*this.currentScaleFactor;
 			this.m_bullet1infos.bullet_height = main_bulled_info_list[this.m_bullet1_key].bullet_height*this.currentScaleFactor;
+			this.m_bullet1infos.sine_amplitude = main_bulled_info_list[this.m_bullet1_key].sine_amplitude*this.currentScaleFactor;
 
 		}
 		
@@ -216,6 +217,8 @@ export class Player {
 			this.m_bullet2infos.bulled_size_mag = main_bulled_info_list[this.m_bullet2_key].bulled_size_mag*this.currentScaleFactor;	
 			this.m_bullet2infos.bullet_width = main_bulled_info_list[this.m_bullet2_key].bullet_width*this.currentScaleFactor;
 			this.m_bullet2infos.bullet_height = main_bulled_info_list[this.m_bullet2_key].bullet_height*this.currentScaleFactor;
+			this.m_bullet2infos.sine_amplitude = main_bulled_info_list[this.m_bullet2_key].sine_amplitude*this.currentScaleFactor;
+
 
 		}
 
@@ -363,7 +366,13 @@ export class Player {
 			maxSpeed: bulletinfos.bulled_maxSpeed,
 			target: enemyInstance, // 追尾する場合
 			trackingStrength: this.trackingStrengthPower, // 0なら追尾しない。追尾させる場合は0より大きい値
-			globalAlpha: 0.4
+			globalAlpha: 0.4,
+			 sine_wave_enabled: bulletinfos.sine_wave_enabled,
+    		sine_amplitude: bulletinfos.sine_amplitude,
+    		sine_angular_frequency: bulletinfos.sine_angular_frequency,
+    		sine_phase_offset: bulletinfos.sine_phase_offset,
+    		sine_axis: bulletinfos.sine_axis || "x",
+			sine_decay_rate: bulletinfos.sine_decay_rate,
 		};
 
 		playerBulletsArray.push(new Bullet(startX, startY, this.asset_manager, bulletOptions));

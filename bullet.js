@@ -30,7 +30,7 @@ export class Bullet {
 		if (this.BulletImageKey && !this.spritebullet) {
 			console.warn(`Player sprite for key "${this.avatar_image_key}" not loaded. Fallback color will be used.`);
 		}
-
+        
         this.globalAlpha = options.globalAlpha !== undefined ? options.globalAlpha : 1; // 弾の透明度
 
         // 形状というより当たり判定
@@ -55,33 +55,24 @@ export class Bullet {
         this.turnRate = options.turnRate || 0; // 旋回率 (ラジアン/フレーム)
         this.timeToLivePattern = options.timeToLivePattern || Infinity; // パターン変更までの時間
         this.currentPatternTime = 0;
-    }
 
-
-
-    // ブラウザの解像度比に合わせて動作を変える
-    updateScale(newScaleFactor, newCanvas) {
-        // 以前のスケールに対する現在の相対位置を計算
-        const relativeX = this.x / (this.canvas.width || BASE_WIDTH); // 0除算を避ける
-        const relativeY = this.y / (this.canvas.height || BASE_HEIGHT);
-
-        this.currentScaleFactor = newScaleFactor;
-        this.canvas = newCanvas; // 新しいcanvasの参照（主にwidth/height）
-
-        // 新しいcanvasサイズに基づいて位置を再設定
-        this.x = relativeX * this.canvas.width;
-        this.y = relativeY * this.canvas.height;
-
-        // 境界チェックなどで位置を補正
-        this.x = Math.max(0, Math.min(this.x, this.canvas.width - this.getScaledWidth()));
-        this.y = Math.max(0, Math.min(this.y, this.canvas.height - this.getScaledHeight()));
+        // サインカーブ用プロパティ
+        this.sineWaveEnabled = options.sine_wave_enabled || false;
+        this.initialSineAmplitude  = options.sine_amplitude || 0;
+        this.sineAngularFrequency = options.sine_angular_frequency || 0;
+        this.sinePhaseOffset = options.sine_phase_offset || 0;
+        this.sineAxis = options.sine_axis || "x"; // "x"または"y"
+        this.pathCenterX = startX; // サインカーブの中心線の初期X座標
+        this.pathCenterY = startY; // サインカーブの中心線の初期Y座標
+        this.sineDecayRate = options.sine_decay_rate;
+        
+        this.bulletLifeTimer = 0; // 弾が生成されてからの経過時間（サイン関数の時間入力に使う）
 
     }
-
 
     update(deltaTime, targetPlayer) {
         if (this.isHit) return;
-
+        this.bulletLifeTimer += deltaTime;
         // 1. 追尾処理 (将来的に実装)
         if (this.target && this.trackingStrength > 0) { // targetPlayerの代わりにthis.targetを使う
             const targetCenterX = this.target.x + (this.target.width ? this.target.width / 2 : 0);
@@ -143,9 +134,35 @@ export class Bullet {
             this.vy = newVy;
         }
 
+        // sin値による値の変化
+        this.pathCenterX += this.vx * deltaTime;
+        this.pathCenterY += this.vy * deltaTime;
+
+        // 3. 最終的な描画位置 (this.x, this.y は左上) を計算
+        let finalDrawX = this.pathCenterX - this.width / 2;
+        let finalDrawY = this.pathCenterY - this.height / 2;
+
+        if (this.sineWaveEnabled && this.initialSineAmplitude !== 0) {
+            // ★現在の振幅を計算 (指数関数的減衰)
+            let currentAmplitude = this.initialSineAmplitude;
+            if (this.sineDecayRate > 0) {
+                currentAmplitude = this.initialSineAmplitude * Math.exp(-this.sineDecayRate * this.bulletLifeTimer);
+            }
+
+            // 振幅が非常に小さくなったら、波の計算を省略してもよい (パフォーマンスのため)
+            if (currentAmplitude > 0.01) { // 例: 0.01ピクセル未満は無視
+                // X軸方向に揺れるサインカーブと仮定
+                const offsetX = currentAmplitude * Math.sin(this.sineAngularFrequency * this.bulletLifeTimer + this.sinePhaseOffset);
+                finalDrawX += offsetX;
+            } else {
+                // 振幅がほぼ0になったら、以降はサインカーブを無効にしても良い
+                // this.sineWaveEnabled = false; 
+            }
+        }
+
         // 5. 位置更新
-        this.x += this.vx * deltaTime;
-        this.y += this.vy * deltaTime;
+        this.x = finalDrawX;
+        this.y = finalDrawY;
     }
 
     draw(ctx) {

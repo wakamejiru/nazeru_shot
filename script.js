@@ -24,6 +24,19 @@ let player;
 // 画像のローリングを行う
 const assetManager = new AssetManager(imageAssetPaths); // imageAssetPaths は game_status.js からエクスポート
 
+// デバッグ用キーとキャラクタータイプをマッピング
+const keyToCharacterType = {
+    '1': CharacterTypeEnum.TYPE_1,
+    '2': CharacterTypeEnum.TYPE_2,
+    '3': CharacterTypeEnum.TYPE_3,
+    '4': CharacterTypeEnum.TYPE_4,
+    '5': CharacterTypeEnum.TYPE_5,
+    '6': CharacterTypeEnum.TYPE_6,
+    '7': CharacterTypeEnum.TYPE_7,
+    '8': CharacterTypeEnum.TYPE_8,
+    '9': CharacterTypeEnum.TYPE_9,
+
+};
 
 // 初期化を実行する
 async function initializeGame() {
@@ -31,7 +44,7 @@ async function initializeGame() {
         await assetManager.loadAllAssets();
         console.log("All assets loaded.");
 
-        const selectedCharType = CharacterTypeEnum.TYPE_1; // 例
+        const selectedCharType = CharacterTypeEnum.TYPE_7; // 例
         
         // 借り初期値を入れる
         const initialPlayerX = 0;
@@ -90,6 +103,16 @@ document.addEventListener('keydown', (e) => {
         keys[e.key] = true;
     } else if (e.key === ' ') { // 'Spacebar' となるブラウザもあるため、' ' もしくは e.code === 'Space' で判定するとより確実
         keys[' '] = true;
+    } else if (keyToCharacterType.hasOwnProperty(e.key)) { // ★ 数字キーの処理を追加
+        const newCharacterTypeKey = keyToCharacterType[e.key];
+        const targetCharacterType = newCharacterTypeKey; 
+
+        if (targetCharacterType && player && player.character_type !== targetCharacterType) {
+            // 既存の character_type (例: "Type1") と比較
+            changePlayerCharacter(targetCharacterType);
+        } else if (!character_info_list[targetCharacterType]) {
+             console.warn(`Character type for key ${e.key} (${targetCharacterType}) is not defined in character_info_list.`);
+        }
     }
 });
 
@@ -101,6 +124,48 @@ document.addEventListener('keyup', (e) => {
         keys[' '] = false;
     }
 });
+
+// ★ プレイヤーキャラクターを切り替える関数
+async function changePlayerCharacter(newCharacterType) {
+    if (!player || !character_info_list[newCharacterType]) {
+        console.warn(`Attempted to change to invalid or undefined character type: ${newCharacterType}`);
+        return;
+    }
+
+    console.log(`Changing player character to: ${newCharacterType}`);
+
+    // 現在の位置とスケールを保持（キャラクター変更後も同じ位置に表示するため）
+    const currentX = player.x;
+    const currentY = player.y;
+    // const globalScaleFactor = scaleFactor; // script.js のグローバルな scaleFactor を使用
+
+    try {
+        // 新しいキャラクタータイプでプレイヤーインスタンスを再生成
+        // アセットは initializeGame で全てロード済みと仮定
+        player = new Player(
+            currentX,
+            currentY,
+            newCharacterType,
+            assetManager,
+            canvas
+        );
+
+        // 新しいプレイヤーに現在のゲームスケールを適用
+        // Playerコンストラクタは内部スケールを1.0で初期化し、
+        // updateScaleで渡されたスケールに基づいて位置やサイズを調整するため、
+        // 保存したx,yを渡しても、updateScaleが適切に処理してくれるはずです。
+        player.updateScale(scaleFactor, canvas); //
+
+        console.log(`Player character changed to ${newCharacterType}.`);
+
+    } catch (error) {
+        console.error(`Error changing player character: `, error);
+        // エラー発生時、必要であれば元のプレイヤーに戻すなどの処理を追加
+    }
+}
+
+
+
 
 function handleResize() {
     // ウィンドウサイズが変わったときに行いたい処理をここに書く
