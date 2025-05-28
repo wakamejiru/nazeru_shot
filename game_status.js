@@ -113,9 +113,10 @@ export const  sub_bulled_info_list = {
     }
 };
 
-// AssetManagerで使う画像パスのリストもここに定義しても良い
+// AssetManagerで使う画像パスのリスト
 export const imageAssetPaths = Object.freeze({
-    avatarType1: "image/avatar/avatar1.svg",
+    avatarTypeA: "image/avatar/avator1.png",
+    HitImageTypeA: "image/avatar/HitImage.svg",
     bulletTypeA: "image/canon/cirlce1.svg",
 });
 
@@ -143,6 +144,7 @@ export const  character_info_list = {
         character_radius:0,
         character_speed:0,
         character_maxhp:0,
+        character_mag:0,
         character_skill1: skill_info_list[SkillTypeEnum.NONE],
         character_ULT: ult_info_list[UltTypeEnum.NONE],
         character_m_bullet1: MainBulletEnum.NONE,
@@ -156,10 +158,15 @@ export const  character_info_list = {
     [CharacterTypeEnum.TYPE_1]:
     {
         charachter_name:"タイプ1",
-        avatar_image_key:"avatarType1",
-        character_radius:1.0,
+        avatar_image_key:"avatarTypeA",
+        sprite_base_draw_width: 40,      // アバターの (ピクセル)
+        sprite_base_draw_height: 40,     // アバターの (ピクセル)
+        hitpoint_image_key: "HitImageTypeA", // ヒットポイントの画像
+        hitpoint_radius:1.0,
+
         character_spped:50,
         character_maxhp:100,
+        character_mag:0.5,
         character_skill1: skill_info_list[SkillTypeEnum.skill_Type1],
         character_ULT: ult_info_list[UltTypeEnum.ult_Type1],
         character_m_bullet1: MainBulletEnum.M_BULLET_1,

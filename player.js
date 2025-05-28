@@ -21,8 +21,8 @@ export class Player {
     {
 
         this.canvas = canvas; // canvasオブジェクト
+		this.x = this.canvas.width/2
 
-        
         this.character_type = character_type; // 例: CharacterTypeEnum.TYPE_1 の「値」("Type1")
         this.asset_manager = asset_manager;   // 画像などのアセットを管理
 
@@ -35,8 +35,21 @@ export class Player {
             
 			// 固定値で入れているのでエラーチェックは行わない
 			this.character_name = status.charachter_name;
+
+
 			this.avatar_image_key = status.avatar_image_key;
+			this.sprite_draw_width = status.sprite_base_draw_width;      // アバターの (ピクセル)
+     	   	this.sprite_draw_height = status.sprite_base_draw_height;     // アバターの (ピクセル)
 			
+        	this.sprite_base_draw_width = status.sprite_base_draw_width;      // アバターの (ピクセル)
+     	   	this.sprite_base_draw_height = status.sprite_base_draw_height;     // アバターの (ピクセル)
+			
+			this.hitpoint_image_key = status.hitpoint_image_key; 
+        	this.hitpoint_radius = status.hitpoint_radius;
+        	this.hitpoint_base_radius = status.hitpoint_radius;
+
+
+
             this.baseradius = status.character_radius;
             this.radius = status.character_radius;
 
@@ -55,11 +68,16 @@ export class Player {
 			this.s_bullet5_key = status.character_s_bullet5;
         }
         this.hp = this.maxHp;
-
+        this.y = this.canvas.height/4 + this.sprite_base_draw_height;
 		// アバター画像（スプライト）を設定
-		this.sprite = this.avatar_image_key ? this.asset_manager.getImage(this.avatar_image_key) : null;
-		if (this.avatar_image_key && !this.sprite) {
+		this.spriteAvator = this.avatar_image_key ? this.asset_manager.getImage(this.avatar_image_key) : null;
+		if (this.avatar_image_key && !this.spriteAvator) {
 			console.warn(`Player sprite for key "${this.avatar_image_key}" not loaded. Fallback color will be used.`);
+		}
+
+		this.spriteHitpoint = this.avatar_image_key ? this.asset_manager.getImage(this.hitpoint_image_key) : null;
+		if (this.hitpoint_image_key && !this.spriteHitpoint) {
+			console.warn(`Player sprite for key "${this.hitpoint_image_key}" not loaded. Fallback color will be used.`);
 		}
 
 		this.m_bullet1infos = this.GetMBulletInfo(this.m_bullet1_key);
@@ -137,10 +155,13 @@ export class Player {
         // スピードも変更する
         this.speed = this.basespeed * this.currentScaleFactor;
 
-
+		// アバターの倍率を計算
+		this.sprite_draw_width = this.sprite_base_draw_width * this.currentScaleFactor;      // アバターの (ピクセル)
+		this.sprite_draw_height = this.sprite_base_draw_height * this.currentScaleFactor;      // アバターの (ピクセル)
 		
-
-
+		// 当たり判定の倍率を計算
+		this.hitpoint_radius = this.hitpoint_base_radius * this.currentScaleFactor;      // アバターの (ピクセル)
+		
 		// 弾がある場合は弾のスケールの大きさと速度をいじる
 		if(this.isvalidbulled(this.m_bullet1infos) == true){
 			this.m_bullet1infos.x_speed =  main_bulled_info_list[this.m_bullet1_key].x_speed*this.currentScaleFactor;
@@ -374,18 +395,25 @@ export class Player {
 
     // プレイヤーの描画ロジック
     draw(ctx) {
-        const scaledWidth = this.canvas.width;
-        const scaledHeight = this.canvas.height;
+		const canvasx = this.canvas.width;
+		const canvasy = this.canvas.height;
+        const scaledDrawWidth = this.sprite_draw_width; // 描画用のスケーリングされた幅
+        const scaledDrawHeight = this.sprite_draw_height; // 描画用のスケーリングされた高さ	
+		
+		// 中心描画に変更
+		const AvatorDrawX = this.x - scaledDrawWidth / 2;
+        const AvatorDrawY = this.y - scaledDrawHeight / 2;
+		// プレイヤーのx,yを左上基準として画像を描画
+		ctx.drawImage(this.spriteAvator, AvatorDrawX, AvatorDrawY, scaledDrawWidth, scaledDrawHeight);
 
-        if (this.sprite) {
-			console.log("キャラクター描画中");
-            // プレイヤーのx,yを左上基準として画像を描画
-            ctx.drawImage(this.sprite, this.x, this.y, scaledWidth, scaledHeight);
-        } else {
-            // フォールバックとして色付きの矩形を描画
-            ctx.fillStyle = this.color;
-            ctx.fillRect(this.x, this.y, scaledWidth, scaledHeight);
-        }
+		// 当たり判定を描画
+		const hitpoint_radius_drawn = this.hitpoint_radius; // 描画用のスケーリングされた幅
+		// 中心描画に変更
+		const HitpointDrawX = this.x - hitpoint_radius_drawn / 2;
+        const HitpointDrawY = this.y - hitpoint_radius_drawn / 2;
+
+		ctx.drawImage(this.spriteHitpoint, HitpointDrawX, HitpointDrawY, hitpoint_radius_drawn, hitpoint_radius_drawn);
+
     }
 
     // プレイヤーのHPバー描画ロジック

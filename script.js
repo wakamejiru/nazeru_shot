@@ -9,15 +9,15 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 // キャンバスのサイズ設定
-const BASE_WIDTH = 600;  // ゲームの基準幅
-const BASE_HEIGHT = 800; // ゲームの基準高さ
+const BASE_WIDTH = 800;  // ゲームの基準幅
+const BASE_HEIGHT = 1000; // ゲームの基準高さ
 let currentWidth = BASE_WIDTH;
 let currentHeight = BASE_HEIGHT;
 let scaleFactor = 1;     // 現在のスケールファクター
 
 // HPバーの設定
-const HP_BAR_HEIGHT = 10; // HPバーの太さ（高さ）
-const PLAYER_HP_BAR_WIDTH = 100; // プレイヤーHPバーの横幅
+const HP_BAR_HEIGHT = 30; // HPバーの太さ（高さ）
+const PLAYER_HP_BAR_WIDTH = 250; // プレイヤーHPバーの横幅
 
 let player;
 
