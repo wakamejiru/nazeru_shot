@@ -1,8 +1,9 @@
 // ==================================================================
 // ★★★ プレイヤー クラスの定義 ★★★
 // ==================================================================
-import { BulletPlayer } from './bullet_player.js'; // Bulletクラスもインポート
-import { CharacterTypeEnum, SkillTypeEnum, UltTypeEnum, MainBulletEnum, SubBulletEnum, character_info_list, skill_info_list,  ult_info_list, main_bulled_info_list, sub_bulled_info_list, imageAssetPaths} from './game_status.js'; // Bulletクラスもインポート
+import { Bullet } from './bullet.js'; // Bulletクラスもインポート
+import { CharacterTypeEnum, SkillTypeEnum, UltTypeEnum, MainBulletEnum, SubBulletEnum, 
+	character_info_list, skill_info_list,  ult_info_list, main_bulled_info_list, sub_bulled_info_list, imageAssetPaths} from './game_status.js'; // Bulletクラスもインポート
 
 
 // 画像の初期化を行う
@@ -21,25 +22,29 @@ export class Player {
 
         this.canvas = canvas; // canvasオブジェクト
 
-        // 初期値は中央
-        this.x = (this.canvas.width/2); // Playerの位置X
-        this.y = (this.canvas.width/2); // Playerの位置Y
         
         this.character_type = character_type; // 例: CharacterTypeEnum.TYPE_1 の「値」("Type1")
         this.asset_manager = asset_manager;   // 画像などのアセットを管理
 
-        // game_state.js からキャラクターの基本データを取得
-        const status = characterInfoList[this.characterType];
+        // game_status.js からキャラクターの基本データを取得
+        const status = character_info_list[this.character_type];
 
         if (!status) {
             console.error(`リスト外が入った要確認`);
         } else {
-            // 固定値で入れているのでエラーチェックは行わない
+            console.error(`Player Constructor: Character type "${this.character_type}" not found. Using defaults.`);
+            
+			// 固定値で入れているのでエラーチェックは行わない
 			this.character_name = status.charachter_name;
 			this.avatar_image_key = status.avatar_image_key;
+			
+            this.baseradius = status.character_radius;
             this.radius = status.character_radius;
-            this.speed = status.character_spped;
-            this.maxHp = status.character_maxhp;
+
+			this.basespeed = status.character_speed;
+			this.speed = status.character_speed;
+            
+			this.maxHp = status.character_maxhp;
             this.skill1 = status.character_skill1;
 			this.ult = status.character_ULT;
 			this.m_bullet1_key = status.character_m_bullet1;
@@ -52,13 +57,19 @@ export class Player {
         }
         this.hp = this.maxHp;
 
-		this.m_bullet1infos = GetMBulletInfo(this.m_bullet1_key);
-		this.m_bullet2infos = GetMBulletInfo(this.m_bullet2_key);
-		this.s_bullet1infos = GetSBulletInfo(this.s_bullet1_key);
-		this.s_bullet2infos = GetSBulletInfo(this.s_bullet2_key);
-		this.s_bullet3infos = GetSBulletInfo(this.s_bullet3_key);
-		this.s_bullet4infos = GetSBulletInfo(this.s_bullet4_key);
-		this.s_bullet5infos = GetSBulletInfo(this.s_bullet5_key);
+		// アバター画像（スプライト）を設定
+		this.sprite = this.avatar_image_key ? this.asset_manager.getImage(this.avatar_image_key) : null;
+		if (this.avatar_image_key && !this.sprite) {
+			console.warn(`Player sprite for key "${this.avatar_image_key}" not loaded. Fallback color will be used.`);
+		}
+
+		this.m_bullet1infos = this.GetMBulletInfo(this.m_bullet1_key);
+		this.m_bullet2infos = this.GetMBulletInfo(this.m_bullet2_key);
+		this.s_bullet1infos = this.GetSBulletInfo(this.s_bullet1_key);
+		this.s_bullet2infos = this.GetSBulletInfo(this.s_bullet2_key);
+		this.s_bullet3infos = this.GetSBulletInfo(this.s_bullet3_key);
+		this.s_bullet4infos = this.GetSBulletInfo(this.s_bullet4_key);
+		this.s_bullet5infos = this.GetSBulletInfo(this.s_bullet5_key);
 		this.waittime_mbullet1=0;
 		this.waittime_mbullet2=0;
 		this.waittime_sbullet1=0;
@@ -66,6 +77,13 @@ export class Player {
 		this.waittime_sbullet3=0;
 		this.waittime_sbullet4=0;
 		this.waittime_sbullet5=0;
+
+		// 移動用
+        this.dx = 0;
+        this.dy = 0;
+
+        // スケール対応用
+        this.currentScaleFactor = 1.0; // 初期スケールファクター
     }
 
 	//  mainBulletのデータをもらい受ける
@@ -111,14 +129,14 @@ export class Player {
         this.y = relativeY * this.canvas.height;
 
         // 境界チェックなどで位置を補正
-        this.x = Math.max(0, Math.min(this.x, this.canvas.width - this.getScaledWidth()));
-        this.y = Math.max(0, Math.min(this.y, this.canvas.height - this.getScaledHeight()));
+        this.x = Math.max(0, Math.min(this.x, this.canvas.width - this.radius)); // 後でアバターのサイずずに合わせる
+        this.y = Math.max(0, Math.min(this.y, this.canvas.height - this.radius));
 
         // 横幅も変更する
-        this.radius = this.radius * this.currentScaleFactor;
+        this.radius = this.baseradius * this.currentScaleFactor;
 
         // スピードも変更する
-        this.speed = this.speed * this.currentScaleFactor;
+        this.speed = this.basespeed * this.currentScaleFactor;
 
 
 		
@@ -126,87 +144,88 @@ export class Player {
 
 		// 弾がある場合は弾のスケールの大きさと速度をいじる
 		if(this.isvalidbulled(this.m_bullet1infos) == true){
-			this.m_bullet1infos.x_speed = this.m_bullet1infos.x_speed*this.currentScaleFactor;
-			this.m_bullet1infos.y_speed = this.m_bullet1infos.y_speed*this.currentScaleFactor;
-			this.m_bullet1infos.accel_x = this.m_bullet1infos.accel_x*this.currentScaleFactor;
-			this.m_bullet1infos.accel_y = this.m_bullet1infos.accel_y*this.currentScaleFactor;
-			this.m_bullet1infos.jeak_x = this.m_bullet1infos.jeak_x*this.currentScaleFactor;
-			this.m_bullet1infos.jeak_y = this.m_bullet1infos.jeak_y*this.currentScaleFactor;
-			this.m_bullet1infos.bulled_maxSpeed = this.m_bullet1infos.bulled_maxSpeed*this.currentScaleFactor;
-			this.m_bullet1infos.bulled_size_mag = this.m_bullet1infos.bulled_size_mag*this.currentScaleFactor;	
+			this.m_bullet1infos.x_speed =  main_bulled_info_list[this.m_bullet1_key].x_speed*this.currentScaleFactor;
+			this.m_bullet1infos.y_speed = main_bulled_info_list[this.m_bullet1_key].y_speed*this.currentScaleFactor;
+			this.m_bullet1infos.accel_x = main_bulled_info_list[this.m_bullet1_key].accel_x*this.currentScaleFactor;
+			this.m_bullet1infos.accel_y = main_bulled_info_list[this.m_bullet1_key].accel_y*this.currentScaleFactor;
+			this.m_bullet1infos.jeak_x = main_bulled_info_list[this.m_bullet1_key].jeak_x*this.currentScaleFactor;
+			this.m_bullet1infos.jeak_y = main_bulled_info_list[this.m_bullet1_key].jeak_y*this.currentScaleFactor;
+			this.m_bullet1infos.bulled_maxSpeed = main_bulled_info_list[this.m_bullet1_key].bulled_maxSpeed*this.currentScaleFactor;
+			this.m_bullet1infos.bulled_size_mag = main_bulled_info_list[this.m_bullet1_key].bulled_size_mag*this.currentScaleFactor;	
 		}
 		
 		// 弾がある場合は弾のスケールの大きさと速度をいじる
 		if(this.isvalidbulled(this.m_bullet2infos) == true){
-			this.m_bullet2infos.x_speed = this.m_bullet2infos.x_speed*this.currentScaleFactor;
-			this.m_bullet2infos.y_speed = this.m_bullet2infos.y_speed*this.currentScaleFactor;
-			this.m_bullet2infos.accel_x = this.m_bullet2infos.accel_x*this.currentScaleFactor;
-			this.m_bullet2infos.accel_y = this.m_bullet2infos.accel_y*this.currentScaleFactor;
-			this.m_bullet2infos.jeak_x = this.m_bullet2infos.jeak_x*this.currentScaleFactor;
-			this.m_bullet2infos.jeak_y = this.m_bullet2infos.jeak_y*this.currentScaleFactor;
-			this.m_bullet2infos.bulled_maxSpeed = this.m_bullet2infos.bulled_maxSpeed*this.currentScaleFactor;
-			this.m_bullet2infos.bulled_size_mag = this.m_bullet2infos.bulled_size_mag*this.currentScaleFactor;	
+			this.m_bullet2infos.x_speed = main_bulled_info_list[this.m_bullet2_key].x_speed*this.currentScaleFactor;
+			this.m_bullet2infos.y_speed = main_bulled_info_list[this.m_bullet2_key].y_speed*this.currentScaleFactor;
+			this.m_bullet2infos.accel_x = main_bulled_info_list[this.m_bullet2_key].accel_x*this.currentScaleFactor;
+			this.m_bullet2infos.accel_y = main_bulled_info_list[this.m_bullet2_key].accel_y*this.currentScaleFactor;
+			this.m_bullet2infos.jeak_x = main_bulled_info_list[this.m_bullet2_key].jeak_x*this.currentScaleFactor;
+			this.m_bullet2infos.jeak_y = main_bulled_info_list[this.m_bullet2_key].jeak_y*this.currentScaleFactor;
+			this.m_bullet2infos.bulled_maxSpeed = main_bulled_info_list[this.m_bullet2_key].bulled_maxSpeed*this.currentScaleFactor;
+			this.m_bullet2infos.bulled_size_mag = main_bulled_info_list[this.m_bullet2_key].bulled_size_mag*this.currentScaleFactor;	
 		}
 
 		// 弾がある場合は弾のスケールの大きさと速度をいじる
 		if(this.isvalidbulled(this.s_bullet1infos) == true){
-			this.s_bullet1infos.x_speed = this.s_bullet1infos.x_speed*this.currentScaleFactor;
-			this.s_bullet1infos.y_speed = this.s_bullet1infos.y_speed*this.currentScaleFactor;
-			this.s_bullet1infos.accel_x = this.s_bullet1infos.accel_x*this.currentScaleFactor;
-			this.s_bullet1infos.accel_y = this.s_bullet1infos.accel_y*this.currentScaleFactor;
-			this.s_bullet1infos.jeak_x = this.s_bullet1infos.jeak_x*this.currentScaleFactor;
-			this.s_bullet1infos.jeak_y = this.s_bullet1infos.jeak_y*this.currentScaleFactor;
-			this.s_bullet1infos.bulled_maxSpeed = this.s_bullet1infos.bulled_maxSpeed*this.currentScaleFactor;
-			this.s_bullet1infos.bulled_size_mag = this.s_bullet1infos.bulled_size_mag*this.currentScaleFactor;	
+			this.s_bullet1infos.x_speed = sub_bulled_info_list[this.s_bullet1_key].x_speed*this.currentScaleFactor;
+			this.s_bullet1infos.y_speed = sub_bulled_info_list[this.s_bullet1_key].y_speed*this.currentScaleFactor;
+			this.s_bullet1infos.accel_x = sub_bulled_info_list[this.s_bullet1_key].accel_x*this.currentScaleFactor;
+			this.s_bullet1infos.accel_y = sub_bulled_info_list[this.s_bullet1_key].accel_y*this.currentScaleFactor;
+			this.s_bullet1infos.jeak_x = sub_bulled_info_list[this.s_bullet1_key].jeak_x*this.currentScaleFactor;
+			this.s_bullet1infos.jeak_y = sub_bulled_info_list[this.s_bullet1_key].jeak_y*this.currentScaleFactor;
+			this.s_bullet1infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet1_key].bulled_maxSpeed*this.currentScaleFactor;
+			this.s_bullet1infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet1_key].bulled_size_mag*this.currentScaleFactor;	
 		}
 
 		if(this.isvalidbulled(this.s_bullet2infos) == true){
-			this.s_bullet2infos.x_speed = this.s_bullet2infos.x_speed*this.currentScaleFactor;
-			this.s_bullet2infos.y_speed = this.s_bullet2infos.y_speed*this.currentScaleFactor;
-			this.s_bullet2infos.accel_x = this.s_bullet2infos.accel_x*this.currentScaleFactor;
-			this.s_bullet2infos.accel_y = this.s_bullet2infos.accel_y*this.currentScaleFactor;
-			this.s_bullet2infos.jeak_x = this.s_bullet2infos.jeak_x*this.currentScaleFactor;
-			this.s_bullet2infos.jeak_y = this.s_bullet2infos.jeak_y*this.currentScaleFactor;
-			this.s_bullet2infos.bulled_maxSpeed = this.s_bullet2infos.bulled_maxSpeed*this.currentScaleFactor;
-			this.s_bullet2infos.bulled_size_mag = this.s_bullet2infos.bulled_size_mag*this.currentScaleFactor;	
+			this.s_bullet2infos.x_speed = sub_bulled_info_list[this.s_bullet2_key].x_speed*this.currentScaleFactor;
+			this.s_bullet2infos.y_speed = sub_bulled_info_list[this.s_bullet2_key].y_speed*this.currentScaleFactor;
+			this.s_bullet2infos.accel_x = sub_bulled_info_list[this.s_bullet2_key].accel_x*this.currentScaleFactor;
+			this.s_bullet2infos.accel_y = sub_bulled_info_list[this.s_bullet2_key].accel_y*this.currentScaleFactor;
+			this.s_bullet2infos.jeak_x = sub_bulled_info_list[this.s_bullet2_key].jeak_x*this.currentScaleFactor;
+			this.s_bullet2infos.jeak_y = sub_bulled_info_list[this.s_bullet2_key].jeak_y*this.currentScaleFactor;
+			this.s_bullet2infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet2_key].bulled_maxSpeed*this.currentScaleFactor;
+			this.s_bullet2infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet2_key].bulled_size_mag*this.currentScaleFactor;	
 		}
 
 		if(this.isvalidbulled(this.s_bullet3infos) == true){
-			this.s_bullet3infos.x_speed = this.s_bullet3infos.x_speed*this.currentScaleFactor;
-			this.s_bullet3infos.y_speed = this.s_bullet3infos.y_speed*this.currentScaleFactor;
-			this.s_bullet3infos.accel_x = this.s_bullet3infos.accel_x*this.currentScaleFactor;
-			this.s_bullet3infos.accel_y = this.s_bullet3infos.accel_y*this.currentScaleFactor;
-			this.s_bullet3infos.jeak_x = this.s_bullet3infos.jeak_x*this.currentScaleFactor;
-			this.s_bullet3infos.jeak_y = this.s_bullet3infos.jeak_y*this.currentScaleFactor;
-			this.s_bullet3infos.bulled_maxSpeed = this.s_bullet3infos.bulled_maxSpeed*this.currentScaleFactor;
-			this.s_bullet3infos.bulled_size_mag = this.s_bullet3infos.bulled_size_mag*this.currentScaleFactor;	
+			this.s_bullet3infos.x_speed = sub_bulled_info_list[this.s_bullet3_key].x_speed*this.currentScaleFactor;
+			this.s_bullet3infos.y_speed = sub_bulled_info_list[this.s_bullet3_key].y_speed*this.currentScaleFactor;
+			this.s_bullet3infos.accel_x = sub_bulled_info_list[this.s_bullet3_key].accel_x*this.currentScaleFactor;
+			this.s_bullet3infos.accel_y = sub_bulled_info_list[this.s_bullet3_key].accel_y*this.currentScaleFactor;
+			this.s_bullet3infos.jeak_x = sub_bulled_info_list[this.s_bullet3_key].jeak_x*this.currentScaleFactor;
+			this.s_bullet3infos.jeak_y = sub_bulled_info_list[this.s_bullet3_key].jeak_y*this.currentScaleFactor;
+			this.s_bullet3infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet3_key].bulled_maxSpeed*this.currentScaleFactor;
+			this.s_bullet3infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet3_key].bulled_size_mag*this.currentScaleFactor;	
 		}
 
-		if(this.isvalidbulled(this.s_bullet4infos) == true){ // isvalidbulled は this.isvalidbulled と仮定
-            this.s_bullet4infos.x_speed = this.s_bullet4infos.x_speed * this.currentScaleFactor;
-            this.s_bullet4infos.y_speed = this.s_bullet4infos.y_speed * this.currentScaleFactor;
-            this.s_bullet4infos.accel_x = this.s_bullet4infos.accel_x * this.currentScaleFactor;
-            this.s_bullet4infos.accel_y = this.s_bullet4infos.accel_y * this.currentScaleFactor;
-            this.s_bullet4infos.jeak_x = this.s_bullet4infos.jeak_x * this.currentScaleFactor; // "jerk" のことかと思われますが、変数名を維持
-            this.s_bullet4infos.jeak_y = this.s_bullet4infos.jeak_y * this.currentScaleFactor; // 同上
-            this.s_bullet4infos.bulled_maxSpeed = this.s_bullet4infos.bulled_maxSpeed * this.currentScaleFactor;
-            this.s_bullet4infos.bulled_size_mag = this.s_bullet4infos.bulled_size_mag * this.currentScaleFactor;
+		if(this.isvalidbulled(this.s_bullet4infos) == true){ 
+            this.s_bullet4infos.x_speed = sub_bulled_info_list[this.s_bullet4_key].x_speed * this.currentScaleFactor;
+            this.s_bullet4infos.y_speed = sub_bulled_info_list[this.s_bullet4_key].y_speed * this.currentScaleFactor;
+            this.s_bullet4infos.accel_x = sub_bulled_info_list[this.s_bullet4_key].accel_x * this.currentScaleFactor;
+            this.s_bullet4infos.accel_y = sub_bulled_info_list[this.s_bullet4_key].accel_y * this.currentScaleFactor;
+            this.s_bullet4infos.jeak_x = sub_bulled_info_list[this.s_bullet4_key].jeak_x * this.currentScaleFactor;
+            this.s_bullet4infos.jeak_y = sub_bulled_info_list[this.s_bullet4_key].jeak_y * this.currentScaleFactor;
+            this.s_bullet4infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet4_key].bulled_maxSpeed * this.currentScaleFactor;
+            this.s_bullet4infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet4_key].bulled_size_mag * this.currentScaleFactor;
         }
 
-
-		if(this.isvalidbulled(this.s_bullet5infos) == true){ // isvalidbulled は this.isvalidbulled と仮定
-            this.s_bullet5infos.x_speed = this.s_bullet5infos.x_speed * this.currentScaleFactor;
-            this.s_bullet5infos.y_speed = this.s_bullet5infos.y_speed * this.currentScaleFactor;
-            this.s_bullet5infos.accel_x = this.s_bullet5infos.accel_x * this.currentScaleFactor;
-            this.s_bullet5infos.accel_y = this.s_bullet5infos.accel_y * this.currentScaleFactor;
-            this.s_bullet5infos.jeak_x = this.s_bullet5infos.jeak_x * this.currentScaleFactor; // "jerk" のことかと思われますが、変数名を維持
-            this.s_bullet5infos.jeak_y = this.s_bullet5infos.jeak_y * this.currentScaleFactor; // 同上
-            this.s_bullet5infos.bulled_maxSpeed = this.s_bullet5infos.bulled_maxSpeed * this.currentScaleFactor;
-            this.s_bullet5infos.bulled_size_mag = this.s_bullet5infos.bulled_size_mag * this.currentScaleFactor;
+		if(this.isvalidbulled(this.s_bullet5infos) == true){ 
+            this.s_bullet5infos.x_speed = sub_bulled_info_list[this.s_bullet5_key].x_speed * this.currentScaleFactor;
+            this.s_bullet5infos.y_speed = sub_bulled_info_list[this.s_bullet5_key].y_speed * this.currentScaleFactor;
+            this.s_bullet5infos.accel_x = sub_bulled_info_list[this.s_bullet5_key].accel_x * this.currentScaleFactor;
+            this.s_bullet5infos.accel_y = sub_bulled_info_list[this.s_bullet5_key].accel_y * this.currentScaleFactor;
+            this.s_bullet5infos.jeak_x = sub_bulled_info_list[this.s_bullet5_key].jeak_x * this.currentScaleFactor;
+            this.s_bullet5infos.jeak_y = sub_bulled_info_list[this.s_bullet5_key].jeak_y * this.currentScaleFactor;
+            this.s_bullet5infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet5_key].bulled_maxSpeed * this.currentScaleFactor;
+            this.s_bullet5infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet5_key].bulled_size_mag * this.currentScaleFactor;
         }
-
 
     }
+
+
+
 
     // プレイヤーの移動ロジック
     move(keys, deltaTime) {
@@ -260,7 +279,7 @@ export class Player {
 				trackingStrength: 0.0 // 0なら追尾しない。追尾させる場合は0より大きい値
 			};
 
-			playerBulletsArray.push(new BulletPlayer(startX, startY - this.bulletHeight / 2, bulletOptions));
+			//playerBulletsArray.push(new Bullet(startX, startY - this.bulletHeight / 2, bulletOptions));
 		}
 
 	}
@@ -356,9 +375,17 @@ export class Player {
 
     // プレイヤーの描画ロジック
     draw(ctx) {
-        ctx.fillStyle = this.color;
-		
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        const scaledWidth = this.canvas.width;
+        const scaledHeight = this.canvas.height;
+
+        if (this.sprite) {
+            // プレイヤーのx,yを左上基準として画像を描画
+            ctx.drawImage(this.sprite, this.x, this.y, scaledWidth, scaledHeight);
+        } else {
+            // フォールバックとして色付きの矩形を描画
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y, scaledWidth, scaledHeight);
+        }
     }
 
     // プレイヤーのHPバー描画ロジック

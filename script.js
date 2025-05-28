@@ -2,6 +2,8 @@
 import { Player } from './player.js';
 import { Enemy } from './enemy.js';
 import { Bullet } from './bullet.js'; // Bulletクラスもインポート
+import { CharacterTypeEnum, imageAssetPaths } from './game_status.js'; // game_status.js から必要なものをインポート
+import { AssetManager } from './asset_manager.js'; // AssetManagerをインポート
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -17,37 +19,49 @@ let scaleFactor = 1;     // 現在のスケールファクター
 const HP_BAR_HEIGHT = 10; // HPバーの太さ（高さ）
 const PLAYER_HP_BAR_WIDTH = 100; // プレイヤーHPバーの横幅
 
+let player;
+
+// 画像のローリングを行う
+const assetManager = new AssetManager(imageAssetPaths); // imageAssetPaths は game_status.js からエクスポート
+
+
+// 初期化を実行する
+async function initializeGame() {
+    try {
+        await assetManager.loadAllAssets();
+        console.log("All assets loaded.");
+
+        const selectedCharType = CharacterTypeEnum.TYPE_1; // 例
+
+        player = new Player(
+            selectedCharType,
+            assetManager,
+            canvas
+		);
+
+        // Enemy インスタンスの生成 (Player と同様に assetManager や characterType を渡す)
+        // enemy = new Enemy( BASE_WIDTH / 2, BASE_HEIGHT * 0.2, canvas, EnemyTypeEnum.TYPE_A, assetManager );
+
+
+        resizeGame(); // 初期リサイズとスケール設定、Playerの位置もここで調整される
+        requestAnimationFrame(gameLoop);
+
+    } catch (error) {
+        console.error("Failed to initialize game:", error);
+    }
+}
 
 
 
-
-
-
-
-
-
-
-
-// --- インスタンス生成 ---
-let player = new Player(canvas.width / 2 - 10, canvas.height - 40, canvas, { 
-    color: 'blue', maxHp: 150, bulletDamage: 30, bulletColor: 'rgba(0, 150, 255, 0.6)',
-    bulletSpeed: 1000, bulletSpeedX: 0,  bulletDamage: 3, bulletInterval: 0.05, bulletSpreadCount: 30
-});
-let enemy = new Enemy(canvas.width / 2 - 20, 50, canvas, {
-    width: 60, height: 60, color: 'purple', maxHp: 1000, speed: 30,
-    bulletSpeedY: 170,bulletSpeedX: 0, bulletDamage: 20, bulletInterval: 0.3, bulletSpreadCount: 30
-});
-
-
-
-
-
-
-
+// let enemy = new Enemy(canvas.width / 2 - 20, 50, canvas, {
+//     width: 60, height: 60, color: 'purple', maxHp: 1000, speed: 30,
+//     bulletSpeedY: 170,bulletSpeedX: 0, bulletDamage: 20, bulletInterval: 0.3, bulletSpreadCount: 30
+// });
 
 // 弾を格納する配列
 let bullets = []; // 敵の弾
 let playerBullets = []; //プレイヤーの弾
+
 // キー入力状態
 const keys = {
     ArrowUp: false,
@@ -118,102 +132,102 @@ function resizeGame() {
     if (player) {
         player.updateScale(scaleFactor, canvas); // Playerクラスにスケール更新メソッドを追加する例
     }
-    if (enemy) {
-        enemy.updateScale(scaleFactor, canvas);   // Enemyクラスにスケール更新メソッドを追加する例
-    }
+    // if (enemy) {
+    //     enemy.updateScale(scaleFactor, canvas);   // Enemyクラスにスケール更新メソッドを追加する例
+    // }
 }
 
 
 // 弾の描画
-function drawEnemyBullets(ctx) {
-    bullets.forEach(bullet => bullet.draw(ctx));
-}
+// function drawEnemyBullets(ctx) {
+//     bullets.forEach(bullet => bullet.draw(ctx));
+// }
 
-function drawPlayerBullets(ctx) {
-    playerBullets.forEach(bullet => bullet.draw(ctx));
-}
+// function drawPlayerBullets(ctx) {
+//     playerBullets.forEach(bullet => bullet.draw(ctx));
+// }
 
 // 敵の弾の移動と画面外判定
-function moveEnemyBullets(deltaTime, playerInstance) {
-    bullets = bullets.filter(bullet => {
-        if (bullet.isHit) return false;
-        bullet.update(deltaTime, playerInstance); // 追尾対象としてplayerインスタンスを渡す例
-        // 画面外判定などは bullet.x, bullet.y, bullet.radius/width/height を使う
-        return bullet.x > - (bullet.isCircle ? bullet.radius : bullet.width/2) &&
-               bullet.x < canvas.width + (bullet.isCircle ? bullet.radius : bullet.width/2) &&
-               bullet.y > - (bullet.isCircle ? bullet.radius : bullet.height/2) &&
-               bullet.y < canvas.height + (bullet.isCircle ? bullet.radius : bullet.height/2) &&
-               (bullet.life > 0);
-    });
-}
+// function moveEnemyBullets(deltaTime, playerInstance) {
+//     bullets = bullets.filter(bullet => {
+//         if (bullet.isHit) return false;
+//         bullet.update(deltaTime, playerInstance); // 追尾対象としてplayerインスタンスを渡す例
+//         // 画面外判定などは bullet.x, bullet.y, bullet.radius/width/height を使う
+//         return bullet.x > - (bullet.isCircle ? bullet.radius : bullet.width/2) &&
+//                bullet.x < canvas.width + (bullet.isCircle ? bullet.radius : bullet.width/2) &&
+//                bullet.y > - (bullet.isCircle ? bullet.radius : bullet.height/2) &&
+//                bullet.y < canvas.height + (bullet.isCircle ? bullet.radius : bullet.height/2) &&
+//                (bullet.life > 0);
+//     });
+// }
 
 // プレイヤーの弾の移動と画面外判定
-function movePlayerBullets(deltaTime, playerInstance) {
-    playerBullets = playerBullets.filter(bullet => {
-        if (bullet.isHit) return false;
-        bullet.update(deltaTime, playerInstance); // プレイヤー弾が追尾しないなら引数なし
-        const b = bullet;
-        return b.x + b.width/2 > 0 && b.x - b.width/2 < canvas.width &&
-               b.y + b.height/2 > 0 && b.y - b.height/2 < canvas.height &&
-               (b.life > 0);
-    });
-}
+// function movePlayerBullets(deltaTime, playerInstance) {
+//     playerBullets = playerBullets.filter(bullet => {
+//         if (bullet.isHit) return false;
+//         bullet.update(deltaTime, playerInstance); // プレイヤー弾が追尾しないなら引数なし
+//         const b = bullet;
+//         return b.x + b.width/2 > 0 && b.x - b.width/2 < canvas.width &&
+//                b.y + b.height/2 > 0 && b.y - b.height/2 < canvas.height &&
+//                (b.life > 0);
+//     });
+// }
 
 // 当たり判定 (プレイヤーと敵の弾)
-function checkCollisions() {
-	if (isGameOver || isGameWin) return;
+// function checkCollisions() {
+// 	if (isGameOver || isGameWin) return;
 
-    // 1. 敵の弾(円形)とプレイヤー(矩形)の当たり判定
-    bullets.forEach(bullet => {
-        if (isGameOver || isGameWin) return; // 円形弾のみ対象とする例
-        // (以前の円と矩形の当たり判定ロジックをここに記述、bullet.radius, player.width, player.height を使用)
-        if (bullet.isCircle) { // 敵の弾は円形と仮定
-            const scaledBulletRadius = bullet.getBaseRadius() * scaleFactor;
-            const scaledPlayerWidth = player.getBaseWidth() * scaleFactor;
-            const scaledPlayerHeight = player.getBaseHeight() * scaleFactor;
+//     // 1. 敵の弾(円形)とプレイヤー(矩形)の当たり判定
+//     bullets.forEach(bullet => {
+//         if (isGameOver || isGameWin) return; // 円形弾のみ対象とする例
+//         // (以前の円と矩形の当たり判定ロジックをここに記述、bullet.radius, player.width, player.height を使用)
+//         if (bullet.isCircle) { // 敵の弾は円形と仮定
+//             const scaledBulletRadius = bullet.getBaseRadius() * scaleFactor;
+//             const scaledPlayerWidth = player.getBaseWidth() * scaleFactor;
+//             const scaledPlayerHeight = player.getBaseHeight() * scaleFactor;
 
-            const didCollide = (function() {
-                let closestX = Math.max(player.x, Math.min(bullet.x, player.x + scaledPlayerWidth));
-                let closestY = Math.max(player.y, Math.min(bullet.y, player.y + scaledPlayerHeight));
-                const distanceX = bullet.x - closestX;
-                const distanceY = bullet.y - closestY;
-                const distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
-                return distanceSquared < (scaledBulletRadius * scaledBulletRadius);
-            })();
+//             const didCollide = (function() {
+//                 let closestX = Math.max(player.x, Math.min(bullet.x, player.x + scaledPlayerWidth));
+//                 let closestY = Math.max(player.y, Math.min(bullet.y, player.y + scaledPlayerHeight));
+//                 const distanceX = bullet.x - closestX;
+//                 const distanceY = bullet.y - closestY;
+//                 const distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+//                 return distanceSquared < (scaledBulletRadius * scaledBulletRadius);
+//             })();
         
 
-            if (didCollide) { // ★★★ ここが衝突条件の結果です ★★★
-                player.hp -= bullet.damage;
-                bullet.isHit = true;
-                if (player.hp <= 0) {
-                    player.hp = 0;
-                    gameOver();
-                    return; // gameOverが呼ばれたらこのforEachループ内の処理はこれ以上不要
-                }
-            }
-        }
-    });
+//             if (didCollide) { // ★★★ ここが衝突条件の結果です ★★★
+//                 player.hp -= bullet.damage;
+//                 bullet.isHit = true;
+//                 if (player.hp <= 0) {
+//                     player.hp = 0;
+//                     gameOver();
+//                     return; // gameOverが呼ばれたらこのforEachループ内の処理はこれ以上不要
+//                 }
+//             }
+//         }
+//     });
 
-    // 2. プレイヤーの弾(矩形)と敵(矩形)の当たり判定
-    playerBullets.forEach(pBullet => {
-        if (pBullet.isHit || !enemy || enemy.hp <= 0) return;
-        if (!pBullet.isCircle && enemy) { // プレイヤー弾(矩形)と敵(矩形)
-            const scaledPBulletWidth = pBullet.getBaseWidth() * scaleFactor;
-            const scaledPBulletHeight = pBullet.getBaseHeight() * scaleFactor;
-            const scaledEnemyWidth = enemy.getBaseWidth() * scaleFactor;
-            const scaledEnemyHeight = enemy.getBaseHeight() * scaleFactor;
+//     // 2. プレイヤーの弾(矩形)と敵(矩形)の当たり判定
+//     playerBullets.forEach(pBullet => {
+//         if (pBullet.isHit || !enemy || enemy.hp <= 0) return;
+//         if (!pBullet.isCircle && enemy) { // プレイヤー弾(矩形)と敵(矩形)
+//             const scaledPBulletWidth = pBullet.getBaseWidth() * scaleFactor;
+//             const scaledPBulletHeight = pBullet.getBaseHeight() * scaleFactor;
+//             const scaledEnemyWidth = enemy.getBaseWidth() * scaleFactor;
+//             const scaledEnemyHeight = enemy.getBaseHeight() * scaleFactor;
 
-            if (pBullet.x - scaledPBulletWidth/2 < enemy.x + scaledEnemyWidth &&
-                pBullet.x + scaledPBulletWidth/2 > enemy.x &&
-                pBullet.y - scaledPBulletHeight/2 < enemy.y + scaledEnemyHeight &&
-                pBullet.y + scaledPBulletHeight/2 > enemy.y) {
-                        enemy.hp -= pBullet.damage;
-                        pBullet.isHit = true;
-                        if (enemy.hp <= 0) { enemy.hp = 0; gameWin(); return; }
-                    }
-                }
-    });
-}
+//             if (pBullet.x - scaledPBulletWidth/2 < enemy.x + scaledEnemyWidth &&
+//                 pBullet.x + scaledPBulletWidth/2 > enemy.x &&
+//                 pBullet.y - scaledPBulletHeight/2 < enemy.y + scaledEnemyHeight &&
+//                 pBullet.y + scaledPBulletHeight/2 > enemy.y) {
+//                         enemy.hp -= pBullet.damage;
+//                         pBullet.isHit = true;
+//                         if (enemy.hp <= 0) { enemy.hp = 0; gameWin(); return; }
+//                     }
+//                 }
+//     });
+// }
 
 let isGameOver = false; // 追加: ゲームオーバー状態フラグ
 let isGameWin = false;  // 追加: ゲーム勝利状態フラグ
@@ -275,24 +289,24 @@ function gameLoop(currentTime) {
     clearCanvas();
 
     player.move(keys, clampedDeltaTime);
-    if (enemy) enemy.move(clampedDeltaTime);
+    //if (enemy) enemy.move(clampedDeltaTime);
 
     player.shoot(playerBullets, Bullet, enemy, clampedDeltaTime); // deltaTimeは直接不要（クールダウンはmoveで処理）
-    if (enemy) enemy.shoot(bullets, Bullet, player, clampedDeltaTime); // 追尾用にplayer, タイマー更新用にdeltaTime
+    //if (enemy) enemy.shoot(bullets, Bullet, player, clampedDeltaTime); // 追尾用にplayer, タイマー更新用にdeltaTime
 
-    moveEnemyBullets(clampedDeltaTime, player); // 追尾対象としてplayerを渡す
-    movePlayerBullets(clampedDeltaTime, enemy);
+    //moveEnemyBullets(clampedDeltaTime, player); // 追尾対象としてplayerを渡す
+    //movePlayerBullets(clampedDeltaTime, enemy);
 
     player.draw(ctx);
-    if (enemy) enemy.draw(ctx);
+   // if (enemy) enemy.draw(ctx);
 
-    drawEnemyBullets(ctx);
-    drawPlayerBullets(ctx);
+    //drawEnemyBullets(ctx);
+   // drawPlayerBullets(ctx);
 
     player.drawHpBar(ctx, HP_BAR_HEIGHT, PLAYER_HP_BAR_WIDTH);
-    if (enemy) enemy.drawHpBar(ctx, HP_BAR_HEIGHT);
+    //if (enemy) enemy.drawHpBar(ctx, HP_BAR_HEIGHT);
 
-    checkCollisions(); // deltaTimeは通常不要
+//    checkCollisions(); // deltaTimeは通常不要
 
     animationFrameId = requestAnimationFrame(gameLoop);
 }
@@ -300,5 +314,4 @@ function gameLoop(currentTime) {
 // --- 初期化処理 ---
 // リサイズしたときに自動的にリスナーが走る
 window.addEventListener('resize', handleResize);
-resizeGame(); // 初期ロード時にも実行
-requestAnimationFrame(gameLoop); // 最初の呼び出し
+initializeGame();
