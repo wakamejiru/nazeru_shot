@@ -131,7 +131,7 @@ export const  main_bulled_info_list = {
     },
     [MainBulletEnum.M_BULLET_2]:
     {
-        start_x_pos:100,
+        start_x_pos:20,
         start_y_pos:0,
         ballet_name:"メインウエポン2",
         ball_image_key: "bulletTypeA",
@@ -162,7 +162,7 @@ export const  main_bulled_info_list = {
     },
     [MainBulletEnum.M_BULLET_3]:
     {
-        start_x_pos:-100,
+        start_x_pos:-20,
         start_y_pos:0,
         ballet_name:"メインウエポン2R",
         ball_image_key: "bulletTypeA",
@@ -193,7 +193,7 @@ export const  main_bulled_info_list = {
     },
     [MainBulletEnum.M_BULLET_4]:
     {
-        start_x_pos:100,
+        start_x_pos:20,
         start_y_pos:0,
         ballet_name:"メインウエポン3",
         ball_image_key: "bulletTypeA",
@@ -224,7 +224,7 @@ export const  main_bulled_info_list = {
     },
     [MainBulletEnum.M_BULLET_5]:
     {
-        start_x_pos:-100,
+        start_x_pos:-20,
         start_y_pos:0,
         ballet_name:"メインウエポン3R",
         ball_image_key: "bulletTypeA",

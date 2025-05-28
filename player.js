@@ -191,8 +191,13 @@ export class Player {
 		this.sprite_draw_height = (this.sprite_base_draw_height || 40) * this.currentScaleFactor;
 		this.hitpoint_radius = (this.hitpoint_base_radius || 10) * this.currentScaleFactor;
 
+		// かなりまずった作り方をした
+
 		// 弾がある場合は弾のスケールの大きさと速度をいじる
 		if(this.isvalidbulled(this.m_bullet1infos) == true){
+			this.m_bullet1infos.start_x_pos =  main_bulled_info_list[this.m_bullet1_key].start_x_pos*this.currentScaleFactor;
+			this.m_bullet1infos.start_y_pos =  main_bulled_info_list[this.m_bullet1_key].start_y_pos*this.currentScaleFactor;
+
 			this.m_bullet1infos.x_speed =  main_bulled_info_list[this.m_bullet1_key].x_speed*this.currentScaleFactor;
 			this.m_bullet1infos.y_speed = main_bulled_info_list[this.m_bullet1_key].y_speed*this.currentScaleFactor;
 			this.m_bullet1infos.accel_x = main_bulled_info_list[this.m_bullet1_key].accel_x*this.currentScaleFactor;
@@ -210,6 +215,10 @@ export class Player {
 		
 		// 弾がある場合は弾のスケールの大きさと速度をいじる
 		if(this.isvalidbulled(this.m_bullet2infos) == true){
+			this.m_bullet2infos.start_x_pos =  main_bulled_info_list[this.m_bullet2_key].start_x_pos*this.currentScaleFactor;
+			this.m_bullet2infos.start_y_pos =  main_bulled_info_list[this.m_bullet2_key].start_y_pos*this.currentScaleFactor;
+
+
 			this.m_bullet2infos.x_speed = main_bulled_info_list[this.m_bullet2_key].x_speed*this.currentScaleFactor;
 			this.m_bullet2infos.y_speed = main_bulled_info_list[this.m_bullet2_key].y_speed*this.currentScaleFactor;
 			this.m_bullet2infos.accel_x = main_bulled_info_list[this.m_bullet2_key].accel_x*this.currentScaleFactor;
@@ -227,6 +236,10 @@ export class Player {
 
 		// 弾がある場合は弾のスケールの大きさと速度をいじる
 		if(this.isvalidbulled(this.s_bullet1infos) == true){
+			this.s_bullet1infos.start_x_pos =  sub_bulled_info_list[this.s_bullet1_key].start_x_pos*this.currentScaleFactor;
+			this.s_bullet1infos.start_y_pos =  sub_bulled_info_list[this.s_bullet1_key].start_y_pos*this.currentScaleFactor;
+
+
 			this.s_bullet1infos.x_speed = sub_bulled_info_list[this.s_bullet1_key].x_speed*this.currentScaleFactor;
 			this.s_bullet1infos.y_speed = sub_bulled_info_list[this.s_bullet1_key].y_speed*this.currentScaleFactor;
 			this.s_bullet1infos.accel_x = sub_bulled_info_list[this.s_bullet1_key].accel_x*this.currentScaleFactor;
@@ -241,6 +254,9 @@ export class Player {
 		}
 
 		if(this.isvalidbulled(this.s_bullet2infos) == true){
+			this.s_bullet2infos.start_x_pos =  sub_bulled_info_list[this.s_bullet2_key].start_x_pos*this.currentScaleFactor;
+			this.s_bullet2infos.start_y_pos =  sub_bulled_info_list[this.s_bullet2_key].start_y_pos*this.currentScaleFactor;
+
 			this.s_bullet2infos.x_speed = sub_bulled_info_list[this.s_bullet2_key].x_speed*this.currentScaleFactor;
 			this.s_bullet2infos.y_speed = sub_bulled_info_list[this.s_bullet2_key].y_speed*this.currentScaleFactor;
 			this.s_bullet2infos.accel_x = sub_bulled_info_list[this.s_bullet2_key].accel_x*this.currentScaleFactor;
@@ -256,6 +272,9 @@ export class Player {
 		}
 
 		if(this.isvalidbulled(this.s_bullet3infos) == true){
+			this.s_bullet3infos.start_x_pos =  sub_bulled_info_list[this.s_bullet3_key].start_x_pos*this.currentScaleFactor;
+			this.s_bullet3infos.start_y_pos =  sub_bulled_info_list[this.s_bullet3_key].start_y_pos*this.currentScaleFactor;
+
 			this.s_bullet3infos.x_speed = sub_bulled_info_list[this.s_bullet3_key].x_speed*this.currentScaleFactor;
 			this.s_bullet3infos.y_speed = sub_bulled_info_list[this.s_bullet3_key].y_speed*this.currentScaleFactor;
 			this.s_bullet3infos.accel_x = sub_bulled_info_list[this.s_bullet3_key].accel_x*this.currentScaleFactor;
@@ -270,6 +289,10 @@ export class Player {
 		}
 
 		if(this.isvalidbulled(this.s_bullet4infos) == true){ 
+			this.s_bullet4infos.start_x_pos =  sub_bulled_info_list[this.s_bullet4_key].start_x_pos*this.currentScaleFactor;
+			this.s_bullet4infos.start_y_pos =  sub_bulled_info_list[this.s_bullet4_key].start_y_pos*this.currentScaleFactor;
+
+
             this.s_bullet4infos.x_speed = sub_bulled_info_list[this.s_bullet4_key].x_speed * this.currentScaleFactor;
             this.s_bullet4infos.y_speed = sub_bulled_info_list[this.s_bullet4_key].y_speed * this.currentScaleFactor;
             this.s_bullet4infos.accel_x = sub_bulled_info_list[this.s_bullet4_key].accel_x * this.currentScaleFactor;
@@ -285,6 +308,9 @@ export class Player {
 		}
 
 		if(this.isvalidbulled(this.s_bullet5infos) == true){ 
+			this.s_bullet5infos.start_x_pos =  sub_bulled_info_list[this.s_bullet5_key].start_x_pos*this.currentScaleFactor;
+			this.s_bullet5infos.start_y_pos =  sub_bulled_info_list[this.s_bullet5_key].start_y_pos*this.currentScaleFactor;
+
             this.s_bullet5infos.x_speed = sub_bulled_info_list[this.s_bullet5_key].x_speed * this.currentScaleFactor;
             this.s_bullet5infos.y_speed = sub_bulled_info_list[this.s_bullet5_key].y_speed * this.currentScaleFactor;
             this.s_bullet5infos.accel_x = sub_bulled_info_list[this.s_bullet5_key].accel_x * this.currentScaleFactor;
@@ -386,7 +412,7 @@ export class Player {
 			sine_decay_rate: bulletinfos.sine_decay_rate,
 		};
 
-				// Zが押されていた場合集中するような処理をとる
+		// Zが押されていた場合集中するような処理をとる
 		if (keys['z']) {
             if(bulletinfos.sine_wave_enabled == true)
 			{
