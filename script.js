@@ -2,15 +2,15 @@
 import { Player } from './player.js';
 import { Enemy } from './enemy.js';
 import { Bullet } from './bullet.js'; // Bulletクラスもインポート
-import { CharacterTypeEnum, imageAssetPaths } from './game_status.js'; // game_status.js から必要なものをインポート
+import { CharacterTypeEnum, imageAssetPaths, character_info_list } from './game_status.js'; // game_status.js から必要なものをインポート
 import { AssetManager } from './asset_manager.js'; // AssetManagerをインポート
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 // キャンバスのサイズ設定
-const BASE_WIDTH = 800;  // ゲームの基準幅
-const BASE_HEIGHT = 1000; // ゲームの基準高さ
+const BASE_WIDTH = 600;  // ゲームの基準幅
+const BASE_HEIGHT = 800; // ゲームの基準高さ
 let currentWidth = BASE_WIDTH;
 let currentHeight = BASE_HEIGHT;
 let scaleFactor = 1;     // 現在のスケールファクター
@@ -32,8 +32,19 @@ async function initializeGame() {
         console.log("All assets loaded.");
 
         const selectedCharType = CharacterTypeEnum.TYPE_1; // 例
+        const stats = character_info_list[selectedCharType]; // game_status.js から取得
+        
+        
+        const playerBaseWidth = stats.sprite_base_draw_width; // プレイヤーの基準幅
+        const playerBaseHeight = stats.sprite_base_draw_height; // プレイヤーの基準高さ
+        const marginBottomBase = 20; // 画面下部からのマージン (基準解像度でのピクセル数)
+
+        const initialPlayerX = BASE_WIDTH / 2 - playerBaseWidth / 2; // 画面中央のX座標
+        const initialPlayerY = BASE_HEIGHT - playerBaseHeight - marginBottomBase; // 画面下部
 
         player = new Player(
+            initialPlayerX,
+            initialPlayerY,
             selectedCharType,
             assetManager,
             canvas

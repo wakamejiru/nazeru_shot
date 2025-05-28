@@ -17,11 +17,14 @@ export class Player {
     // charactername キャラネーム
     // image_list  初期化した画像のリスト   
     // options その他設定値   
-    constructor(character_type, asset_manager, canvas)
+    constructor(initialX, initialY, character_type, asset_manager, canvas)
     {
 
         this.canvas = canvas; // canvasオブジェクト
-		this.x = this.canvas.width/2
+		// 初期位置を設定 (引数で渡されたものを優先)
+		this.x = initialX !== undefined ? initialX : (this.canvas.width / 2);
+		this.y = initialY !== undefined ? initialY : (this.canvas.height * 0.8); // Y座標も適切な初期値を
+
 
         this.character_type = character_type; // 例: CharacterTypeEnum.TYPE_1 の「値」("Type1")
         this.asset_manager = asset_manager;   // 画像などのアセットを管理
@@ -68,7 +71,7 @@ export class Player {
 			this.s_bullet5_key = status.character_s_bullet5;
         }
         this.hp = this.maxHp;
-        this.y = this.canvas.height/4 + this.sprite_base_draw_height;
+
 		// アバター画像（スプライト）を設定
 		this.spriteAvator = this.avatar_image_key ? this.asset_manager.getImage(this.avatar_image_key) : null;
 		if (this.avatar_image_key && !this.spriteAvator) {
@@ -135,33 +138,55 @@ export class Player {
     {
         // 以前のスケールに対する現在の相対位置を計算
         
-        const relativeX = this.x / (this.canvas.width || BASE_WIDTH); // 0除算を避ける
-        const relativeY = this.y / (this.canvas.height || BASE_HEIGHT);
+		// 更新前の canvas の幅と高さを取得。0 の場合はフォールバックとして基準解像度を使用。
+		// (BASE_WIDTH, BASE_HEIGHT は player.js で利用可能である前提)
+		const oldCanvasWidth = this.canvas.width || BASE_WIDTH;  // BASE_WIDTH は script.js からインポートするか、コンストラクタで渡す
+		const oldCanvasHeight = this.canvas.height || BASE_HEIGHT; // 同上
 
-        this.currentScaleFactor = newScaleFactor;
-        this.canvas = newCanvas; // 新しいcanvasの参照（主にwidth/height）
+		// this.x や this.y が NaN や Infinity でないことを確認
+		if (isNaN(this.x) || !isFinite(this.x) || isNaN(this.y) || !isFinite(this.y)) {
+			console.warn("Player.updateScale: Initial x/y is NaN or Infinity. Resetting to center.");
+			// player.x, player.y が左上基準の場合
+			this.x = (oldCanvasWidth - (this.baseWidth * this.currentScaleFactor)) / 2;
+			this.y = (oldCanvasHeight - (this.baseHeight * this.currentScaleFactor)) / 2;
+		}
 
-        // 新しいcanvasサイズに基づいて位置を再設定
-        this.x = relativeX * this.canvas.width;
-        this.y = relativeY * this.canvas.height;
+		// oldCanvasWidth/Height が0でないことを保証
+		const safeOldCanvasWidth = oldCanvasWidth === 0 ? BASE_WIDTH : oldCanvasWidth;
+		const safeOldCanvasHeight = oldCanvasHeight === 0 ? BASE_HEIGHT : oldCanvasHeight;
 
-        // 境界チェックなどで位置を補正
-        this.x = Math.max(0, Math.min(this.x, this.canvas.width - this.radius)); // 後でアバターのサイずずに合わせる
-        this.y = Math.max(0, Math.min(this.y, this.canvas.height - this.radius));
+		// プレイヤーの論理的な中心に基づいて相対位置を計算
+		const currentLogicalWidth = (this.sprite_draw_width || 20) * this.currentScaleFactor;
+		const currentLogicalHeight = (this.sprite_draw_height || 20) * this.currentScaleFactor;
+		const currentLogicalCenterX = this.x + currentLogicalWidth / 2;
+		const currentLogicalCenterY = this.y + currentLogicalHeight / 2;
 
-        // 横幅も変更する
-        this.radius = this.baseradius * this.currentScaleFactor;
+		const relativeCenterX = currentLogicalCenterX / safeOldCanvasWidth;
+		const relativeCenterY = currentLogicalCenterY / safeOldCanvasHeight;
 
-        // スピードも変更する
-        this.speed = this.basespeed * this.currentScaleFactor;
+		this.currentScaleFactor = newScaleFactor;
+		this.canvas = newCanvas; // 新しいcanvasの参照
 
-		// アバターの倍率を計算
-		this.sprite_draw_width = this.sprite_base_draw_width * this.currentScaleFactor;      // アバターの (ピクセル)
-		this.sprite_draw_height = this.sprite_base_draw_height * this.currentScaleFactor;      // アバターの (ピクセル)
-		
-		// 当たり判定の倍率を計算
-		this.hitpoint_radius = this.hitpoint_base_radius * this.currentScaleFactor;      // アバターの (ピクセル)
-		
+		const newScaledLogicalWidth = (this.baseWidth || 20) * this.currentScaleFactor;
+		const newScaledLogicalHeight = (this.baseHeight || 20) * this.currentScaleFactor;
+
+		// 新しいスケールに基づいて左上のx, yを再計算
+		this.x = (relativeCenterX * this.canvas.width) - newScaledLogicalWidth / 2;
+		this.y = (relativeCenterY * this.canvas.height) - newScaledLogicalHeight / 2;
+
+		// 境界チェックなどで位置を補正 (左上基準で)
+		this.x = Math.max(0, Math.min(this.x, this.canvas.width - newScaledLogicalWidth));
+		this.y = Math.max(0, Math.min(this.y, this.canvas.height - newScaledLogicalHeight));
+
+		// プレイヤー自身の当たり判定半径や速度も、基本値を元にスケール (既に実装済み)
+		this.radius = (this.baseradius || 10) * this.currentScaleFactor;
+		this.speed = (this.basespeed || 200) * this.currentScaleFactor;
+
+		// アバターの描画サイズも更新 (既に実装済み)
+		this.sprite_draw_width = (this.sprite_base_draw_width || 40) * this.currentScaleFactor;
+		this.sprite_draw_height = (this.sprite_base_draw_height || 40) * this.currentScaleFactor;
+		this.hitpoint_radius = (this.hitpoint_base_radius || 10) * this.currentScaleFactor;
+
 		// 弾がある場合は弾のスケールの大きさと速度をいじる
 		if(this.isvalidbulled(this.m_bullet1infos) == true){
 			this.m_bullet1infos.x_speed =  main_bulled_info_list[this.m_bullet1_key].x_speed*this.currentScaleFactor;
@@ -253,10 +278,14 @@ export class Player {
         this.dx = 0;
         this.dy = 0;
 
+		
+		let drawn_width_half = this.sprite_base_draw_width / 2;
+		let drawn_height_half = this.sprite_base_draw_height / 2;
+
         if (keys.ArrowUp && this.y > 0) this.dy = -1;
-        else if (keys.ArrowDown && this.y < this.canvas.height - this.y) this.dy = 1;
+        else if (keys.ArrowDown && this.y < this.canvas.height -drawn_height_half) this.dy = 1;
         if (keys.ArrowLeft && this.x > 0) this.dx = -1;
-        else if (keys.ArrowRight && this.x < this.canvas.width - this.y) this.dx = 1;
+        else if (keys.ArrowRight && this.x < this.canvas.width - drawn_width_half) this.dx = 1;
 
         const magnitude = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
         let moveX = 0;
@@ -266,17 +295,17 @@ export class Player {
             moveY = (this.dy / magnitude) * this.speed * deltaTime;
         }
 
+		
         this.x += moveX;
         this.y += moveY;
 
-        // 境界からはみ出ないように最終調整
-        this.x = Math.max(0, Math.min(this.x, this.canvas.width - this.radius));
-        this.y = Math.max(0, Math.min(this.y, this.canvas.height - this.radius));
 
-        if (this.bulletCooldownTimer > 0) {
-            this.bulletCooldownTimer -= deltaTime; // タイマーも deltaTime で減算
-            if (this.bulletCooldownTimer < 0) this.bulletCooldownTimer = 0;
-        }
+
+        // 境界からはみ出ないように最終調整
+        this.x = Math.max(drawn_width_half, Math.min(this.x, this.canvas.width - drawn_width_half));
+        this.y = Math.max(drawn_height_half, Math.min(this.y, this.canvas.height - drawn_height_half));
+
+        
     }
 
 	// main弾のインスタンスを作成する
@@ -395,8 +424,6 @@ export class Player {
 
     // プレイヤーの描画ロジック
     draw(ctx) {
-		const canvasx = this.canvas.width;
-		const canvasy = this.canvas.height;
         const scaledDrawWidth = this.sprite_draw_width; // 描画用のスケーリングされた幅
         const scaledDrawHeight = this.sprite_draw_height; // 描画用のスケーリングされた高さ	
 		
@@ -404,7 +431,7 @@ export class Player {
 		const AvatorDrawX = this.x - scaledDrawWidth / 2;
         const AvatorDrawY = this.y - scaledDrawHeight / 2;
 		// プレイヤーのx,yを左上基準として画像を描画
-		ctx.drawImage(this.spriteAvator, AvatorDrawX, AvatorDrawY, scaledDrawWidth, scaledDrawHeight);
+		//ctx.drawImage(this.spriteAvator, AvatorDrawX, AvatorDrawY, scaledDrawWidth, scaledDrawHeight);
 
 		// 当たり判定を描画
 		const hitpoint_radius_drawn = this.hitpoint_radius; // 描画用のスケーリングされた幅
