@@ -349,9 +349,9 @@ export class Player {
 			vx: bulletinfos.x_speed,
 			vy: -bulletinfos.y_speed, 
 			ax: bulletinfos.accel_x,
-			ay: bulletinfos.accel_y,
+			ay: -bulletinfos.accel_y,
 			jx: bulletinfos.jeak_x,
-			jy: bulletinfos.jeak_y,
+			jy: -bulletinfos.jeak_y,
 			BulletImageKey: bulletinfos.ball_image_key,
 			shape: bulletinfos.ball_shape,
 			width: bulletinfos.bullet_width, 
@@ -362,7 +362,8 @@ export class Player {
 			life: bulletinfos.bulled_life,
 			maxSpeed: bulletinfos.bulled_maxSpeed,
 			target: enemyInstance, // 追尾する場合
-			trackingStrength: this.trackingStrengthPower // 0なら追尾しない。追尾させる場合は0より大きい値
+			trackingStrength: this.trackingStrengthPower, // 0なら追尾しない。追尾させる場合は0より大きい値
+			globalAlpha: 0.4
 		};
 
 		playerBulletsArray.push(new Bullet(startX, startY, this.asset_manager, bulletOptions));

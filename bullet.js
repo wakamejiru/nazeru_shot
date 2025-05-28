@@ -31,7 +31,7 @@ export class Bullet {
 			console.warn(`Player sprite for key "${this.avatar_image_key}" not loaded. Fallback color will be used.`);
 		}
 
-
+        this.globalAlpha = options.globalAlpha !== undefined ? options.globalAlpha : 1; // 弾の透明度
 
         // 形状というより当たり判定
         this.shape = options.shape || 'rectangle'; // デフォルトは長方形
@@ -149,8 +149,14 @@ export class Bullet {
     }
 
     draw(ctx) {
+        
         if (this.isHit) return;
+        ctx.save(); // 現在の描画コンテキストの状態を保存する (globalAlphaなどの設定も含む)
+
+        ctx.globalAlpha = this.globalAlpha;
         ctx.fillStyle = this.color;
         ctx.drawImage(this.spritebullet, this.x, this.y, this.width, this.height);
+
+        ctx.restore();// 設定復活
     }
 }
