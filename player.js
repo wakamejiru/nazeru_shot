@@ -431,7 +431,7 @@ export class Player {
 		const AvatorDrawX = this.x - scaledDrawWidth / 2;
         const AvatorDrawY = this.y - scaledDrawHeight / 2;
 		// プレイヤーのx,yを左上基準として画像を描画
-		//ctx.drawImage(this.spriteAvator, AvatorDrawX, AvatorDrawY, scaledDrawWidth, scaledDrawHeight);
+		ctx.drawImage(this.spriteAvator, AvatorDrawX, AvatorDrawY, scaledDrawWidth, scaledDrawHeight);
 
 		// 当たり判定を描画
 		const hitpoint_radius_drawn = this.hitpoint_radius; // 描画用のスケーリングされた幅

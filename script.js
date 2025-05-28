@@ -16,8 +16,8 @@ let currentHeight = BASE_HEIGHT;
 let scaleFactor = 1;     // 現在のスケールファクター
 
 // HPバーの設定
-const HP_BAR_HEIGHT = 30; // HPバーの太さ（高さ）
-const PLAYER_HP_BAR_WIDTH = 250; // プレイヤーHPバーの横幅
+const HP_BAR_HEIGHT = 10; // HPバーの太さ（高さ）
+const PLAYER_HP_BAR_WIDTH = 150; // プレイヤーHPバーの横幅
 
 let player;
 
@@ -32,15 +32,10 @@ async function initializeGame() {
         console.log("All assets loaded.");
 
         const selectedCharType = CharacterTypeEnum.TYPE_1; // 例
-        const stats = character_info_list[selectedCharType]; // game_status.js から取得
         
-        
-        const playerBaseWidth = stats.sprite_base_draw_width; // プレイヤーの基準幅
-        const playerBaseHeight = stats.sprite_base_draw_height; // プレイヤーの基準高さ
-        const marginBottomBase = 20; // 画面下部からのマージン (基準解像度でのピクセル数)
-
-        const initialPlayerX = BASE_WIDTH / 2 - playerBaseWidth / 2; // 画面中央のX座標
-        const initialPlayerY = BASE_HEIGHT - playerBaseHeight - marginBottomBase; // 画面下部
+        // 借り初期値を入れる
+        const initialPlayerX = 0;
+        const initialPlayerY = 0;
 
         player = new Player(
             initialPlayerX,
@@ -54,7 +49,14 @@ async function initializeGame() {
         // enemy = new Enemy( BASE_WIDTH / 2, BASE_HEIGHT * 0.2, canvas, EnemyTypeEnum.TYPE_A, assetManager );
 
 
-        resizeGame(); // 初期リサイズとスケール設定、Playerの位置もここで調整される
+        resizeGame();
+
+        // 初期時の場所を変更
+        player.x = canvas.width / 2;          // X方向: canvasの幅の中心
+        player.y = canvas.height * 0.9;       // Y方向: canvasの高さの上から90%の位置 (つまり下から10%の位置)
+
+
+
         requestAnimationFrame(gameLoop);
 
     } catch (error) {
@@ -112,34 +114,48 @@ function handleResize() {
 
 // 画面リサイズ処理関数
 function resizeGame() {
+    const screenOccupationRatio = 0.8; // ★ キャンバスを画面の8割の大きさにするための比率
     const aspectRatio = BASE_WIDTH / BASE_HEIGHT;
-    let newWindowWidth = window.innerWidth;
-    let newWindowHeight = window.innerHeight;
-    const windowAspectRatio = newWindowWidth / newWindowHeight;
 
-    if (windowAspectRatio > aspectRatio) {
-        // ウィンドウがゲームよりも横長の場合、高さを基準に合わせる
-        currentHeight = newWindowHeight;
-        currentWidth = currentHeight * aspectRatio;
-        scaleFactor = currentHeight / BASE_HEIGHT;
+    // キャンバスが利用可能な「目標の」最大幅と高さを計算 (実際のウィンドウサイズの8割)
+    let targetAvailableWidth = window.innerWidth * screenOccupationRatio;
+    let targetAvailableHeight = window.innerHeight * screenOccupationRatio;
+
+    // 目標とする利用可能領域の縦横比
+    const targetAvailableAspectRatio = targetAvailableWidth / targetAvailableHeight;
+
+    let newCanvasWidth;
+    let newCanvasHeight;
+
+    if (targetAvailableAspectRatio > aspectRatio) {
+        // 目標利用可能領域がゲームの縦横比よりも横長の場合、高さを基準に合わせる
+        newCanvasHeight = targetAvailableHeight;
+        newCanvasWidth = newCanvasHeight * aspectRatio;
     } else {
-        // ウィンドウがゲームよりも縦長（または同じ比率）の場合、幅を基準に合わせる
-        currentWidth = newWindowWidth;
-        currentHeight = currentWidth / aspectRatio;
-        scaleFactor = currentWidth / BASE_WIDTH;
+        // 目標利用可能領域がゲームの縦横比よりも縦長（または同じ比率）の場合、幅を基準に合わせる
+        newCanvasWidth = targetAvailableWidth;
+        newCanvasHeight = newCanvasWidth / aspectRatio;
     }
+
+    // グローバル変数を更新 (または、これらの値を関数の戻り値として処理することも可能)
+    currentWidth = newCanvasWidth;
+    currentHeight = newCanvasHeight;
 
     canvas.width = currentWidth;
     canvas.height = currentHeight;
 
-    // CSSで中央揃えにする場合（例）
-    canvas.style.position = 'absolute';
-    canvas.style.left = (window.innerWidth - currentWidth) / 2 + 'px';
-    canvas.style.top = (window.innerHeight - currentHeight) / 2 + 'px';
+    // スケールファクターの計算
+    // (最終的なキャンバスの幅 / ゲームの基準幅) または (最終的なキャンバスの高さ / ゲームの基準高さ)
+    // 縦横比が維持されていれば、どちらで計算しても同じ値になる
+    scaleFactor = currentWidth / BASE_WIDTH;
+    // もし詳細に分岐するなら:
+    // if (targetAvailableAspectRatio > aspectRatio) {
+    //     scaleFactor = currentHeight / BASE_HEIGHT;
+    // } else {
+    //     scaleFactor = currentWidth / BASE_WIDTH;
+    // }
 
-    // TODO: 必要であれば、既存のゲームオブジェクトの位置やサイズを再計算
-    // (ただし、各オブジェクトが描画時や更新時にスケールファクターやcanvas.{width|height}を
-    //  参照するようになっていれば、ここでの大規模な再計算は不要な場合も多い)
+    // 既存のゲームオブジェクトの位置やサイズを再計算
     if (player) {
         player.updateScale(scaleFactor, canvas); // Playerクラスにスケール更新メソッドを追加する例
     }
@@ -314,7 +330,10 @@ function gameLoop(currentTime) {
     //drawEnemyBullets(ctx);
    // drawPlayerBullets(ctx);
 
-    player.drawHpBar(ctx, HP_BAR_HEIGHT, PLAYER_HP_BAR_WIDTH);
+    // HPバーのスケール変更はここで行う
+    const scaledHpBarHeight = HP_BAR_HEIGHT * scaleFactor;
+    const scaledPlayerHpBarWidth = PLAYER_HP_BAR_WIDTH * scaleFactor;
+    player.drawHpBar(ctx, scaledHpBarHeight, scaledPlayerHpBarWidth);
     //if (enemy) enemy.drawHpBar(ctx, HP_BAR_HEIGHT);
 
 //    checkCollisions(); // deltaTimeは通常不要

@@ -162,7 +162,7 @@ export const  character_info_list = {
         sprite_base_draw_width: 40,      // アバターの (ピクセル)
         sprite_base_draw_height: 40,     // アバターの (ピクセル)
         hitpoint_image_key: "HitImageTypeA", // ヒットポイントの画像
-        hitpoint_radius:1.0,
+        hitpoint_radius:8.0,
 
         character_spped:50,
         character_maxhp:100,
