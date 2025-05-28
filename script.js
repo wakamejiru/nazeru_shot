@@ -104,11 +104,7 @@ document.addEventListener('keyup', (e) => {
 
 function handleResize() {
     // ウィンドウサイズが変わったときに行いたい処理をここに書く
-    console.log("ウィンドウサイズが変更されました！");
-    console.log("新しい幅:", window.innerWidth, "新しい高さ:", window.innerHeight);
-
-    // 例えば、ここでキャンバスのサイズを調整する関数を呼び出す
-    // resizeGame(); // ← あなたのゲームのキャンバスリサイズ関数
+    resizeGame(); // ← あなたのゲームのキャンバスリサイズ関数
 }
 
 
@@ -170,9 +166,9 @@ function resizeGame() {
 //     bullets.forEach(bullet => bullet.draw(ctx));
 // }
 
-// function drawPlayerBullets(ctx) {
-//     playerBullets.forEach(bullet => bullet.draw(ctx));
-// }
+  function drawPlayerBullets(ctx) {
+     playerBullets.forEach(bullet => bullet.draw(ctx));
+ }
 
 // 敵の弾の移動と画面外判定
 // function moveEnemyBullets(deltaTime, playerInstance) {
@@ -189,16 +185,16 @@ function resizeGame() {
 // }
 
 // プレイヤーの弾の移動と画面外判定
-// function movePlayerBullets(deltaTime, playerInstance) {
-//     playerBullets = playerBullets.filter(bullet => {
-//         if (bullet.isHit) return false;
-//         bullet.update(deltaTime, playerInstance); // プレイヤー弾が追尾しないなら引数なし
-//         const b = bullet;
-//         return b.x + b.width/2 > 0 && b.x - b.width/2 < canvas.width &&
-//                b.y + b.height/2 > 0 && b.y - b.height/2 < canvas.height &&
-//                (b.life > 0);
-//     });
-// }
+function movePlayerBullets(deltaTime, playerInstance) {
+    playerBullets = playerBullets.filter(bullet => {
+        if (bullet.isHit) return false;
+        bullet.update(deltaTime, playerInstance); // プレイヤー弾が追尾しないなら引数なし
+        const b = bullet;
+        return b.x + b.width/2 > 0 && b.x - b.width/2 < canvas.width &&
+               b.y + b.height/2 > 0 && b.y - b.height/2 < canvas.height &&
+               (b.life > 0);
+    });
+}
 
 // 当たり判定 (プレイヤーと敵の弾)
 // function checkCollisions() {
@@ -318,17 +314,18 @@ function gameLoop(currentTime) {
     player.move(keys, clampedDeltaTime);
     //if (enemy) enemy.move(clampedDeltaTime);
 
-    //player.shoot(playerBullets, Bullet, enemy, clampedDeltaTime); // deltaTimeは直接不要（クールダウンはmoveで処理）
+    player.shoot(playerBullets, player, clampedDeltaTime);
+
     //if (enemy) enemy.shoot(bullets, Bullet, player, clampedDeltaTime); // 追尾用にplayer, タイマー更新用にdeltaTime
 
     //moveEnemyBullets(clampedDeltaTime, player); // 追尾対象としてplayerを渡す
-    //movePlayerBullets(clampedDeltaTime, enemy);
+    movePlayerBullets(clampedDeltaTime, player);
 
     player.draw(ctx);
    // if (enemy) enemy.draw(ctx);
 
     //drawEnemyBullets(ctx);
-   // drawPlayerBullets(ctx);
+    drawPlayerBullets(ctx);
 
     // HPバーのスケール変更はここで行う
     const scaledHpBarHeight = HP_BAR_HEIGHT * scaleFactor;

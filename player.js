@@ -97,6 +97,7 @@ export class Player {
 		this.waittime_sbullet3=0;
 		this.waittime_sbullet4=0;
 		this.waittime_sbullet5=0;
+		this.trackingStrengthPower = 0.0 // ここをスキルで能動的に変えられるようにする
 
 		// 移動用
         this.dx = 0;
@@ -196,7 +197,11 @@ export class Player {
 			this.m_bullet1infos.jeak_x = main_bulled_info_list[this.m_bullet1_key].jeak_x*this.currentScaleFactor;
 			this.m_bullet1infos.jeak_y = main_bulled_info_list[this.m_bullet1_key].jeak_y*this.currentScaleFactor;
 			this.m_bullet1infos.bulled_maxSpeed = main_bulled_info_list[this.m_bullet1_key].bulled_maxSpeed*this.currentScaleFactor;
-			this.m_bullet1infos.bulled_size_mag = main_bulled_info_list[this.m_bullet1_key].bulled_size_mag*this.currentScaleFactor;	
+			this.m_bullet1infos.bulled_size_mag = main_bulled_info_list[this.m_bullet1_key].bulled_size_mag*this.currentScaleFactor;
+			
+			this.m_bullet1infos.bullet_width = main_bulled_info_list[this.m_bullet1_key].bullet_width*this.currentScaleFactor;
+			this.m_bullet1infos.bullet_height = main_bulled_info_list[this.m_bullet1_key].bullet_height*this.currentScaleFactor;
+
 		}
 		
 		// 弾がある場合は弾のスケールの大きさと速度をいじる
@@ -209,6 +214,9 @@ export class Player {
 			this.m_bullet2infos.jeak_y = main_bulled_info_list[this.m_bullet2_key].jeak_y*this.currentScaleFactor;
 			this.m_bullet2infos.bulled_maxSpeed = main_bulled_info_list[this.m_bullet2_key].bulled_maxSpeed*this.currentScaleFactor;
 			this.m_bullet2infos.bulled_size_mag = main_bulled_info_list[this.m_bullet2_key].bulled_size_mag*this.currentScaleFactor;	
+			this.m_bullet2infos.bullet_width = main_bulled_info_list[this.m_bullet2_key].bullet_width*this.currentScaleFactor;
+			this.m_bullet2infos.bullet_height = main_bulled_info_list[this.m_bullet2_key].bullet_height*this.currentScaleFactor;
+
 		}
 
 		// 弾がある場合は弾のスケールの大きさと速度をいじる
@@ -221,6 +229,9 @@ export class Player {
 			this.s_bullet1infos.jeak_y = sub_bulled_info_list[this.s_bullet1_key].jeak_y*this.currentScaleFactor;
 			this.s_bullet1infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet1_key].bulled_maxSpeed*this.currentScaleFactor;
 			this.s_bullet1infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet1_key].bulled_size_mag*this.currentScaleFactor;	
+
+			this.s_bullet1infos.bullet_width = sub_bulled_info_list[this.s_bullet1_key].bullet_width*this.currentScaleFactor;
+			this.s_bullet1infos.bullet_height = sub_bulled_info_list[this.s_bullet1_key].bullet_height*this.currentScaleFactor;	
 		}
 
 		if(this.isvalidbulled(this.s_bullet2infos) == true){
@@ -232,6 +243,10 @@ export class Player {
 			this.s_bullet2infos.jeak_y = sub_bulled_info_list[this.s_bullet2_key].jeak_y*this.currentScaleFactor;
 			this.s_bullet2infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet2_key].bulled_maxSpeed*this.currentScaleFactor;
 			this.s_bullet2infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet2_key].bulled_size_mag*this.currentScaleFactor;	
+		
+			this.s_bullet2infos.bullet_width = sub_bulled_info_list[this.s_bullet2_key].bullet_width*this.currentScaleFactor;
+			this.s_bullet2infos.bullet_height = sub_bulled_info_list[this.s_bullet2_key].bullet_height*this.currentScaleFactor;	
+
 		}
 
 		if(this.isvalidbulled(this.s_bullet3infos) == true){
@@ -243,6 +258,9 @@ export class Player {
 			this.s_bullet3infos.jeak_y = sub_bulled_info_list[this.s_bullet3_key].jeak_y*this.currentScaleFactor;
 			this.s_bullet3infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet3_key].bulled_maxSpeed*this.currentScaleFactor;
 			this.s_bullet3infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet3_key].bulled_size_mag*this.currentScaleFactor;	
+
+			this.s_bullet3infos.bullet_width = sub_bulled_info_list[this.s_bullet3_key].bullet_width*this.currentScaleFactor;
+			this.s_bullet3infos.bullet_height = sub_bulled_info_list[this.s_bullet3_key].bullet_height*this.currentScaleFactor;	
 		}
 
 		if(this.isvalidbulled(this.s_bullet4infos) == true){ 
@@ -254,7 +272,11 @@ export class Player {
             this.s_bullet4infos.jeak_y = sub_bulled_info_list[this.s_bullet4_key].jeak_y * this.currentScaleFactor;
             this.s_bullet4infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet4_key].bulled_maxSpeed * this.currentScaleFactor;
             this.s_bullet4infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet4_key].bulled_size_mag * this.currentScaleFactor;
-        }
+
+			this.s_bullet4infos.bullet_width = sub_bulled_info_list[this.s_bullet4_key].bullet_width*this.currentScaleFactor;
+			this.s_bullet4infos.bullet_height = sub_bulled_info_list[this.s_bullet4_key].bullet_height*this.currentScaleFactor;	
+
+		}
 
 		if(this.isvalidbulled(this.s_bullet5infos) == true){ 
             this.s_bullet5infos.x_speed = sub_bulled_info_list[this.s_bullet5_key].x_speed * this.currentScaleFactor;
@@ -265,7 +287,10 @@ export class Player {
             this.s_bullet5infos.jeak_y = sub_bulled_info_list[this.s_bullet5_key].jeak_y * this.currentScaleFactor;
             this.s_bullet5infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet5_key].bulled_maxSpeed * this.currentScaleFactor;
             this.s_bullet5infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet5_key].bulled_size_mag * this.currentScaleFactor;
-        }
+
+			this.s_bullet5infos.bullet_width = sub_bulled_info_list[this.s_bullet5_key].bullet_width*this.currentScaleFactor;
+			this.s_bullet5infos.bullet_height = sub_bulled_info_list[this.s_bullet5_key].bullet_height*this.currentScaleFactor;	
+		}
 
     }
 
@@ -311,30 +336,40 @@ export class Player {
 	// main弾のインスタンスを作成する
 	// bulletのwaittimeは外でやる
 	createBulletInstance(playerBulletsArray, bulletinfos, enemyInstance)
-	{
-		if(this.isvalidbulled(bulletinfos)==true){
-			const scaledBulletWidth = this.getScaledBulletWidth();
-			const scaledBulletHeight = this.getScaledBulletHeight();
-			const startX = this.x + this.getScaledWidth() / 2;
-			const startY = this.y;
+	{	
+		// 中心描画に変更
+		const AvatorDrawX = this.x;
+		const AvatorDrawY = this.y - this.sprite_draw_height / 2;
 
-			const bulletOptions = {
-				vy: -this.getScaledBulletSpeedY(), 
-				vx: this.getScaledBulletSpeedX(),
-				width: scaledBulletWidth, height: scaledBulletHeight, isCircle: false,
-				color: this.bulletColor, damage: this.bulletDamage, life: this.bulletHP,
-				maxSpeed: this.getScaledBulletSpeedY(),
-				target: enemyInstance, // 追尾する場合
-				trackingStrength: 0.0 // 0なら追尾しない。追尾させる場合は0より大きい値
-			};
+		const startX = AvatorDrawX + bulletinfos.start_x_pos;
+		
+		const startY = AvatorDrawY + bulletinfos.start_y_pos - bulletinfos.bullet_height / 2;
 
-			//playerBulletsArray.push(new Bullet(startX, startY - this.bulletHeight / 2, bulletOptions));
-		}
+		const bulletOptions = {
+			vx: bulletinfos.x_speed,
+			vy: -bulletinfos.y_speed, 
+			ax: bulletinfos.accel_x,
+			ay: bulletinfos.accel_y,
+			jx: bulletinfos.jeak_x,
+			jy: bulletinfos.jeak_y,
+			BulletImageKey: bulletinfos.ball_image_key,
+			shape: bulletinfos.ball_shape,
+			width: bulletinfos.bullet_width, 
+			height: bulletinfos.bullet_height,
+			orientation: bulletinfos.orientation,
+			color: bulletinfos.color, 
+			damage: bulletinfos.damage, 
+			life: bulletinfos.bulled_life,
+			maxSpeed: bulletinfos.bulled_maxSpeed,
+			target: enemyInstance, // 追尾する場合
+			trackingStrength: this.trackingStrengthPower // 0なら追尾しない。追尾させる場合は0より大きい値
+		};
 
+		playerBulletsArray.push(new Bullet(startX, startY, this.asset_manager, bulletOptions));
 	}
 
 	// sub弾のインスタンスを作成する
-    shoot(playerBulletsArray, BulletClass, enemyInstance, deltaTime) {
+    shoot(playerBulletsArray, enemyInstance, deltaTime) {
 
         if (this.hp <= 0) return;
 
@@ -343,82 +378,96 @@ export class Player {
 
 
 		// mainbullet1
-		if (this.waittime_mbullet1 > 0) { // クールダウン中かチェック
-            this.waittime_mbullet1 -= deltaTime; // クールダウンタイマーを減算
-            if (this.waittime_mbullet1 < 0) this.bulletTimer = 0;
-        }else
-		{
-			// m_bullet1が打てる
-			this.createBulletInstance(playerBulletsArray, this.m_bullet1infos, enemyInstance);
-			this.waittime_mbullet1 = this.m_bullet1infos.rate; // クールダウン再セット
+		if(this.isvalidbulled(this.m_bullet1infos)==true){
+			if (this.waittime_mbullet1 > 0) { // クールダウン中かチェック
+				this.waittime_mbullet1 -= deltaTime; // クールダウンタイマーを減算
+				if (this.waittime_mbullet1 < 0) this.bulletTimer = 0;
+			}else
+			{
+				// m_bullet1が打てる
+				this.createBulletInstance(playerBulletsArray, this.m_bullet1infos, enemyInstance);
+				this.waittime_mbullet1 = this.m_bullet1infos.rate; // クールダウン再セット
+			}
 		}
 
         // mainbullet2
-		if (this.waittime_mbullet2 > 0) { // クールダウン中かチェック
-            this.waittime_mbullet2 -= deltaTime; // クールダウンタイマーを減算
-            if (this.waittime_mbullet2 < 0) this.bulletTimer = 0;
-        }else
-		{
-			// m_bullet1が打てる
-			this.createBulletInstance(playerBulletsArray, this.m_bullet2infos, enemyInstance);
-			this.waittime_mbullet2 = this.m_bullet2infos.rate; // クールダウン再セット
+		if(this.isvalidbulled(this.m_bullet2infos)==true){
+			if (this.waittime_mbullet2 > 0) { // クールダウン中かチェック
+				this.waittime_mbullet2 -= deltaTime; // クールダウンタイマーを減算
+				if (this.waittime_mbullet2 < 0) this.bulletTimer = 0;
+			}else
+			{
+				// m_bullet1が打てる
+				this.createBulletInstance(playerBulletsArray, this.m_bullet2infos, enemyInstance);
+				this.waittime_mbullet2 = this.m_bullet2infos.rate; // クールダウン再セット
+			}
 		}
 
 		 // subbullet1
-		 if (this.waittime_sbullet1 > 0) { // クールダウン中かチェック
-            this.waittime_sbullet1 -= deltaTime; // クールダウンタイマーを減算
-            if (this.waittime_sbullet1 < 0) this.bulletTimer = 0;
-        }else
-		{
-			// m_bullet1が打てる
-			this.createBulletInstance(playerBulletsArray, this.s_bullet1infos, enemyInstance);
-			this.waittime_sbullet1 = this.s_bullet1infos.rate; // クールダウン再セット
+		 if(this.isvalidbulled(this.s_bullet1infos)==true){
+			if (this.waittime_sbullet1 > 0) { // クールダウン中かチェック
+				this.waittime_sbullet1 -= deltaTime; // クールダウンタイマーを減算
+				if (this.waittime_sbullet1 < 0) this.bulletTimer = 0;
+				}else
+				{
+					// m_bullet1が打てる
+					this.createBulletInstance(playerBulletsArray, this.s_bullet1infos, enemyInstance);
+					this.waittime_sbullet1 = this.s_bullet1infos.rate; // クールダウン再セット
+				}
 		}
 
 		 // subbullet2
-		 if (this.waittime_sbullet2 > 0) { // クールダウン中かチェック
-            this.waittime_sbullet2 -= deltaTime; // クールダウンタイマーを減算
-            if (this.waittime_sbullet2 < 0) this.bulletTimer = 0;
-        }else
-		{
-			// m_bullet2が打てる
-			this.createBulletInstance(playerBulletsArray, this.s_bullet2infos, enemyInstance);
-			this.waittime_sbullet2 = this.s_bullet2infos.rate; // クールダウン再セット
+		if(this.isvalidbulled(this.s_bullet2infos)==true){
+			if (this.waittime_sbullet2 > 0) { // クールダウン中かチェック
+				this.waittime_sbullet2 -= deltaTime; // クールダウンタイマーを減算
+				if (this.waittime_sbullet2 < 0) this.bulletTimer = 0;
+			}else
+			{
+				// m_bullet2が打てる
+				this.createBulletInstance(playerBulletsArray, this.s_bullet2infos, enemyInstance);
+				this.waittime_sbullet2 = this.s_bullet2infos.rate; // クールダウン再セット
+			}
 		}
 
 
 		 // subbullet3
-		 if (this.waittime_sbullet3 > 0) { // クールダウン中かチェック
-            this.waittime_sbullet3 -= deltaTime; // クールダウンタイマーを減算
-            if (this.waittime_sbullet3 < 0) this.bulletTimer = 0;
-        }else
-		{
-			// m_bullet3が打てる
-			this.createBulletInstance(playerBulletsArray, this.s_bullet3infos, enemyInstance);
-			this.waittime_sbullet3 = this.s_bullet3infos.rate; // クールダウン再セット
+		 if(this.isvalidbulled(this.s_bullet3infos)==true){
+			if (this.waittime_sbullet3 > 0) { // クールダウン中かチェック
+				this.waittime_sbullet3 -= deltaTime; // クールダウンタイマーを減算
+				if (this.waittime_sbullet3 < 0) this.bulletTimer = 0;
+			}else
+			{
+				// m_bullet3が打てる
+				this.createBulletInstance(playerBulletsArray, this.s_bullet3infos, enemyInstance);
+				this.waittime_sbullet3 = this.s_bullet3infos.rate; // クールダウン再セット
+			}
 		}
 
 		 // subbullet4
-		 if (this.waittime_sbullet4 > 0) { // クールダウン中かチェック
-            this.waittime_sbullet4 -= deltaTime; // クールダウンタイマーを減算
-            if (this.waittime_sbullet4 < 0) this.bulletTimer = 0;
-        }else
-		{
-			// m_bullet4が打てる
-			this.createBulletInstance(playerBulletsArray, this.s_bullet4infos, enemyInstance);
-			this.waittime_sbullet4 = this.s_bullet4infos.rate; // クールダウン再セット
+		 if(this.isvalidbulled(this.s_bullet4infos)==true){
+			if (this.waittime_sbullet4 > 0) { // クールダウン中かチェック
+				this.waittime_sbullet4 -= deltaTime; // クールダウンタイマーを減算
+				if (this.waittime_sbullet4 < 0) this.bulletTimer = 0;
+			}else
+			{
+				// m_bullet4が打てる
+				this.createBulletInstance(playerBulletsArray, this.s_bullet4infos, enemyInstance);
+				this.waittime_sbullet4 = this.s_bullet4infos.rate; // クールダウン再セット
+			}
 		}
 		
 		// subbullet5
-		if (this.waittime_sbullet5 > 0) { // クールダウン中かチェック
-		this.waittime_sbullet5 -= deltaTime; // クールダウンタイマーを減算
-		if (this.waittime_sbullet5 < 0) this.bulletTimer = 0;
-		}else
-		{
-			// m_bullet5が打てる
-			this.createBulletInstance(playerBulletsArray, this.s_bullet5infos, enemyInstance);
-			this.waittime_sbullet5 = this.s_bullet5infos.rate; // クールダウン再セット
-		}	
+		if(this.isvalidbulled(this.s_bullet5infos)==true){
+			if (this.waittime_sbullet5 > 0) { // クールダウン中かチェック
+			this.waittime_sbullet5 -= deltaTime; // クールダウンタイマーを減算
+			if (this.waittime_sbullet5 < 0) this.bulletTimer = 0;
+			}else
+			{
+				// m_bullet5が打てる
+				this.createBulletInstance(playerBulletsArray, this.s_bullet5infos, enemyInstance);
+				this.waittime_sbullet5 = this.s_bullet5infos.rate; // クールダウン再セット
+			}	
+		}
 
     }
 
@@ -441,6 +490,9 @@ export class Player {
 
 		ctx.drawImage(this.spriteHitpoint, HitpointDrawX, HitpointDrawY, hitpoint_radius_drawn, hitpoint_radius_drawn);
 
+		// 中心にさらに点を表示
+		ctx.fillStyle = 'Black'; // 
+		ctx.fillRect(this.x - 2, this.y - 2, 8, 8); // this.x, this.y に点を描画
     }
 
     // プレイヤーのHPバー描画ロジック

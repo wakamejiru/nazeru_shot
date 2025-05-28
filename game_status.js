@@ -14,7 +14,7 @@ export const CharacterTypeEnum = Object.freeze({
 });
 
 export const SkillTypeEnum = Object.freeze({
-  NONE: "NONE", // タイプミス修正: MONE -> NONE
+  NONE: "NONE", 
   SKILL_1: "skill_1", // 回復
 });
 
@@ -31,6 +31,7 @@ export const MainBulletEnum = Object.freeze({
 export const SubBulletEnum = Object.freeze({
   NONE: "NONE",
   S_BULLET_1: "s_bullet_1", // サブウェポン
+  S_BULLET_2: "s_bullet_1_R", // サブウェポン1のR
 });
 
 
@@ -70,10 +71,16 @@ export const  main_bulled_info_list = {
     },
     [MainBulletEnum.M_BULLET_1]:
     {
+        start_x_pos:0,
+        start_y_pos:0,
         ballet_name:"メインウエポン1",
         ball_image_key: "bulletTypeA",
+        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
+        bullet_width: 15.0,
+        bullet_height: 15.0,
+        orientation: 0.0, // 回転数
         x_speed:0,
-        y_speed:-2000,
+        y_speed:1500,
         accel_x:0,
         accel_y:0,
         jeak_x:0,
@@ -82,8 +89,7 @@ export const  main_bulled_info_list = {
         damage: 25,
         bulled_life: 5,
         bulled_maxSpeed: 10000,
-        bulled_size_mag: 1.0,
-        rate:2.0
+        rate:0.2,
     }
 };
   
@@ -96,20 +102,49 @@ export const  sub_bulled_info_list = {
     },
     [SubBulletEnum.S_BULLET_1]:
     {
+        start_x_pos:5,
+        start_y_pos:0,
         ballet_name:"サブウエポン1",
         ball_image_key: "bulletTypeA",
         x_speed:100,
-        y_speed:-3500,
+        y_speed:800,
         accel_x:0,
         accel_y:0,
         jeak_x:0,
         jeak_y:0,
+        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
+        bullet_width: 5.0,
+        bullet_height: 5.0,
+        orientation: 0.0, // 回転数
         color: 'rgb(255, 255, 255)',
         damage: 5,
         bulled_life: 1,
         bulled_maxSpeed: 10000,
         bulled_size_mag: 0.5,
-        rate:2.0
+        rate:0.3
+    },
+    [SubBulletEnum.S_BULLET_2]:
+    {
+        start_x_pos:-5,
+        start_y_pos:0,
+        ballet_name:"サブウエポン2R",
+        ball_image_key: "bulletTypeA",
+        x_speed:-100,
+        y_speed:800,
+        accel_x:0,
+        accel_y:0,
+        jeak_x:0,
+        jeak_y:0,
+        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
+        bullet_width: 5.0,
+        bullet_height: 5.0,
+        orientation: 0.0, // 回転数
+        color: 'rgb(255, 255, 255)',
+        damage: 5,
+        bulled_life: 1,
+        bulled_maxSpeed: 10000,
+        bulled_size_mag: 0.5,
+        rate:0.3
     }
 };
 
@@ -172,7 +207,7 @@ export const  character_info_list = {
         character_m_bullet1: MainBulletEnum.M_BULLET_1,
         character_m_bullet2: MainBulletEnum.NONE,
         character_s_bullet1: SubBulletEnum.S_BULLET_1,
-        character_s_bullet2: SubBulletEnum.S_BULLET_1, // 左右反転を忘れない
+        character_s_bullet2: SubBulletEnum.S_BULLET_2,
         character_s_bullet3: SubBulletEnum.NONE,
         character_s_bullet4: SubBulletEnum.NONE,
         character_s_bullet5: SubBulletEnum.NONE

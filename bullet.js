@@ -1,9 +1,16 @@
+import { CharacterTypeEnum, SkillTypeEnum, UltTypeEnum, MainBulletEnum, SubBulletEnum, 
+	character_info_list, skill_info_list,  ult_info_list, main_bulled_info_list, sub_bulled_info_list, imageAssetPaths} from './game_status.js'; // Bulletクラスもインポート
+
 // ==================================================================
-// ★★★ Bullet クラスの定義 (新規追加) ★★★
+// Bullet クラスの定義
 // ==================================================================
+
+// 打ち出した，設置した弾自体を制御するクラス
+// 打ち出し，設置は各クラスで制御する
 export class Bullet {
-    constructor(startX, startY, options = {}) {
-        this.x = startX;
+    // ひし形や三角，楕円の弾も扱えるようにする
+    constructor(startX, startY, asset_manager, options = {}) {
+        this.x = startX - options.width/2;
         this.y = startY;
 
         // 速度と加速度 (ベクトルで管理)
@@ -14,10 +21,24 @@ export class Bullet {
 		this.jx = options.jx !== undefined ? options.jx : 0; // X方向の加加速度
         this.jy = options.jy !== undefined ? options.jy : 0; // Y方向の加加速度
 
-        this.radius = options.radius !== undefined ? options.radius : 5; // 円形弾の場合
-        this.width = options.width !== undefined ? options.width : 5;   // 矩形弾の場合
-        this.height = options.height !== undefined ? options.height : 10; // 矩形弾の場合
-        this.isCircle = options.isCircle !== undefined ? options.isCircle : true; // trueなら円形、falseなら矩形
+        // 見た目の弾丸
+        // 画像を使用する
+        this.asset_manager = asset_manager;   // 画像などのアセットを管理
+        this.BulletImageKey = options.BulletImageKey;
+        // 画像読み込み
+		this.spritebullet = this.BulletImageKey ? this.asset_manager.getImage(this.BulletImageKey) : null;
+		if (this.BulletImageKey && !this.spritebullet) {
+			console.warn(`Player sprite for key "${this.avatar_image_key}" not loaded. Fallback color will be used.`);
+		}
+
+
+
+        // 形状というより当たり判定
+        this.shape = options.shape || 'rectangle'; // デフォルトは長方形
+        this.width = options.width || 10;         // 形状に応じた幅 (例: 長方形の幅、楕円の横直径)
+        this.height = options.height || 10;        // 形状に応じた高さ (例: 長方形の高さ、楕円の縦直径)
+        this.orientation = options.orientation || 0; // 形状の向き (ラジアン)
+
 
         this.color = options.color || 'white';
         this.damage = options.damage || 10;
@@ -35,14 +56,10 @@ export class Bullet {
         this.timeToLivePattern = options.timeToLivePattern || Infinity; // パターン変更までの時間
         this.currentPatternTime = 0;
     }
-    getScaledWidth() { return this.width * this.currentScaleFactor; }
-    getScaledHeight() { return this.height * this.currentScaleFactor; }
-    getScaledSpeed() { return this.speed * this.currentScaleFactor; }
-    getScaledBulletSpeedX() { return this.bulletSpeedX * this.currentScaleFactor; }
-    getScaledBulletSpeedY() { return this.bulletSpeedY * this.currentScaleFactor; }
-    getScaledBulletWidth() { return this.bulletWidth * this.currentScaleFactor; }
-    getScaledBulletHeight() { return this.BulletHeight * this.currentScaleFactor; }
-        // ブラウザの解像度比に合わせて動作を変える
+
+
+
+    // ブラウザの解像度比に合わせて動作を変える
     updateScale(newScaleFactor, newCanvas) {
         // 以前のスケールに対する現在の相対位置を計算
         const relativeX = this.x / (this.canvas.width || BASE_WIDTH); // 0除算を避ける
@@ -134,13 +151,6 @@ export class Bullet {
     draw(ctx) {
         if (this.isHit) return;
         ctx.fillStyle = this.color;
-        if (this.isCircle) {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fill();
-        } else {
-           // 矩形弾の描画は中心基準に修正
-            ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
-        }
+        ctx.drawImage(this.spritebullet, this.x, this.y, this.width, this.height);
     }
 }
