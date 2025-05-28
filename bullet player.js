@@ -1,13 +1,9 @@
 // ==================================================================
 // ★★★ Bullet クラスの定義 (新規追加) ★★★
 // ==================================================================
-const bullet_type = Object.freeze({
-  bullet_Type1: "bullet_1", // 丸型の弾を縦に発射する
-  bullet_Type2: "bullet_2", // 丸型の弾を射角75度方向に縦に発射する
-});
 
 
-export class Bullet {
+export class BulletPlayer {
     constructor(startX, startY, options = {}) {
         this.x = startX;
         this.y = startY;

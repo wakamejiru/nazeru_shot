@@ -59,13 +59,13 @@ export const  character_info_list = {
         character_maxhp:0,
         character_skill1: skill_info_list[SkillTypeEnum.NONE],
         character_ULT: ult_info_list[UltTypeEnum.NONE],
-        character_m_bullet1: main_bulled_info_list[MainBulletEnum.NONE],
-        character_m_bullet2: main_bulled_info_list[MainBulletEnum.NONE],
-        character_s_bullet1: sub_bulled_info_list[SubBulletEnum.NONE],
-        character_s_bullet2: sub_bulled_info_list[SubBulletEnum.NONE],
-        character_s_bullet3: sub_bulled_info_list[SubBulletEnum.NONE],
-        character_s_bullet4: sub_bulled_info_list[SubBulletEnum.NONE],
-        character_s_bullet5: sub_bulled_info_list[SubBulletEnum.NONE]
+        character_m_bullet1: MainBulletEnum.NONE,
+        character_m_bullet2: MainBulletEnum.NONE,
+        character_s_bullet1: SubBulletEnum.NONE,
+        character_s_bullet2: SubBulletEnum.NONE,
+        character_s_bullet3: SubBulletEnum.NONE,
+        character_s_bullet4: SubBulletEnum.NONE,
+        character_s_bullet5: SubBulletEnum.NONE
     },
     [CharacterTypeEnum.TYPE_1]:
     {
@@ -76,13 +76,13 @@ export const  character_info_list = {
         character_maxhp:100,
         character_skill1: skill_info_list[SkillTypeEnum.skill_Type1],
         character_ULT: ult_info_list[UltTypeEnum.ult_Type1],
-        character_m_bullet1: main_bulled_info_list[MainBulletEnum.M_BULLET_1],
-        character_m_bullet2: main_bulled_info_list[MainBulletEnum.NONE],
-        character_s_bullet1: sub_bulled_info_list[SubBulletEnum.S_BULLET_1],
-        character_s_bullet2: sub_bulled_info_list[SubBulletEnum.S_BULLET_1], // 左右反転を忘れない
-        character_s_bullet3: sub_bulled_info_list[SubBulletEnum.NONE],
-        character_s_bullet4: sub_bulled_info_list[SubBulletEnum.NONE],
-        character_s_bullet5: sub_bulled_info_list[SubBulletEnum.NONE]
+        character_m_bullet1: MainBulletEnum.M_BULLET_1,
+        character_m_bullet2: MainBulletEnum.NONE,
+        character_s_bullet1: SubBulletEnum.S_BULLET_1,
+        character_s_bullet2: SubBulletEnum.S_BULLET_1, // 左右反転を忘れない
+        character_s_bullet3: SubBulletEnum.NONE,
+        character_s_bullet4: SubBulletEnum.NONE,
+        character_s_bullet5: SubBulletEnum.NONE
     }
 };
 
@@ -136,6 +136,7 @@ export const  main_bulled_info_list = {
         bulled_life: 5,
         bulled_maxSpeed: 10000,
         bulled_size_mag: 1.0,
+        rate:2.0
     }
 };
   
@@ -161,6 +162,7 @@ export const  sub_bulled_info_list = {
         bulled_life: 1,
         bulled_maxSpeed: 10000,
         bulled_size_mag: 0.5,
+        rate:2.0
     }
 };
 
