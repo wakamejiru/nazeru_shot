@@ -4,8 +4,6 @@
 // この情報は上書きはしない
 // ゲームプレイ中はPlayerクラスでコピーしたものを変異させる
 
-// Player側のクラスを管理する
-
 // --- Enums ---
 export const CharacterTypeEnum = Object.freeze({
   NONE: "NONE",
@@ -202,7 +200,7 @@ export const  main_bulled_info_list = {
         bullet_height: 15.0,
         orientation: 0.0, // 回転数
         x_speed:0,
-        y_speed:1000,
+        y_speed:1100,
         accel_x:0,
         accel_y:0,// -1100貫通弾の時はこれが使える
         jeak_x:0,
@@ -233,7 +231,7 @@ export const  main_bulled_info_list = {
         bullet_height: 15.0,
         orientation: 0.0, // 回転数
         x_speed:0,
-        y_speed:1000,
+        y_speed:1100,
         accel_x:0,
         accel_y:0,
         jeak_x:0,
@@ -515,7 +513,7 @@ export const  sub_bulled_info_list = {
     },[SubBulletEnum.S_BULLET_7]: // 5角形
     {
         start_x_pos:0,
-        start_y_pos:200,
+        start_y_pos:50,
         ballet_name:"サブウエポン4",
         ball_image_key: "bulletTypeA",
         x_speed:0,
@@ -545,7 +543,7 @@ export const  sub_bulled_info_list = {
     },[SubBulletEnum.S_BULLET_8]: // 5角形
     {
         start_x_pos: 95.11,
-        start_y_pos:130.90,
+        start_y_pos:65.90,
         ballet_name:"サブウエポン3R",
         ball_image_key: "bulletTypeA",
         x_speed:0,
@@ -576,7 +574,7 @@ export const  sub_bulled_info_list = {
     },[SubBulletEnum.S_BULLET_9]: // 5角形
     {
         start_x_pos:58.78,
-        start_y_pos:20.90,
+        start_y_pos:10.90,
         ballet_name:"サブウエポン3R",
         ball_image_key: "bulletTypeA",
         x_speed:0,
@@ -607,7 +605,7 @@ export const  sub_bulled_info_list = {
     },[SubBulletEnum.S_BULLET_10]: // 5角形
     {
         start_x_pos:-58.78,
-        start_y_pos:20.90,
+        start_y_pos:10.90,
         ballet_name:"サブウエポン3R",
         ball_image_key: "bulletTypeA",
         x_speed:0,
@@ -637,7 +635,7 @@ export const  sub_bulled_info_list = {
     },[SubBulletEnum.S_BULLET_11]: // 5角形
     {
         start_x_pos:-95.11,
-        start_y_pos:130.90,
+        start_y_pos:65.90,
         ballet_name:"サブウエポン3R",
         ball_image_key: "bulletTypeA",
         x_speed:0,
@@ -734,6 +732,7 @@ export const imageAssetPaths = Object.freeze({
     avatarTypeA: "image/avatar/avator1.png",
     HitImageTypeA: "image/avatar/HitImage.svg",
     bulletTypeA: "image/canon/cirlce1.svg",
+    EnemyTypeA: "image/enemy/Enemy1.png"
 });
 
 
@@ -972,3 +971,90 @@ export const  character_info_list = {
 };
 
 
+// 敵enemyの宣言を行う
+
+// --- Enums ---
+export const EnemyTypeEnum = Object.freeze({
+  NONE: "NONE",
+  E_TYPE_1: "Type1",
+  E_TYPE_2: "Type2",
+  E_TYPE_3: "Type3",
+  E_TYPE_4: "Type4",
+  E_TYPE_5: "Type5",
+  E_TYPE_6: "Type6",
+  E_TYPE_7: "Type7",
+  E_TYPE_8: "Type8",
+  E_TYPE_9: "Type9",
+});
+
+export const EnemySkillTypeEnum = Object.freeze({
+  NONE: "NONE", 
+  E_SKILL_1: "skill_1",
+  E_SKILL_2: "skill_2",
+
+});
+
+export const EnemyUltTypeEnum = Object.freeze({
+  NONE: "NONE",
+  E_ULT_1: "ult_1", // 一定時間無敵
+});
+
+// エネミーのスキルリストを作成する
+// そのキャラが度のスキルを何個所持しているかを書く
+// そのスキルの威力や動作は他の部分で記述するので、書かない
+export const enemys_skill_list =
+{
+    [EnemyTypeEnum.NONE]:
+    {
+        skill1: EnemySkillTypeEnum.NONE
+    }, [EnemyTypeEnum.E_TYPE_1]:
+    {
+        skill1: EnemySkillTypeEnum.E_SKILL_1,
+        skill2: EnemySkillTypeEnum.E_SKILL_2,
+    }
+
+}
+
+// キャラクター情報から作成する
+// 一番上から名前
+// キャラクター画像
+// 表示される中心円の半径(当たり判定っぽいやつ)
+// プレイヤーの移動速度
+// MaxHP
+// スキル1の情報
+// ULTの情報
+// M通常弾1の情報
+// M通常弾2の情報 // ない場合はデフォルト
+// S通常弾1の情報
+// S通常弾2の情報 // ない場合はデフォルト
+// S通常弾3の情報 // ない場合はデフォルト
+// S通常弾4の情報 // ない場合はデフォルト
+// S通常弾5の情報 // ない場合はデフォルト
+export const  enemy_info_list = {
+    [EnemyTypeEnum.NONE]:
+    {
+        charachter_name:"NONE",
+        avatar_image_key:"",
+        character_radius:0,
+        character_speed:0,
+        character_maxhp:0,
+        character_mag:0,
+        enemy_skill_list: skill_info_list[SkillTypeEnum.NONE],
+    },
+    [EnemyTypeEnum.E_TYPE_1]:
+    {
+        enemy_name:"ENEMY",
+        enemy_image_key:"EnemyTypeA",
+        enemy_hitpoint_radius:100,
+        enemy_width:150,
+        enemy_height:180,
+        enemy_speed:100,
+        enemy_maxhp:200000,
+        enemy_mag:0,
+        e_ult_type: EnemyUltTypeEnum.E_ULT_1,
+        e_limit_break_point: 0.6, // 発狂ラインは割合で示す
+    }
+
+
+
+}

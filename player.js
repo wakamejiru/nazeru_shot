@@ -403,7 +403,7 @@ export class Player {
 			maxSpeed: bulletinfos.bulled_maxSpeed,
 			target: enemyInstance, // 追尾する場合
 			trackingStrength: this.trackingStrengthPower, // 0なら追尾しない。追尾させる場合は0より大きい値
-			globalAlpha: 0.4,
+			globalAlpha: 0.9,
 			 sine_wave_enabled: bulletinfos.sine_wave_enabled,
     		sine_amplitude: bulletinfos.sine_amplitude,
     		sine_angular_frequency: bulletinfos.sine_angular_frequency,

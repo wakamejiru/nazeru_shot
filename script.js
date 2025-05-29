@@ -2,7 +2,7 @@
 import { Player } from './player.js';
 import { Enemy } from './enemy.js';
 import { Bullet } from './bullet.js'; // Bulletクラスもインポート
-import { CharacterTypeEnum, imageAssetPaths, character_info_list } from './game_status.js'; // game_status.js から必要なものをインポート
+import { CharacterTypeEnum, imageAssetPaths, character_info_list, EnemyTypeEnum } from './game_status.js'; // game_status.js から必要なものをインポート
 import { AssetManager } from './asset_manager.js'; // AssetManagerをインポート
 
 const canvas = document.getElementById('gameCanvas');
@@ -16,10 +16,11 @@ let currentHeight = BASE_HEIGHT;
 let scaleFactor = 1;     // 現在のスケールファクター
 
 // HPバーの設定
-const HP_BAR_HEIGHT = 10; // HPバーの太さ（高さ）
+const HP_BAR_HEIGHT = 20; // HPバーの太さ（高さ）
 const PLAYER_HP_BAR_WIDTH = 150; // プレイヤーHPバーの横幅
 
 let player;
+let enemy;
 
 // 画像のローリングを行う
 const assetManager = new AssetManager(imageAssetPaths); // imageAssetPaths は game_status.js からエクスポート
@@ -58,8 +59,10 @@ async function initializeGame() {
             canvas
 		);
 
+        const EnemyType = EnemyTypeEnum.E_TYPE_1;
+
         // Enemy インスタンスの生成 (Player と同様に assetManager や characterType を渡す)
-        // enemy = new Enemy( BASE_WIDTH / 2, BASE_HEIGHT * 0.2, canvas, EnemyTypeEnum.TYPE_A, assetManager );
+        enemy = new Enemy( BASE_WIDTH / 2, BASE_HEIGHT * 0.2, EnemyType, assetManager, canvas);
 
 
         resizeGame();
@@ -77,12 +80,6 @@ async function initializeGame() {
     }
 }
 
-
-
-// let enemy = new Enemy(canvas.width / 2 - 20, 50, canvas, {
-//     width: 60, height: 60, color: 'purple', maxHp: 1000, speed: 30,
-//     bulletSpeedY: 170,bulletSpeedX: 0, bulletDamage: 20, bulletInterval: 0.3, bulletSpreadCount: 30
-// });
 
 // 弾を格納する配列
 let bullets = []; // 敵の弾
@@ -217,9 +214,9 @@ function resizeGame() {
     if (player) {
         player.updateScale(scaleFactor, canvas); // Playerクラスにスケール更新メソッドを追加する例
     }
-    // if (enemy) {
-    //     enemy.updateScale(scaleFactor, canvas);   // Enemyクラスにスケール更新メソッドを追加する例
-    // }
+    if (enemy) {
+        enemy.updateScale(scaleFactor, canvas);   // Enemyクラスにスケール更新メソッドを追加する例
+    }
 }
 
 
@@ -374,7 +371,7 @@ function gameLoop(currentTime) {
     clearCanvas();
 
     player.move(keys, clampedDeltaTime);
-    //if (enemy) enemy.move(clampedDeltaTime);
+    if (enemy) enemy.move(clampedDeltaTime);
 
     player.shoot(keys, playerBullets, player, clampedDeltaTime);
 
@@ -384,7 +381,7 @@ function gameLoop(currentTime) {
     movePlayerBullets(clampedDeltaTime, player);
 
     player.draw(ctx);
-   // if (enemy) enemy.draw(ctx);
+    if (enemy) enemy.draw(ctx);
 
     //drawEnemyBullets(ctx);
     drawPlayerBullets(ctx);
@@ -393,8 +390,9 @@ function gameLoop(currentTime) {
     const scaledHpBarHeight = HP_BAR_HEIGHT * scaleFactor;
     const scaledPlayerHpBarWidth = PLAYER_HP_BAR_WIDTH * scaleFactor;
     player.drawHpBar(ctx, scaledHpBarHeight, scaledPlayerHpBarWidth);
-    //if (enemy) enemy.drawHpBar(ctx, HP_BAR_HEIGHT);
+    if (enemy) enemy.drawHpBar(ctx, HP_BAR_HEIGHT);
 
+        // 当たり判定
 //    checkCollisions(); // deltaTimeは通常不要
 
     animationFrameId = requestAnimationFrame(gameLoop);
