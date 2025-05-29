@@ -62,7 +62,7 @@ async function initializeGame() {
         const EnemyType = EnemyTypeEnum.E_TYPE_1;
 
         // Enemy インスタンスの生成 (Player と同様に assetManager や characterType を渡す)
-        enemy = new Enemy( BASE_WIDTH / 2, BASE_HEIGHT * 0.2, EnemyType, assetManager, canvas);
+        enemy = new Enemy( BASE_WIDTH / 2, BASE_HEIGHT * 0.3, EnemyType, assetManager, canvas);
 
 
         resizeGame();
@@ -70,7 +70,6 @@ async function initializeGame() {
         // 初期時の場所を変更
         player.x = canvas.width / 2;          // X方向: canvasの幅の中心
         player.y = canvas.height * 0.9;       // Y方向: canvasの高さの上から90%の位置 (つまり下から10%の位置)
-
 
 
         requestAnimationFrame(gameLoop);
@@ -212,10 +211,10 @@ function resizeGame() {
 
     // 既存のゲームオブジェクトの位置やサイズを再計算
     if (player) {
-        player.updateScale(scaleFactor, canvas); // Playerクラスにスケール更新メソッドを追加する例
+        player.updateScale(scaleFactor, canvas, BASE_WIDTH, BASE_HEIGHT); // Playerクラスにスケール更新メソッドを追加する例
     }
     if (enemy) {
-        enemy.updateScale(scaleFactor, canvas);   // Enemyクラスにスケール更新メソッドを追加する例
+        enemy.updateScale(scaleFactor, canvas, BASE_WIDTH, BASE_HEIGHT);   // Enemyクラスにスケール更新メソッドを追加する例
     }
 }
 
@@ -390,10 +389,16 @@ function gameLoop(currentTime) {
     const scaledHpBarHeight = HP_BAR_HEIGHT * scaleFactor;
     const scaledPlayerHpBarWidth = PLAYER_HP_BAR_WIDTH * scaleFactor;
     player.drawHpBar(ctx, scaledHpBarHeight, scaledPlayerHpBarWidth);
-    if (enemy) enemy.drawHpBar(ctx, HP_BAR_HEIGHT);
+
+    const EnemyscaledHpBarHeight = HP_BAR_HEIGHT * scaleFactor;
+    if (enemy) enemy.drawHpBar(ctx, EnemyscaledHpBarHeight);
+
+
+    
+
 
         // 当たり判定
-//    checkCollisions(); // deltaTimeは通常不要
+    //    checkCollisions(); // deltaTimeは通常不要
 
     animationFrameId = requestAnimationFrame(gameLoop);
 }

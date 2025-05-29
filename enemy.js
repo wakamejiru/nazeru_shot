@@ -58,9 +58,12 @@ export class Enemy {
         this.moveAreaLeftX = this.EnemyWidth/2;
         this.moveAreaRightX = this.Canvas.width - this.EnemyWidth/2;
 
-        this.MovewaitTimer = 2.0; // 停止時間
-        this.waitDuration = this.MovewaitTimer;
-        this.moveChangeTimer = 2.0; // 次の移動方向を決定する秒数
+        this.waitTimer = 2.0; // 停止時間
+        this.waitDuration = this.waitTimer;
+
+        // スキルの発動感覚時間
+        this.SkillWaitTimer = 1.5; // 難易度依存(E:1.5, N;0.5, H:0)
+        this.waitDuration = this.SkillWaitTimer;
 
         // 初期化ここまで
 
@@ -68,39 +71,94 @@ export class Enemy {
         this.targetX = this.x;
         this.targetY = this.y;
 
+        this.skillorUltDoing = false;
+
     }
 
     // ブラウザの解像度比に合わせて動作を変える
-    updateScale(newScaleFactor, newCanvas) {
-        // 以前のスケールに対する現在の相対位置を計算
-        const relativeX = this.x / (this.Canvas.width || BASE_WIDTH); // 0除算を避ける
-        const relativeY = this.y / (this.Canvas.height || BASE_HEIGHT);
+    updateScale(newScaleFactor, newCanvas, gameBaseWidth, gameBaseHeight) { // ★ 引数に gameBaseWidth, gameBaseHeight を追加
+        // 更新前の有効なキャンバスサイズを取得 (0の場合はフォールバックとして基準解像度を使用)
+        const oldEffectiveCanvasWidth = this.Canvas.width || gameBaseWidth;
+        const oldEffectiveCanvasHeight = this.Canvas.height || gameBaseHeight;
 
+        // 現在の位置の相対的な割合を計算
+        const relativeX = this.x / oldEffectiveCanvasWidth;
+        const relativeY = this.y / oldEffectiveCanvasHeight;
+
+        // ★ 現在のターゲット位置の相対的な割合も計算
+        const relativeTargetX = this.targetX / oldEffectiveCanvasWidth;
+        const relativeTargetY = this.targetY / oldEffectiveCanvasHeight;
+
+        // スケールとキャンバス参照を更新
         this.currentScaleFactor = newScaleFactor;
-        this.Canvas = newCanvas; // 新しいcanvasの参照（主にwidth/height）
+        this.Canvas = newCanvas;
 
-        // 新しいcanvasサイズに基づいて位置を再設定
-        this.x = relativeX * this.Canvas.width;
-        this.y = relativeY * this.Canvas.height;
-
-        // Enemyの大きさなどをリサイジング
-        this.EnemyHitpointRadius = this.BaseEnemyHitpointRadius * newScaleFactor;
+        // Enemyの基本サイズと速度をスケールに合わせて更新
         this.EnemyWidth = this.BaseEnemyWidth * newScaleFactor;
         this.EnemyHeight = this.BaseEnemyHeight * newScaleFactor;
         this.EnemySpeed = this.BaseEnemySpeed * newScaleFactor;
+        this.EnemyHitpointRadius = this.BaseEnemyHitpointRadius * newScaleFactor; // ヒットポイント半径もスケール
 
-        // 境界チェックなどで位置を補正
-        this.x = Math.max(0, Math.min(this.x, this.Canvas.width - this.EnemyWidth));
-        this.y = Math.max(0, Math.min(this.y, this.Canvas.height - this.EnemyHeight));
+        // 新しいキャンバスサイズとスケールに基づいて自身の位置を再設定
+        this.x = relativeX * this.Canvas.width;
+        this.y = relativeY * this.Canvas.height;
 
+        // ★ 新しいキャンバスサイズとスケールに基づいてターゲット位置を再設定
+        this.targetX = relativeTargetX * this.Canvas.width;
+        this.targetY = relativeTargetY * this.Canvas.height;
+
+        // ----- 自身の位置を境界内にクランプ (中心座標基準) -----
+        this.x = Math.max(
+            this.EnemyWidth / 2,
+            Math.min(this.x, this.Canvas.width - this.EnemyWidth / 2)
+        );
+        this.y = Math.max(
+            this.EnemyHeight / 2,
+            Math.min(this.y, this.Canvas.height - this.EnemyHeight / 2)
+        );
+
+        // ----- 新しい移動範囲を計算 (setNewTarget と同様のロジック) -----
+        const currentMoveAreaTopY = this.EnemyHeight / 2;
+        const currentMoveAreaBottomY = Math.max(currentMoveAreaTopY, this.Canvas.height / 3 - (this.EnemyHeight / 2));
+        const currentMoveAreaLeftX = this.EnemyWidth / 2;
+        const currentMoveAreaRightX = Math.max(currentMoveAreaLeftX, this.Canvas.width - (this.EnemyWidth / 2));
+
+        // ----- スケーリングされたターゲット位置を新しい移動範囲内にクランプ -----
+        this.targetX = Math.max(
+            currentMoveAreaLeftX,
+            Math.min(this.targetX, currentMoveAreaRightX)
+        );
+        this.targetY = Math.max(
+            currentMoveAreaTopY,
+            Math.min(this.targetY, currentMoveAreaBottomY)
+        );
     }
 
     setNewTarget() {
-        // 移動範囲の再計算 (canvas.height や自身のサイズに依存するため)
-        this.moveAreaBottomY = this.Canvas.height / 3 - (this.EnemyHeight/2);
-        this.moveAreaRightX = this.Canvas.width - (this.EnemyWidth/2);
-        this.targetX = this.moveAreaLeftX + Math.random() * (this.moveAreaRightX - this.moveAreaLeftX);
-        this.targetY = this.moveAreaTopY + Math.random() * ((this.moveAreaBottomY - this.moveAreaTopY));
+        // 移動範囲の再計算 (this.EnemyHeight, this.EnemyWidth はスケール済み)
+        this.moveAreaTopY = this.EnemyHeight / 2;
+        this.moveAreaBottomY = this.Canvas.height / 3 - (this.EnemyHeight / 2);
+        this.moveAreaLeftX = this.EnemyWidth / 2;
+        this.moveAreaRightX = this.Canvas.width - (this.EnemyWidth / 2);
+
+        // ★ Y座標の下限が上限より小さくならないように調整
+        const effectiveMoveAreaBottomY = Math.max(this.moveAreaTopY, this.moveAreaBottomY);
+
+        // X座標のターゲット設定 (移動範囲がない場合は中央に)
+        const randomXRange = this.moveAreaRightX - this.moveAreaLeftX;
+        if (randomXRange <= 0) { // 等号も含む (範囲が0の場合)
+            this.targetX = this.Canvas.width / 2;
+        } else {
+            this.targetX = this.moveAreaLeftX + Math.random() * randomXRange;
+        }
+
+        // Y座標のターゲット設定
+        const randomYRange = effectiveMoveAreaBottomY - this.moveAreaTopY;
+        if (randomYRange <= 0) { // 等号も含む (範囲が0の場合)
+            this.targetY = this.moveAreaTopY; // 範囲がない場合は上限値に設定
+        } else {
+            this.targetY = this.moveAreaTopY + Math.random() * randomYRange;
+        }
     }
 
 
@@ -117,12 +175,6 @@ export class Enemy {
                 } 
             return;
         }
-        // this.moveChangeTimer -= deltaTime;
-        // if (this.moveChangeTimer <= 0) {
-        //     this.setNewTarget();
-        //     this.moveChangeTimer = this.moveChangeInterval;
-        // }
-
 
         const dx = this.targetX - this.x;
         const dy = this.targetY - this.y;
@@ -140,11 +192,31 @@ export class Enemy {
 
         this.x += moveX;
         this.y += moveY;
+
+        // ★ 移動後に座標をクランプ (境界を超えないように)
+        this.x = Math.max(this.moveAreaLeftX, Math.min(this.x, this.moveAreaRightX));
+        this.y = Math.max(this.moveAreaTopY, Math.min(this.y, this.moveAreaBottomY));
     }
 
      shoot(enemyBulletsArray, playerInstance, deltaTime) { // deltaTime は直接使わないが、クールダウンはdeltaTimeで管理
         if (this.hp <= 0) return;
+
         // 発射はスキルで発射されるようなシステムにする
+          if (this.SkillWaitTimer > 0) {
+            this.SkillWaitTimer -= deltaTime;
+            if (this.SkillWaitTimer < 0)
+                {
+                    this.waitTimer = 0; // スキルの待ち時間はスキル発動時の有効タイミングで行う
+                    this.setNewTarget();
+                } 
+            return;
+        }
+
+        // スキルの発動を行う
+
+
+
+
 
 
         // if (this.bulletTimer > 0) { // ★ クールダウン中かチェック

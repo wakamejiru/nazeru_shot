@@ -138,193 +138,272 @@ export class Player {
 	}
 
     // ブラウザの解像度比に合わせて動作を変える
-    updateScale(newScaleFactor, newCanvas)
-    {
-        // 以前のスケールに対する現在の相対位置を計算
+    updateScale(newScaleFactor, newCanvas, gameBaseWidth, gameBaseHeight) { // ★ 引数に gameBaseWidth, gameBaseHeight を追加
+        // 更新前の有効なキャンバスサイズを取得
+        const oldEffectiveCanvasWidth = this.canvas.width || gameBaseWidth;
+        const oldEffectiveCanvasHeight = this.canvas.height || gameBaseHeight;
+
+        // プレイヤーの中心座標の相対的な割合を計算
+        // (this.x, this.y は既に中心座標であるため、そのまま使用)
+        const relativeCenterX = this.x / oldEffectiveCanvasWidth;
+        const relativeCenterY = this.y / oldEffectiveCanvasHeight;
+
+        // スケールファクターとキャンバス参照を更新
+        this.currentScaleFactor = newScaleFactor;
+        this.canvas = newCanvas;
+
+        // プレイヤー自身のスケーリングが必要なプロパティを更新
+        this.sprite_draw_width = (this.sprite_base_draw_width || 40) * this.currentScaleFactor;
+        this.sprite_draw_height = (this.sprite_base_draw_height || 40) * this.currentScaleFactor;
+        this.hitpoint_radius = (this.hitpoint_base_radius || 10) * this.currentScaleFactor;
+        this.speed = (this.basespeed || 50) * this.currentScaleFactor; // basespeed のデフォルト値も考慮
+        if (this.baseradius !== undefined) { // baseradius が存在する場合のみスケール
+             this.radius = (this.baseradius || 10) * this.currentScaleFactor;
+        }
+
+
+        // 新しいキャンバスサイズとスケールに基づいてプレイヤーの中心位置を再設定
+        this.x = relativeCenterX * this.canvas.width;
+        this.y = relativeCenterY * this.canvas.height;
+
+        // プレイヤーの中心位置を新しいキャンバスの境界内にクランプ
+        const halfScaledWidth = this.sprite_draw_width / 2;
+        const halfScaledHeight = this.sprite_draw_height / 2;
+
+        this.x = Math.max(halfScaledWidth, Math.min(this.x, this.canvas.width - halfScaledWidth));
+        this.y = Math.max(halfScaledHeight, Math.min(this.y, this.canvas.height - halfScaledHeight));
+
+        // --- 弾情報のスケーリング ---
+
+        const scaleBulletProperties = (bulletInfos, baseBulletList, bulletKey) => {
+            if (!this.isvalidbulled(bulletInfos) || !bulletKey || bulletKey === MainBulletEnum.NONE || bulletKey === SubBulletEnum.NONE) {
+                return;
+            }
+            const baseInfo = baseBulletList[bulletKey];
+            if (!baseInfo) {
+                // console.warn(`Base bullet info not found for key: ${bulletKey}`);
+                return;
+            }
+
+            // スケールするプロパティ (位置オフセット、速度、サイズなど)
+            bulletInfos.start_x_pos = (baseInfo.start_x_pos || 0) * this.currentScaleFactor;
+            bulletInfos.start_y_pos = (baseInfo.start_y_pos || 0) * this.currentScaleFactor;
+            bulletInfos.x_speed = (baseInfo.x_speed || 0) * this.currentScaleFactor;
+            bulletInfos.y_speed = (baseInfo.y_speed || 0) * this.currentScaleFactor; // Y方向の反転はcreateBulletInstanceで行う
+            bulletInfos.accel_x = (baseInfo.accel_x || 0) * this.currentScaleFactor;
+            bulletInfos.accel_y = (baseInfo.accel_y || 0) * this.currentScaleFactor; // Y方向の反転はcreateBulletInstanceで行う
+            bulletInfos.jeak_x = (baseInfo.jeak_x || 0) * this.currentScaleFactor;
+            bulletInfos.jeak_y = (baseInfo.jeak_y || 0) * this.currentScaleFactor;   // Y方向の反転はcreateBulletInstanceで行う
+            bulletInfos.bulled_maxSpeed = (baseInfo.bulled_maxSpeed || 10000) * this.currentScaleFactor;
+            
+            // bullet_width と bullet_height は bulled_size_mag を考慮してスケール
+            const sizeMultiplier = baseInfo.bulled_size_mag || 1.0;
+            bulletInfos.bullet_width = (baseInfo.bullet_width || 5) * sizeMultiplier * this.currentScaleFactor;
+            bulletInfos.bullet_height = (baseInfo.bullet_height || 5) * sizeMultiplier * this.currentScaleFactor;
+
+            // サインカーブの振幅もピクセル単位なのでスケール
+            if (baseInfo.hasOwnProperty('sine_amplitude')) {
+                 bulletInfos.sine_amplitude = (baseInfo.sine_amplitude || 0) * this.currentScaleFactor;
+            }
+        };
         
-		// 更新前の canvas の幅と高さを取得。0 の場合はフォールバックとして基準解像度を使用。
-		// (BASE_WIDTH, BASE_HEIGHT は player.js で利用可能である前提)
-		const oldCanvasWidth = this.canvas.width || BASE_WIDTH;  // BASE_WIDTH は script.js からインポートするか、コンストラクタで渡す
-		const oldCanvasHeight = this.canvas.height || BASE_HEIGHT; // 同上
-
-		// this.x や this.y が NaN や Infinity でないことを確認
-		if (isNaN(this.x) || !isFinite(this.x) || isNaN(this.y) || !isFinite(this.y)) {
-			console.warn("Player.updateScale: Initial x/y is NaN or Infinity. Resetting to center.");
-			// player.x, player.y が左上基準の場合
-			this.x = (oldCanvasWidth - (this.baseWidth * this.currentScaleFactor)) / 2;
-			this.y = (oldCanvasHeight - (this.baseHeight * this.currentScaleFactor)) / 2;
-		}
-
-		// oldCanvasWidth/Height が0でないことを保証
-		const safeOldCanvasWidth = oldCanvasWidth === 0 ? BASE_WIDTH : oldCanvasWidth;
-		const safeOldCanvasHeight = oldCanvasHeight === 0 ? BASE_HEIGHT : oldCanvasHeight;
-
-		// プレイヤーの論理的な中心に基づいて相対位置を計算
-		const currentLogicalWidth = (this.sprite_draw_width || 20) * this.currentScaleFactor;
-		const currentLogicalHeight = (this.sprite_draw_height || 20) * this.currentScaleFactor;
-		const currentLogicalCenterX = this.x + currentLogicalWidth / 2;
-		const currentLogicalCenterY = this.y + currentLogicalHeight / 2;
-
-		const relativeCenterX = currentLogicalCenterX / safeOldCanvasWidth;
-		const relativeCenterY = currentLogicalCenterY / safeOldCanvasHeight;
-
-		this.currentScaleFactor = newScaleFactor;
-		this.canvas = newCanvas; // 新しいcanvasの参照
-
-		const newScaledLogicalWidth = (this.baseWidth || 20) * this.currentScaleFactor;
-		const newScaledLogicalHeight = (this.baseHeight || 20) * this.currentScaleFactor;
-
-		// 新しいスケールに基づいて左上のx, yを再計算
-		this.x = (relativeCenterX * this.canvas.width) - newScaledLogicalWidth / 2;
-		this.y = (relativeCenterY * this.canvas.height) - newScaledLogicalHeight / 2;
-
-		// 境界チェックなどで位置を補正 (左上基準で)
-		this.x = Math.max(0, Math.min(this.x, this.canvas.width - newScaledLogicalWidth));
-		this.y = Math.max(0, Math.min(this.y, this.canvas.height - newScaledLogicalHeight));
-
-		// プレイヤー自身の当たり判定半径や速度も、基本値を元にスケール (既に実装済み)
-		this.radius = (this.baseradius || 10) * this.currentScaleFactor;
-		this.speed = (this.basespeed || 200) * this.currentScaleFactor;
-
-		// アバターの描画サイズも更新 (既に実装済み)
-		this.sprite_draw_width = (this.sprite_base_draw_width || 40) * this.currentScaleFactor;
-		this.sprite_draw_height = (this.sprite_base_draw_height || 40) * this.currentScaleFactor;
-		this.hitpoint_radius = (this.hitpoint_base_radius || 10) * this.currentScaleFactor;
-
-		// かなりまずった作り方をした
-
-		// 弾がある場合は弾のスケールの大きさと速度をいじる
-		if(this.isvalidbulled(this.m_bullet1infos) == true){
-			this.m_bullet1infos.start_x_pos =  main_bulled_info_list[this.m_bullet1_key].start_x_pos*this.currentScaleFactor;
-			this.m_bullet1infos.start_y_pos =  main_bulled_info_list[this.m_bullet1_key].start_y_pos*this.currentScaleFactor;
-
-			this.m_bullet1infos.x_speed =  main_bulled_info_list[this.m_bullet1_key].x_speed*this.currentScaleFactor;
-			this.m_bullet1infos.y_speed = main_bulled_info_list[this.m_bullet1_key].y_speed*this.currentScaleFactor;
-			this.m_bullet1infos.accel_x = main_bulled_info_list[this.m_bullet1_key].accel_x*this.currentScaleFactor;
-			this.m_bullet1infos.accel_y = main_bulled_info_list[this.m_bullet1_key].accel_y*this.currentScaleFactor;
-			this.m_bullet1infos.jeak_x = main_bulled_info_list[this.m_bullet1_key].jeak_x*this.currentScaleFactor;
-			this.m_bullet1infos.jeak_y = main_bulled_info_list[this.m_bullet1_key].jeak_y*this.currentScaleFactor;
-			this.m_bullet1infos.bulled_maxSpeed = main_bulled_info_list[this.m_bullet1_key].bulled_maxSpeed*this.currentScaleFactor;
-			this.m_bullet1infos.bulled_size_mag = main_bulled_info_list[this.m_bullet1_key].bulled_size_mag*this.currentScaleFactor;
-			
-			this.m_bullet1infos.bullet_width = main_bulled_info_list[this.m_bullet1_key].bullet_width*this.currentScaleFactor;
-			this.m_bullet1infos.bullet_height = main_bulled_info_list[this.m_bullet1_key].bullet_height*this.currentScaleFactor;
-			this.m_bullet1infos.sine_amplitude = main_bulled_info_list[this.m_bullet1_key].sine_amplitude*this.currentScaleFactor;
-
-		}
-		
-		// 弾がある場合は弾のスケールの大きさと速度をいじる
-		if(this.isvalidbulled(this.m_bullet2infos) == true){
-			this.m_bullet2infos.start_x_pos =  main_bulled_info_list[this.m_bullet2_key].start_x_pos*this.currentScaleFactor;
-			this.m_bullet2infos.start_y_pos =  main_bulled_info_list[this.m_bullet2_key].start_y_pos*this.currentScaleFactor;
-
-
-			this.m_bullet2infos.x_speed = main_bulled_info_list[this.m_bullet2_key].x_speed*this.currentScaleFactor;
-			this.m_bullet2infos.y_speed = main_bulled_info_list[this.m_bullet2_key].y_speed*this.currentScaleFactor;
-			this.m_bullet2infos.accel_x = main_bulled_info_list[this.m_bullet2_key].accel_x*this.currentScaleFactor;
-			this.m_bullet2infos.accel_y = main_bulled_info_list[this.m_bullet2_key].accel_y*this.currentScaleFactor;
-			this.m_bullet2infos.jeak_x = main_bulled_info_list[this.m_bullet2_key].jeak_x*this.currentScaleFactor;
-			this.m_bullet2infos.jeak_y = main_bulled_info_list[this.m_bullet2_key].jeak_y*this.currentScaleFactor;
-			this.m_bullet2infos.bulled_maxSpeed = main_bulled_info_list[this.m_bullet2_key].bulled_maxSpeed*this.currentScaleFactor;
-			this.m_bullet2infos.bulled_size_mag = main_bulled_info_list[this.m_bullet2_key].bulled_size_mag*this.currentScaleFactor;	
-			this.m_bullet2infos.bullet_width = main_bulled_info_list[this.m_bullet2_key].bullet_width*this.currentScaleFactor;
-			this.m_bullet2infos.bullet_height = main_bulled_info_list[this.m_bullet2_key].bullet_height*this.currentScaleFactor;
-			this.m_bullet2infos.sine_amplitude = main_bulled_info_list[this.m_bullet2_key].sine_amplitude*this.currentScaleFactor;
-
-
-		}
-
-		// 弾がある場合は弾のスケールの大きさと速度をいじる
-		if(this.isvalidbulled(this.s_bullet1infos) == true){
-			this.s_bullet1infos.start_x_pos =  sub_bulled_info_list[this.s_bullet1_key].start_x_pos*this.currentScaleFactor;
-			this.s_bullet1infos.start_y_pos =  sub_bulled_info_list[this.s_bullet1_key].start_y_pos*this.currentScaleFactor;
-
-
-			this.s_bullet1infos.x_speed = sub_bulled_info_list[this.s_bullet1_key].x_speed*this.currentScaleFactor;
-			this.s_bullet1infos.y_speed = sub_bulled_info_list[this.s_bullet1_key].y_speed*this.currentScaleFactor;
-			this.s_bullet1infos.accel_x = sub_bulled_info_list[this.s_bullet1_key].accel_x*this.currentScaleFactor;
-			this.s_bullet1infos.accel_y = sub_bulled_info_list[this.s_bullet1_key].accel_y*this.currentScaleFactor;
-			this.s_bullet1infos.jeak_x = sub_bulled_info_list[this.s_bullet1_key].jeak_x*this.currentScaleFactor;
-			this.s_bullet1infos.jeak_y = sub_bulled_info_list[this.s_bullet1_key].jeak_y*this.currentScaleFactor;
-			this.s_bullet1infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet1_key].bulled_maxSpeed*this.currentScaleFactor;
-			this.s_bullet1infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet1_key].bulled_size_mag*this.currentScaleFactor;	
-
-			this.s_bullet1infos.bullet_width = sub_bulled_info_list[this.s_bullet1_key].bullet_width*this.currentScaleFactor;
-			this.s_bullet1infos.bullet_height = sub_bulled_info_list[this.s_bullet1_key].bullet_height*this.currentScaleFactor;	
-		}
-
-		if(this.isvalidbulled(this.s_bullet2infos) == true){
-			this.s_bullet2infos.start_x_pos =  sub_bulled_info_list[this.s_bullet2_key].start_x_pos*this.currentScaleFactor;
-			this.s_bullet2infos.start_y_pos =  sub_bulled_info_list[this.s_bullet2_key].start_y_pos*this.currentScaleFactor;
-
-			this.s_bullet2infos.x_speed = sub_bulled_info_list[this.s_bullet2_key].x_speed*this.currentScaleFactor;
-			this.s_bullet2infos.y_speed = sub_bulled_info_list[this.s_bullet2_key].y_speed*this.currentScaleFactor;
-			this.s_bullet2infos.accel_x = sub_bulled_info_list[this.s_bullet2_key].accel_x*this.currentScaleFactor;
-			this.s_bullet2infos.accel_y = sub_bulled_info_list[this.s_bullet2_key].accel_y*this.currentScaleFactor;
-			this.s_bullet2infos.jeak_x = sub_bulled_info_list[this.s_bullet2_key].jeak_x*this.currentScaleFactor;
-			this.s_bullet2infos.jeak_y = sub_bulled_info_list[this.s_bullet2_key].jeak_y*this.currentScaleFactor;
-			this.s_bullet2infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet2_key].bulled_maxSpeed*this.currentScaleFactor;
-			this.s_bullet2infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet2_key].bulled_size_mag*this.currentScaleFactor;	
-		
-			this.s_bullet2infos.bullet_width = sub_bulled_info_list[this.s_bullet2_key].bullet_width*this.currentScaleFactor;
-			this.s_bullet2infos.bullet_height = sub_bulled_info_list[this.s_bullet2_key].bullet_height*this.currentScaleFactor;	
-
-		}
-
-		if(this.isvalidbulled(this.s_bullet3infos) == true){
-			this.s_bullet3infos.start_x_pos =  sub_bulled_info_list[this.s_bullet3_key].start_x_pos*this.currentScaleFactor;
-			this.s_bullet3infos.start_y_pos =  sub_bulled_info_list[this.s_bullet3_key].start_y_pos*this.currentScaleFactor;
-
-			this.s_bullet3infos.x_speed = sub_bulled_info_list[this.s_bullet3_key].x_speed*this.currentScaleFactor;
-			this.s_bullet3infos.y_speed = sub_bulled_info_list[this.s_bullet3_key].y_speed*this.currentScaleFactor;
-			this.s_bullet3infos.accel_x = sub_bulled_info_list[this.s_bullet3_key].accel_x*this.currentScaleFactor;
-			this.s_bullet3infos.accel_y = sub_bulled_info_list[this.s_bullet3_key].accel_y*this.currentScaleFactor;
-			this.s_bullet3infos.jeak_x = sub_bulled_info_list[this.s_bullet3_key].jeak_x*this.currentScaleFactor;
-			this.s_bullet3infos.jeak_y = sub_bulled_info_list[this.s_bullet3_key].jeak_y*this.currentScaleFactor;
-			this.s_bullet3infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet3_key].bulled_maxSpeed*this.currentScaleFactor;
-			this.s_bullet3infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet3_key].bulled_size_mag*this.currentScaleFactor;	
-
-			this.s_bullet3infos.bullet_width = sub_bulled_info_list[this.s_bullet3_key].bullet_width*this.currentScaleFactor;
-			this.s_bullet3infos.bullet_height = sub_bulled_info_list[this.s_bullet3_key].bullet_height*this.currentScaleFactor;	
-		}
-
-		if(this.isvalidbulled(this.s_bullet4infos) == true){ 
-			this.s_bullet4infos.start_x_pos =  sub_bulled_info_list[this.s_bullet4_key].start_x_pos*this.currentScaleFactor;
-			this.s_bullet4infos.start_y_pos =  sub_bulled_info_list[this.s_bullet4_key].start_y_pos*this.currentScaleFactor;
-
-
-            this.s_bullet4infos.x_speed = sub_bulled_info_list[this.s_bullet4_key].x_speed * this.currentScaleFactor;
-            this.s_bullet4infos.y_speed = sub_bulled_info_list[this.s_bullet4_key].y_speed * this.currentScaleFactor;
-            this.s_bullet4infos.accel_x = sub_bulled_info_list[this.s_bullet4_key].accel_x * this.currentScaleFactor;
-            this.s_bullet4infos.accel_y = sub_bulled_info_list[this.s_bullet4_key].accel_y * this.currentScaleFactor;
-            this.s_bullet4infos.jeak_x = sub_bulled_info_list[this.s_bullet4_key].jeak_x * this.currentScaleFactor;
-            this.s_bullet4infos.jeak_y = sub_bulled_info_list[this.s_bullet4_key].jeak_y * this.currentScaleFactor;
-            this.s_bullet4infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet4_key].bulled_maxSpeed * this.currentScaleFactor;
-            this.s_bullet4infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet4_key].bulled_size_mag * this.currentScaleFactor;
-
-			this.s_bullet4infos.bullet_width = sub_bulled_info_list[this.s_bullet4_key].bullet_width*this.currentScaleFactor;
-			this.s_bullet4infos.bullet_height = sub_bulled_info_list[this.s_bullet4_key].bullet_height*this.currentScaleFactor;	
-
-		}
-
-		if(this.isvalidbulled(this.s_bullet5infos) == true){ 
-			this.s_bullet5infos.start_x_pos =  sub_bulled_info_list[this.s_bullet5_key].start_x_pos*this.currentScaleFactor;
-			this.s_bullet5infos.start_y_pos =  sub_bulled_info_list[this.s_bullet5_key].start_y_pos*this.currentScaleFactor;
-
-            this.s_bullet5infos.x_speed = sub_bulled_info_list[this.s_bullet5_key].x_speed * this.currentScaleFactor;
-            this.s_bullet5infos.y_speed = sub_bulled_info_list[this.s_bullet5_key].y_speed * this.currentScaleFactor;
-            this.s_bullet5infos.accel_x = sub_bulled_info_list[this.s_bullet5_key].accel_x * this.currentScaleFactor;
-            this.s_bullet5infos.accel_y = sub_bulled_info_list[this.s_bullet5_key].accel_y * this.currentScaleFactor;
-            this.s_bullet5infos.jeak_x = sub_bulled_info_list[this.s_bullet5_key].jeak_x * this.currentScaleFactor;
-            this.s_bullet5infos.jeak_y = sub_bulled_info_list[this.s_bullet5_key].jeak_y * this.currentScaleFactor;
-            this.s_bullet5infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet5_key].bulled_maxSpeed * this.currentScaleFactor;
-            this.s_bullet5infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet5_key].bulled_size_mag * this.currentScaleFactor;
-
-			this.s_bullet5infos.bullet_width = sub_bulled_info_list[this.s_bullet5_key].bullet_width*this.currentScaleFactor;
-			this.s_bullet5infos.bullet_height = sub_bulled_info_list[this.s_bullet5_key].bullet_height*this.currentScaleFactor;	
-		}
-
+        scaleBulletProperties(this.m_bullet1infos, main_bulled_info_list, this.m_bullet1_key);
+        scaleBulletProperties(this.m_bullet2infos, main_bulled_info_list, this.m_bullet2_key);
+        scaleBulletProperties(this.s_bullet1infos, sub_bulled_info_list, this.s_bullet1_key);
+        scaleBulletProperties(this.s_bullet2infos, sub_bulled_info_list, this.s_bullet2_key);
+        scaleBulletProperties(this.s_bullet3infos, sub_bulled_info_list, this.s_bullet3_key);
+        scaleBulletProperties(this.s_bullet4infos, sub_bulled_info_list, this.s_bullet4_key);
+        scaleBulletProperties(this.s_bullet5infos, sub_bulled_info_list, this.s_bullet5_key);
     }
+
+
+	// updateScale(newScaleFactor, newCanvas, BASE_WIDTH, BASE_HEIGHT)
+    // {
+    //     // 以前のスケールに対する現在の相対位置を計算
+        
+	// 	// 更新前の canvas の幅と高さを取得。0 の場合はフォールバックとして基準解像度を使用。
+	// 	// (BASE_WIDTH, BASE_HEIGHT は player.js で利用可能である前提)
+	// 	const oldCanvasWidth = this.canvas.width || BASE_WIDTH;  // BASE_WIDTH は script.js からインポートするか、コンストラクタで渡す
+	// 	const oldCanvasHeight = this.canvas.height || BASE_HEIGHT; // 同上
+
+	// 	// this.x や this.y が NaN や Infinity でないことを確認
+	// 	if (isNaN(this.x) || !isFinite(this.x) || isNaN(this.y) || !isFinite(this.y)) {
+	// 		console.warn("Player.updateScale: Initial x/y is NaN or Infinity. Resetting to center.");
+	// 		// player.x, player.y が左上基準の場合
+	// 		this.x = (oldCanvasWidth - (this.baseWidth * this.currentScaleFactor)) / 2;
+	// 		this.y = (oldCanvasHeight - (this.baseHeight * this.currentScaleFactor)) / 2;
+	// 	}
+
+	// 	// oldCanvasWidth/Height が0でないことを保証
+	// 	const safeOldCanvasWidth = oldCanvasWidth === 0 ? BASE_WIDTH : oldCanvasWidth;
+	// 	const safeOldCanvasHeight = oldCanvasHeight === 0 ? BASE_HEIGHT : oldCanvasHeight;
+
+	// 	// プレイヤーの論理的な中心に基づいて相対位置を計算
+	// 	const currentLogicalWidth = (this.sprite_draw_width || 20) * this.currentScaleFactor;
+	// 	const currentLogicalHeight = (this.sprite_draw_height || 20) * this.currentScaleFactor;
+	// 	const currentLogicalCenterX = this.x + currentLogicalWidth / 2;
+	// 	const currentLogicalCenterY = this.y + currentLogicalHeight / 2;
+
+	// 	const relativeCenterX = currentLogicalCenterX / safeOldCanvasWidth;
+	// 	const relativeCenterY = currentLogicalCenterY / safeOldCanvasHeight;
+
+	// 	this.currentScaleFactor = newScaleFactor;
+	// 	this.canvas = newCanvas; // 新しいcanvasの参照
+
+	// 	const newScaledLogicalWidth = (this.baseWidth || 20) * this.currentScaleFactor;
+	// 	const newScaledLogicalHeight = (this.baseHeight || 20) * this.currentScaleFactor;
+
+	// 	// 新しいスケールに基づいて左上のx, yを再計算
+	// 	this.x = (relativeCenterX * this.canvas.width) - newScaledLogicalWidth / 2;
+	// 	this.y = (relativeCenterY * this.canvas.height) - newScaledLogicalHeight / 2;
+
+	// 	// 境界チェックなどで位置を補正 (左上基準で)
+	// 	this.x = Math.max(0, Math.min(this.x, this.canvas.width - newScaledLogicalWidth));
+	// 	this.y = Math.max(0, Math.min(this.y, this.canvas.height - newScaledLogicalHeight));
+
+	// 	// プレイヤー自身の当たり判定半径や速度も、基本値を元にスケール (既に実装済み)
+	// 	this.radius = (this.baseradius || 10) * this.currentScaleFactor;
+	// 	this.speed = (this.basespeed || 200) * this.currentScaleFactor;
+
+	// 	// アバターの描画サイズも更新 (既に実装済み)
+	// 	this.sprite_draw_width = (this.sprite_base_draw_width || 40) * this.currentScaleFactor;
+	// 	this.sprite_draw_height = (this.sprite_base_draw_height || 40) * this.currentScaleFactor;
+	// 	this.hitpoint_radius = (this.hitpoint_base_radius || 10) * this.currentScaleFactor;
+
+	// 	// かなりまずった作り方をした
+
+	// 	// 弾がある場合は弾のスケールの大きさと速度をいじる
+	// 	if(this.isvalidbulled(this.m_bullet1infos) == true){
+	// 		this.m_bullet1infos.start_x_pos =  main_bulled_info_list[this.m_bullet1_key].start_x_pos*this.currentScaleFactor;
+	// 		this.m_bullet1infos.start_y_pos =  main_bulled_info_list[this.m_bullet1_key].start_y_pos*this.currentScaleFactor;
+
+	// 		this.m_bullet1infos.x_speed =  main_bulled_info_list[this.m_bullet1_key].x_speed*this.currentScaleFactor;
+	// 		this.m_bullet1infos.y_speed = main_bulled_info_list[this.m_bullet1_key].y_speed*this.currentScaleFactor;
+	// 		this.m_bullet1infos.accel_x = main_bulled_info_list[this.m_bullet1_key].accel_x*this.currentScaleFactor;
+	// 		this.m_bullet1infos.accel_y = main_bulled_info_list[this.m_bullet1_key].accel_y*this.currentScaleFactor;
+	// 		this.m_bullet1infos.jeak_x = main_bulled_info_list[this.m_bullet1_key].jeak_x*this.currentScaleFactor;
+	// 		this.m_bullet1infos.jeak_y = main_bulled_info_list[this.m_bullet1_key].jeak_y*this.currentScaleFactor;
+	// 		this.m_bullet1infos.bulled_maxSpeed = main_bulled_info_list[this.m_bullet1_key].bulled_maxSpeed*this.currentScaleFactor;
+	// 		this.m_bullet1infos.bulled_size_mag = main_bulled_info_list[this.m_bullet1_key].bulled_size_mag*this.currentScaleFactor;
+			
+	// 		this.m_bullet1infos.bullet_width = main_bulled_info_list[this.m_bullet1_key].bullet_width*this.currentScaleFactor;
+	// 		this.m_bullet1infos.bullet_height = main_bulled_info_list[this.m_bullet1_key].bullet_height*this.currentScaleFactor;
+	// 		this.m_bullet1infos.sine_amplitude = main_bulled_info_list[this.m_bullet1_key].sine_amplitude*this.currentScaleFactor;
+
+	// 	}
+		
+	// 	// 弾がある場合は弾のスケールの大きさと速度をいじる
+	// 	if(this.isvalidbulled(this.m_bullet2infos) == true){
+	// 		this.m_bullet2infos.start_x_pos =  main_bulled_info_list[this.m_bullet2_key].start_x_pos*this.currentScaleFactor;
+	// 		this.m_bullet2infos.start_y_pos =  main_bulled_info_list[this.m_bullet2_key].start_y_pos*this.currentScaleFactor;
+
+
+	// 		this.m_bullet2infos.x_speed = main_bulled_info_list[this.m_bullet2_key].x_speed*this.currentScaleFactor;
+	// 		this.m_bullet2infos.y_speed = main_bulled_info_list[this.m_bullet2_key].y_speed*this.currentScaleFactor;
+	// 		this.m_bullet2infos.accel_x = main_bulled_info_list[this.m_bullet2_key].accel_x*this.currentScaleFactor;
+	// 		this.m_bullet2infos.accel_y = main_bulled_info_list[this.m_bullet2_key].accel_y*this.currentScaleFactor;
+	// 		this.m_bullet2infos.jeak_x = main_bulled_info_list[this.m_bullet2_key].jeak_x*this.currentScaleFactor;
+	// 		this.m_bullet2infos.jeak_y = main_bulled_info_list[this.m_bullet2_key].jeak_y*this.currentScaleFactor;
+	// 		this.m_bullet2infos.bulled_maxSpeed = main_bulled_info_list[this.m_bullet2_key].bulled_maxSpeed*this.currentScaleFactor;
+	// 		this.m_bullet2infos.bulled_size_mag = main_bulled_info_list[this.m_bullet2_key].bulled_size_mag*this.currentScaleFactor;	
+	// 		this.m_bullet2infos.bullet_width = main_bulled_info_list[this.m_bullet2_key].bullet_width*this.currentScaleFactor;
+	// 		this.m_bullet2infos.bullet_height = main_bulled_info_list[this.m_bullet2_key].bullet_height*this.currentScaleFactor;
+	// 		this.m_bullet2infos.sine_amplitude = main_bulled_info_list[this.m_bullet2_key].sine_amplitude*this.currentScaleFactor;
+
+
+	// 	}
+
+	// 	// 弾がある場合は弾のスケールの大きさと速度をいじる
+	// 	if(this.isvalidbulled(this.s_bullet1infos) == true){
+	// 		this.s_bullet1infos.start_x_pos =  sub_bulled_info_list[this.s_bullet1_key].start_x_pos*this.currentScaleFactor;
+	// 		this.s_bullet1infos.start_y_pos =  sub_bulled_info_list[this.s_bullet1_key].start_y_pos*this.currentScaleFactor;
+
+
+	// 		this.s_bullet1infos.x_speed = sub_bulled_info_list[this.s_bullet1_key].x_speed*this.currentScaleFactor;
+	// 		this.s_bullet1infos.y_speed = sub_bulled_info_list[this.s_bullet1_key].y_speed*this.currentScaleFactor;
+	// 		this.s_bullet1infos.accel_x = sub_bulled_info_list[this.s_bullet1_key].accel_x*this.currentScaleFactor;
+	// 		this.s_bullet1infos.accel_y = sub_bulled_info_list[this.s_bullet1_key].accel_y*this.currentScaleFactor;
+	// 		this.s_bullet1infos.jeak_x = sub_bulled_info_list[this.s_bullet1_key].jeak_x*this.currentScaleFactor;
+	// 		this.s_bullet1infos.jeak_y = sub_bulled_info_list[this.s_bullet1_key].jeak_y*this.currentScaleFactor;
+	// 		this.s_bullet1infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet1_key].bulled_maxSpeed*this.currentScaleFactor;
+	// 		this.s_bullet1infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet1_key].bulled_size_mag*this.currentScaleFactor;	
+
+	// 		this.s_bullet1infos.bullet_width = sub_bulled_info_list[this.s_bullet1_key].bullet_width*this.currentScaleFactor;
+	// 		this.s_bullet1infos.bullet_height = sub_bulled_info_list[this.s_bullet1_key].bullet_height*this.currentScaleFactor;	
+	// 	}
+
+	// 	if(this.isvalidbulled(this.s_bullet2infos) == true){
+	// 		this.s_bullet2infos.start_x_pos =  sub_bulled_info_list[this.s_bullet2_key].start_x_pos*this.currentScaleFactor;
+	// 		this.s_bullet2infos.start_y_pos =  sub_bulled_info_list[this.s_bullet2_key].start_y_pos*this.currentScaleFactor;
+
+	// 		this.s_bullet2infos.x_speed = sub_bulled_info_list[this.s_bullet2_key].x_speed*this.currentScaleFactor;
+	// 		this.s_bullet2infos.y_speed = sub_bulled_info_list[this.s_bullet2_key].y_speed*this.currentScaleFactor;
+	// 		this.s_bullet2infos.accel_x = sub_bulled_info_list[this.s_bullet2_key].accel_x*this.currentScaleFactor;
+	// 		this.s_bullet2infos.accel_y = sub_bulled_info_list[this.s_bullet2_key].accel_y*this.currentScaleFactor;
+	// 		this.s_bullet2infos.jeak_x = sub_bulled_info_list[this.s_bullet2_key].jeak_x*this.currentScaleFactor;
+	// 		this.s_bullet2infos.jeak_y = sub_bulled_info_list[this.s_bullet2_key].jeak_y*this.currentScaleFactor;
+	// 		this.s_bullet2infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet2_key].bulled_maxSpeed*this.currentScaleFactor;
+	// 		this.s_bullet2infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet2_key].bulled_size_mag*this.currentScaleFactor;	
+		
+	// 		this.s_bullet2infos.bullet_width = sub_bulled_info_list[this.s_bullet2_key].bullet_width*this.currentScaleFactor;
+	// 		this.s_bullet2infos.bullet_height = sub_bulled_info_list[this.s_bullet2_key].bullet_height*this.currentScaleFactor;	
+
+	// 	}
+
+	// 	if(this.isvalidbulled(this.s_bullet3infos) == true){
+	// 		this.s_bullet3infos.start_x_pos =  sub_bulled_info_list[this.s_bullet3_key].start_x_pos*this.currentScaleFactor;
+	// 		this.s_bullet3infos.start_y_pos =  sub_bulled_info_list[this.s_bullet3_key].start_y_pos*this.currentScaleFactor;
+
+	// 		this.s_bullet3infos.x_speed = sub_bulled_info_list[this.s_bullet3_key].x_speed*this.currentScaleFactor;
+	// 		this.s_bullet3infos.y_speed = sub_bulled_info_list[this.s_bullet3_key].y_speed*this.currentScaleFactor;
+	// 		this.s_bullet3infos.accel_x = sub_bulled_info_list[this.s_bullet3_key].accel_x*this.currentScaleFactor;
+	// 		this.s_bullet3infos.accel_y = sub_bulled_info_list[this.s_bullet3_key].accel_y*this.currentScaleFactor;
+	// 		this.s_bullet3infos.jeak_x = sub_bulled_info_list[this.s_bullet3_key].jeak_x*this.currentScaleFactor;
+	// 		this.s_bullet3infos.jeak_y = sub_bulled_info_list[this.s_bullet3_key].jeak_y*this.currentScaleFactor;
+	// 		this.s_bullet3infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet3_key].bulled_maxSpeed*this.currentScaleFactor;
+	// 		this.s_bullet3infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet3_key].bulled_size_mag*this.currentScaleFactor;	
+
+	// 		this.s_bullet3infos.bullet_width = sub_bulled_info_list[this.s_bullet3_key].bullet_width*this.currentScaleFactor;
+	// 		this.s_bullet3infos.bullet_height = sub_bulled_info_list[this.s_bullet3_key].bullet_height*this.currentScaleFactor;	
+	// 	}
+
+	// 	if(this.isvalidbulled(this.s_bullet4infos) == true){ 
+	// 		this.s_bullet4infos.start_x_pos =  sub_bulled_info_list[this.s_bullet4_key].start_x_pos*this.currentScaleFactor;
+	// 		this.s_bullet4infos.start_y_pos =  sub_bulled_info_list[this.s_bullet4_key].start_y_pos*this.currentScaleFactor;
+
+
+    //         this.s_bullet4infos.x_speed = sub_bulled_info_list[this.s_bullet4_key].x_speed * this.currentScaleFactor;
+    //         this.s_bullet4infos.y_speed = sub_bulled_info_list[this.s_bullet4_key].y_speed * this.currentScaleFactor;
+    //         this.s_bullet4infos.accel_x = sub_bulled_info_list[this.s_bullet4_key].accel_x * this.currentScaleFactor;
+    //         this.s_bullet4infos.accel_y = sub_bulled_info_list[this.s_bullet4_key].accel_y * this.currentScaleFactor;
+    //         this.s_bullet4infos.jeak_x = sub_bulled_info_list[this.s_bullet4_key].jeak_x * this.currentScaleFactor;
+    //         this.s_bullet4infos.jeak_y = sub_bulled_info_list[this.s_bullet4_key].jeak_y * this.currentScaleFactor;
+    //         this.s_bullet4infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet4_key].bulled_maxSpeed * this.currentScaleFactor;
+    //         this.s_bullet4infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet4_key].bulled_size_mag * this.currentScaleFactor;
+
+	// 		this.s_bullet4infos.bullet_width = sub_bulled_info_list[this.s_bullet4_key].bullet_width*this.currentScaleFactor;
+	// 		this.s_bullet4infos.bullet_height = sub_bulled_info_list[this.s_bullet4_key].bullet_height*this.currentScaleFactor;	
+
+	// 	}
+
+	// 	if(this.isvalidbulled(this.s_bullet5infos) == true){ 
+	// 		this.s_bullet5infos.start_x_pos =  sub_bulled_info_list[this.s_bullet5_key].start_x_pos*this.currentScaleFactor;
+	// 		this.s_bullet5infos.start_y_pos =  sub_bulled_info_list[this.s_bullet5_key].start_y_pos*this.currentScaleFactor;
+
+    //         this.s_bullet5infos.x_speed = sub_bulled_info_list[this.s_bullet5_key].x_speed * this.currentScaleFactor;
+    //         this.s_bullet5infos.y_speed = sub_bulled_info_list[this.s_bullet5_key].y_speed * this.currentScaleFactor;
+    //         this.s_bullet5infos.accel_x = sub_bulled_info_list[this.s_bullet5_key].accel_x * this.currentScaleFactor;
+    //         this.s_bullet5infos.accel_y = sub_bulled_info_list[this.s_bullet5_key].accel_y * this.currentScaleFactor;
+    //         this.s_bullet5infos.jeak_x = sub_bulled_info_list[this.s_bullet5_key].jeak_x * this.currentScaleFactor;
+    //         this.s_bullet5infos.jeak_y = sub_bulled_info_list[this.s_bullet5_key].jeak_y * this.currentScaleFactor;
+    //         this.s_bullet5infos.bulled_maxSpeed = sub_bulled_info_list[this.s_bullet5_key].bulled_maxSpeed * this.currentScaleFactor;
+    //         this.s_bullet5infos.bulled_size_mag = sub_bulled_info_list[this.s_bullet5_key].bulled_size_mag * this.currentScaleFactor;
+
+	// 		this.s_bullet5infos.bullet_width = sub_bulled_info_list[this.s_bullet5_key].bullet_width*this.currentScaleFactor;
+	// 		this.s_bullet5infos.bullet_height = sub_bulled_info_list[this.s_bullet5_key].bullet_height*this.currentScaleFactor;	
+	// 	}
+
+    // }
 
 
 

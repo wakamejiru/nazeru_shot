@@ -991,7 +991,9 @@ export const EnemySkillTypeEnum = Object.freeze({
   NONE: "NONE", 
   E_SKILL_1: "skill_1",
   E_SKILL_2: "skill_2",
-
+  E_SKILL_3: "skill_3",
+  E_SKILL_4: "skill_4",
+  E_SKILL_5: "skill_5",
 });
 
 export const EnemyUltTypeEnum = Object.freeze({
@@ -1011,6 +1013,14 @@ export const enemys_skill_list =
     {
         skill1: EnemySkillTypeEnum.E_SKILL_1,
         skill2: EnemySkillTypeEnum.E_SKILL_2,
+        skill3: EnemySkillTypeEnum.E_SKILL_3,
+        skill4: EnemySkillTypeEnum.E_SKILL_4,
+        skill5: EnemySkillTypeEnum.E_SKILL_5,
+        skill1: EnemySkillTypeEnum.E_SKILL_1,
+        skill2: EnemySkillTypeEnum.E_SKILL_2,
+        skill3: EnemySkillTypeEnum.E_SKILL_3,
+        skill4: EnemySkillTypeEnum.E_SKILL_4,
+        skill5: EnemySkillTypeEnum.E_SKILL_5,
     }
 
 }
