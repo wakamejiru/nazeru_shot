@@ -53,10 +53,10 @@ export class Enemy {
         this.hp = this.EnemyMaxHP;
         
         // 移動用プロパティ
-        this.moveAreaTopY = 0;
-        this.moveAreaBottomY = this.Canvas.height / 5 - this.EnemyHeight;
-        this.moveAreaLeftX = 0;
-        this.moveAreaRightX = this.Canvas.width - this.EnemyWidth;
+        this.moveAreaTopY = this.EnemyHeight/2;
+        this.moveAreaBottomY = this.Canvas.height / 3 - this.EnemyHeight/2;
+        this.moveAreaLeftX = this.EnemyWidth/2;
+        this.moveAreaRightX = this.Canvas.width - this.EnemyWidth/2;
 
         this.MovewaitTimer = 2.0; // 停止時間
         this.waitDuration = this.MovewaitTimer;
@@ -67,7 +67,6 @@ export class Enemy {
         // 移動ターゲット座標 (初期値は自身の位置)
         this.targetX = this.x;
         this.targetY = this.y;
-        this.setNewTarget(); // setNewTargetにもcanvasを渡して初期目標を設定
 
     }
 
@@ -98,8 +97,8 @@ export class Enemy {
 
     setNewTarget() {
         // 移動範囲の再計算 (canvas.height や自身のサイズに依存するため)
-        this.moveAreaBottomY = this.Canvas.height / 5 - this.height;
-        this.moveAreaRightX = this.Canvas.width - this.width;
+        this.moveAreaBottomY = this.Canvas.height / 3 - (this.EnemyHeight/2);
+        this.moveAreaRightX = this.Canvas.width - (this.EnemyWidth/2);
         this.targetX = this.moveAreaLeftX + Math.random() * (this.moveAreaRightX - this.moveAreaLeftX);
         this.targetY = this.moveAreaTopY + Math.random() * ((this.moveAreaBottomY - this.moveAreaTopY));
     }
@@ -111,14 +110,18 @@ export class Enemy {
         
         if (this.waitTimer > 0) {
             this.waitTimer -= deltaTime;
-            if (this.waitTimer < 0) this.waitTimer = 0;
+            if (this.waitTimer < 0)
+                {
+                    this.waitTimer = 0;
+                    this.setNewTarget();
+                } 
             return;
         }
-        this.moveChangeTimer -= deltaTime;
-        if (this.moveChangeTimer <= 0) {
-            this.setNewTarget();
-            this.moveChangeTimer = this.moveChangeInterval;
-        }
+        // this.moveChangeTimer -= deltaTime;
+        // if (this.moveChangeTimer <= 0) {
+        //     this.setNewTarget();
+        //     this.moveChangeTimer = this.moveChangeInterval;
+        // }
 
 
         const dx = this.targetX - this.x;
