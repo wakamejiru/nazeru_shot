@@ -98,8 +98,14 @@ export const  main_bulled_info_list = {
     },
     [MainBulletEnum.M_BULLET_1]:
     {
-        start_x_pos:0,
-        start_y_pos:0,
+        bullet_namber :3, // バレットの数は3
+        Bullet_Angle :30, // バレットの放射角度(R)
+        z_bullet_angle_mag: 0.5, // 低速モード時の集中率
+        // 半径と設置角度からバレットの放出点を計算することができる        
+        bullet_pointAngle: 0, //バレットの設置角度(R)
+        bullet_pointRadius: 0, // バレットの設置半径
+        z_bullet_pointRadius_mag: 0.5, // 低速モード時の集中率
+
         ballet_name:"メインウエポン1",
         ball_image_key: "bulletTypeA",
         ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
@@ -784,13 +790,8 @@ export const  character_info_list = {
         character_mag:0.5,
         character_skill1: skill_info_list[SkillTypeEnum.skill_Type1],
         character_ULT: ult_info_list[UltTypeEnum.ult_Type1],
-        character_m_bullet1: MainBulletEnum.M_BULLET_1,
-        character_m_bullet2: MainBulletEnum.NONE,
-        character_s_bullet1: SubBulletEnum.S_BULLET_1,
-        character_s_bullet2: SubBulletEnum.S_BULLET_2,
-        character_s_bullet3: SubBulletEnum.NONE,
-        character_s_bullet4: SubBulletEnum.NONE,
-        character_s_bullet5: SubBulletEnum.NONE
+        character_m_bullet: MainBulletEnum.M_BULLET_1,
+        character_s_bullet: SubBulletEnum.S_BULLET_1,
     },
     [CharacterTypeEnum.TYPE_2]:
     {
