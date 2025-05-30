@@ -98,7 +98,7 @@ export const  main_bulled_info_list = {
     },
     [MainBulletEnum.M_BULLET_1]:
     {
-        bullet_namber :3, // バレットの数は3
+        bullet_number :3, // バレットの数は3
         Bullet_Angle :30, // バレットの放射角度(R)
         z_bullet_angle_mag: 0.5, // 低速モード時の集中率
         // 半径と設置角度からバレットの放出点を計算することができる        
@@ -785,11 +785,11 @@ export const  character_info_list = {
         hitpoint_image_key: "HitImageTypeA", // ヒットポイントの画像
         hitpoint_radius:8.0,
 
-        character_spped:50,
+        character_speed:50,
         character_maxhp:100,
         character_mag:0.5,
-        character_skill1: skill_info_list[SkillTypeEnum.skill_Type1],
-        character_ULT: ult_info_list[UltTypeEnum.ult_Type1],
+        character_skill1: skill_info_list[SkillTypeEnum.SKILL_1],
+        character_ULT: ult_info_list[UltTypeEnum.ULT_1],
         character_m_bullet: MainBulletEnum.M_BULLET_1,
         character_s_bullet: SubBulletEnum.S_BULLET_1,
     },
