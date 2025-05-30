@@ -4,6 +4,7 @@ import { Enemy } from './enemy.js';
 import { Bullet } from './bullet.js'; // Bulletクラスもインポート
 import { CharacterTypeEnum, imageAssetPaths, character_info_list, EnemyTypeEnum } from './game_status.js'; // game_status.js から必要なものをインポート
 import { AssetManager } from './asset_manager.js'; // AssetManagerをインポート
+import { PlayerType1 } from './Player/Type1Player.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -51,13 +52,15 @@ async function initializeGame() {
         const initialPlayerX = 0;
         const initialPlayerY = 0;
 
-        player = new Player(
-            initialPlayerX,
-            initialPlayerY,
-            selectedCharType,
-            assetManager,
-            canvas
-		);
+        // player = new Player(
+        //     initialPlayerX,
+        //     initialPlayerY,
+        //     selectedCharType,
+        //     assetManager,
+        //     canvas
+		// );
+
+        player = new PlayerType1(initialPlayerX, initialPlayerY, assetManager, canvas, canvas.width, canvas.height);
 
         const EnemyType = EnemyTypeEnum.E_TYPE_1;
 
@@ -91,7 +94,7 @@ const keys = {
     ArrowLeft: false,
     ArrowRight: false,
 	' ': false, // スペースキー (キー名は ' ' または 'Space'、ブラウザにより異なる場合があるので注意)
-    'z': false, // 'z'キーの状態を追加 (小文字で統一)
+    ArrowZ: false, // 'z'キーの状態を追加 (小文字で統一)
 };
 
 // キーダウンイベント
@@ -211,7 +214,7 @@ function resizeGame() {
 
     // 既存のゲームオブジェクトの位置やサイズを再計算
     if (player) {
-        player.updateScale(scaleFactor, canvas, BASE_WIDTH, BASE_HEIGHT); // Playerクラスにスケール更新メソッドを追加する例
+        player.updateScale(scaleFactor, canvas, BASE_WIDTH, BASE_HEIGHT, currentWidth, currentHeight); // Playerクラスにスケール更新メソッドを追加する例
     }
     if (enemy) {
         enemy.updateScale(scaleFactor, canvas, BASE_WIDTH, BASE_HEIGHT);   // Enemyクラスにスケール更新メソッドを追加する例
@@ -372,14 +375,14 @@ function gameLoop(currentTime) {
     player.move(keys, clampedDeltaTime);
     if (enemy) enemy.move(clampedDeltaTime);
 
-    player.shoot(keys, playerBullets, player, clampedDeltaTime);
+    player._shoot(keys, playerBullets, enemy, clampedDeltaTime);
 
     //if (enemy) enemy.shoot(bullets, Bullet, player, clampedDeltaTime); // 追尾用にplayer, タイマー更新用にdeltaTime
 
     //moveEnemyBullets(clampedDeltaTime, player); // 追尾対象としてplayerを渡す
     movePlayerBullets(clampedDeltaTime, player);
 
-    player.draw(ctx);
+    player.draw(ctx, keys);
     if (enemy) enemy.draw(ctx);
 
     //drawEnemyBullets(ctx);

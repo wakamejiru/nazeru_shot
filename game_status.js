@@ -20,13 +20,19 @@ export const CharacterTypeEnum = Object.freeze({
 
 export const SkillTypeEnum = Object.freeze({
   NONE: "NONE", 
-  SKILL_1: "skill_1", // 回復
+  SKILL_1: "skill_1", // 小回復
+  SKILL_1: "skill_2", // 追尾
 });
 
 export const UltTypeEnum = Object.freeze({
   NONE: "NONE",
   ULT_1: "ult_1", // 一定時間無敵
 });
+
+export const PassiveTypeEnum = Object.freeze({
+    NONE: "NONE",
+    Passive_1: "Passive_1", // 一定時間無敵
+  });
 
 export const MainBulletEnum = Object.freeze({
   NONE: "NONE",
@@ -98,7 +104,7 @@ export const  main_bulled_info_list = {
     },
     [MainBulletEnum.M_BULLET_1]:
     {
-        bullet_namber :3, // バレットの数は3
+        bullet_number :3, // バレットの数は3
         Bullet_Angle :30, // バレットの放射角度(R)
         z_bullet_angle_mag: 0.5, // 低速モード時の集中率
         // 半径と設置角度からバレットの放出点を計算することができる        
@@ -785,11 +791,12 @@ export const  character_info_list = {
         hitpoint_image_key: "HitImageTypeA", // ヒットポイントの画像
         hitpoint_radius:8.0,
 
-        character_spped:50,
+        character_speed:50,
         character_maxhp:100,
         character_mag:0.5,
-        character_skill1: skill_info_list[SkillTypeEnum.skill_Type1],
-        character_ULT: ult_info_list[UltTypeEnum.ult_Type1],
+        character_skill1: skill_info_list[SkillTypeEnum.SKILL_1],
+        character_skill2: skill_info_list[SkillTypeEnum.SKILL_2],
+        character_ULT: ult_info_list[UltTypeEnum.ULT_1],
         character_m_bullet: MainBulletEnum.M_BULLET_1,
         character_s_bullet: SubBulletEnum.S_BULLET_1,
     },

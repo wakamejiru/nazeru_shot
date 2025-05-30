@@ -2,7 +2,7 @@
 import { PlayerBase } from './PlayerBase.js';
 
 import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum, 
-    main_bulled_info_list, sub_bulled_info_list } from './game_status.js';
+    main_bulled_info_list, sub_bulled_info_list } from '../game_status.js';
 
 export class PlayerType1 extends PlayerBase {
     constructor(InitialX, InitialY, AssetManager, Canvas, NowPlayAreaWidth, NowPlayAreaHeight) {
@@ -16,154 +16,168 @@ export class PlayerType1 extends PlayerBase {
             sprite_base_draw_height: myCharacterConfig.sprite_base_draw_height,
             hitpoint_image_key: myCharacterConfig.hitpoint_image_key,
             hitpoint_radius: myCharacterConfig.hitpoint_radius,
-            character_speed: myCharacterConfig.character_spped, // タイプミスに注意
+            character_speed: myCharacterConfig.character_speed,
             character_maxhp: myCharacterConfig.character_maxhp,
             slowMoveFactor: 0.5, // Type1固有の低速係数（またはmyCharacterConfigからロード）
+
+            character_skill1: myCharacterConfig.character_skill1,
+            character_skill2: myCharacterConfig.character_skill2,
+            character_ULT: myCharacterConfig.character_ULT,
+            character_m_bullet: myCharacterConfig.character_m_bullet,
+            character_s_bullet: myCharacterConfig.character_s_bullet,
         };
         super(InitialX, InitialY, AssetManager, Canvas, baseConfig, NowPlayAreaWidth, NowPlayAreaHeight);
 
         this.main_bullet_list = [];
         this.sub_bullet_list = [];
-        // 弾を作成する
-        _createbullettype();
+
+        // スキルの内容は基本自由にさせたいので各クラスで別々に書く
+        // スキルによっては発動有効時間が置かれる
+        this.skill1WaitTime = 6.0; // 6秒
+        this.skill1NowWaitTime = skill1WaitTime; // カウンタ
+        
+        this.skill2WaitTime = 10.0; // 6秒
+        this.skill2NowWaitTime = skill2WaitTime; // カウンタ
+        this.skill2DuringTime = 5.0;
+        this.skill2NowDuringTime = 0; // カウンタ
+        this.WakeUpSkill2 = false;
+
+        this.Skill1HPRecovery = 20;
+
+        this.BasePassiveSkillTh = 0.5;
+        this.PassiveSkillTh = this.BasePassiveSkillTh;
+        this.BasePassiveSkillDemageCut = 0.5;
+        this.PassiveSkillDemageCut = this.BasePassiveSkillDemageCut;
+
+        this.ULTDuringTime = 5.0;
+        this.ULTNowDuringTime = 0; // カウンタ
+        this.WakeUpULT = false;
+        
     }
 
     updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth, 
         NewGamePlayerSizeHeight, NewGamePlayerSizeWidth)
     {
         // 規定クラスコンストラクタで呼び出し
-        super(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth, 
+        super.updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth, 
         NewGamePlayerSizeHeight, NewGamePlayerSizeWidth);
 
         // このクラス内でサイズを使っている部分を変更
 
     }
-    
-    // 弾を作成する
-    _createbullettype()
-    {
-        // 弾を作成する
-        // Mainの弾を作成する
-        // 弾は自由度が高いのでここで書いて一括管理は行わない
-        this.MainBulletName = "メイン弾!"
-        this.MainBulletNumber = 3;
-        this.MainBulletMaxAngleRight = 30;
-        this.MainBulletMinAngleRight = -30;
-        this.MainBulletStartPointX123 = 0; // 3点とも打ち出し箇所は同じ
-        this.MainBulletStartPointY123 = 0; // 3点とも打ち出し箇所は同じ
-        this.MainBulletDamage = 25;
-        this.MainBulletRate = 0.3; // 0.1秒ごとに1つ発射
-        this.MainBulletImageKey = "bulletTypeA";
-        
-        // Upscale必要
-        this.BaseMainBulletSpeedX = 0;
-        this.MainBulletSpeedX = this.BaseMainBulletSpeedX;
-        this.BaseMainBulletSpeedY = 900;
-        this.MainBulletSpeedY = this.BaseMainBulletSpeedY;
-        this.MainBulletWidth = 10.0;
-        this.BaseMainBulletWidth = this.MainBulletWidth;
-        this.MainBulletHeight = 10.0;
-        this.BaseMainBulletHeight = this.MainBulletHeight;
-
-        // Subの弾を作成する
-        // 弾は自由度が高いのでここで書いて一括管理は行わない
-        this.SubBulletName = "サブ弾!"
-        this.SubBulletNumber = 8;
-        this.SubBulletMaxAngleRight = 45;
-        this.SubBulletMinAngleRight = -45;
-        this.SubBulletStartPointX123 = 0; // 3点とも打ち出し箇所は同じ
-        this.SubBulletStartPointY123 = 0; // 3点とも打ち出し箇所は同じ
-        this.SubBulletDamage = 5;
-        this.SubBulletRate = 0.1; // 0.3秒ごとに1つ発射
-        this.SubBulletImageKey = "bulletTypeA";
-        
-        // Upscale必要
-        this.SubBulletSpeedX = 0;
-        this.SubBulletSpeedY = 900;
-        this.SubBulletWidth = 5.0;
-        this.SubBulletHeight = 5.0;
-    }
-
 
     // 弾を打つ
     _shoot(Keys, PlayerBulletsArray, TargetEnemy, CurrentTime, DeltaTime){
         
-        status = this.MainBulletInfo;
-
-        // まずはMainの弾の発射地点から計算する
-        
-
-
-
+        // Type1は既定クラスのshotをそのまま使える
+        super._shoot(Keys, PlayerBulletsArray, TargetEnemy, CurrentTime, DeltaTime);
 
     }
 
 
-    // PlayerBaseの_setupSkillsAndAttackPatternsをオーバーライドして専用スキルを設定
-    _setupSkillsAndAttackPatterns(characterConfig) { // characterConfig は character_info_list[CharacterTypeEnum.TYPE_1]
-        const patternsForPhase = [];
+    // skillの発動の確認を行う
+    _skillrun(DeltaTime)
+    {
+        // Skill1の判定&処理を行う
+        _skillrun1(DeltaTime);
+        // Skill2の判定&処理を行う
+        _skillrun2(DeltaTime);
+        // ULTの判定&処理を行う
+        this._playULT(DeltaTime);
+        // Passiveskillの処理
+        this._passiveskillrun();
 
-        // メイン弾1の設定
-        if (characterConfig.character_m_bullet1 && characterConfig.character_m_bullet1 !== MainBulletEnum.NONE) {
-            const m1BaseInfo = main_bulled_info_list[characterConfig.character_m_bullet1];
-            if (m1BaseInfo) {
-                patternsForPhase.push(new CircularAttackSkill(this, {
-                    bullet_key: characterConfig.character_m_bullet1,
-                    bullets_per_shot: 1, // 単発前方
-                    angle_offset_rad: -Math.PI / 2, // 真上
-                    shot_speed_multiplier: 1.0, // game_status.jsの弾速をそのまま使う場合
-                    cooldown: m1BaseInfo.rate || 0.2,
-                    // ...その他CircularAttackSkillが必要とするオプション
-                }));
+    }
+
+    
+
+    // skill1の発動を行う
+    _skillrun1(DeltaTime)
+    {
+
+        // クールダウンを確認する
+		if(super.isvalidskill(this.CharacterSkillType1)==true){
+			if (this.skill1NowWaitTime > 0) { // クールダウン中かチェック
+				this.skill1NowWaitTime -= DeltaTime; // クールダウンタイマーを減算
+				if (this.skill1NowWaitTime < 0) this.skill1NowWaitTime = 0;
+			}else
+			{
+
+                this.NowHP += this.Skill1HPRecovery;
+                this.NowHP = Math.max(this.NowHP, this.MaxHP); // Maxは超えないように
+
+                this.skill1NowWaitTime = this.skill1WaitTime; // クールダウン再セット
+			}
+		}
+    }
+
+    // skill2の発動を行う
+    _skillrun2(DeltaTime)
+    {
+        // クールダウンを確認する
+		if(super.isvalidskill(this.CharacterSkillType2)==true){
+			if (this.skill2NowWaitTime > 0) { // クールダウン中かチェック
+				this.skill2NowWaitTime -= DeltaTime; // クールダウンタイマーを減算
+				if (this.skill2NowWaitTime < 0) this.skill2NowWaitTime = 0;
+			}else
+			{
+                // 発動                
+                this.WakeUpSkill2 = true;
+
+                // たまに追尾性能を追加
+                this.trackingStrengthPower = 2.5;
+            }
+		}
+
+        if(this.WakeUpSkill2 == true){
+            // 発動時間が終わったかを確認する
+            if(this.skill2NowDuringTime > this.skill2DuringTime){
+                this.WakeUpSkill2 = false;
+                // 発動時間のカウンタをリセット
+                this.skill2NowDuringTime = 0;
+                // 発動間隔のカウンタをリセット
+                this.skill2NowWaitTime = this.skill2WaitTime; // クールダウン再セット
+
+                // 変更したパラメータをもとに戻す
+                this.trackingStrengthPower = this.BasetrackingStrengthPower;
+
+            }else{
+                // 発動中のためカウンタを変更する
+                this.skill2NowDuringTime += DeltaTime;
             }
         }
-        // サブ弾1の設定 (例としてFanAttackSkillを使う場合)
-        if (characterConfig.character_s_bullet1 && characterConfig.character_s_bullet1 !== SubBulletEnum.NONE) {
-            const s1BaseInfo = sub_bulled_info_list[characterConfig.character_s_bullet1];
-            if (s1BaseInfo) {
-                // FanAttackSkill を使うと仮定した場合 (FanAttackSkill.js が別途必要)
-                /*
-                patternsForPhase.push(new FanAttackSkill(this, {
-                    bullet_key: characterConfig.character_s_bullet1,
-                    bullets_per_shot: s1BaseInfo.fan_bullets || 3, // fan_bulletsをgame_statusで定義
-                    fan_angle_degrees: s1BaseInfo.fan_angle_degrees || 30,
-                    target_player: false, // プレイヤーは通常前方を向く
-                    fan_base_angle_offset_rad: -Math.PI / 2, // 前方
-                    cooldown: s1BaseInfo.rate || 0.5,
-                    shot_speed_multiplier: 1.0,
-                }));
-                */
-                // もしサブ弾もCircularAttackSkillで単純に前方に撃つなら:
-                 patternsForPhase.push(new CircularAttackSkill(this, {
-                     bullet_key: characterConfig.character_s_bullet1,
-                     bullets_per_shot: 1,
-                     angle_offset_rad: -Math.PI / 2 + 0.1, // メイン弾より少し右
-                     cooldown: s1BaseInfo.rate || 0.3,
-                     shot_speed_multiplier: 0.8,
-                     start_x_offset: (s1BaseInfo.start_x_pos || 0) * this.currentScaleFactor, // 発射位置オフセット
-                     start_y_offset: (s1BaseInfo.start_y_pos || 0) * this.currentScaleFactor,
-                 }));
-            }
-        }
-        // サブ弾2も同様に...
-        if (characterConfig.character_s_bullet2 && characterConfig.character_s_bullet2 !== SubBulletEnum.NONE) {
-            const s2BaseInfo = sub_bulled_info_list[characterConfig.character_s_bullet2];
-            if (s2BaseInfo) {
-                 patternsForPhase.push(new CircularAttackSkill(this, {
-                     bullet_key: characterConfig.character_s_bullet2,
-                     bullets_per_shot: 1,
-                     angle_offset_rad: -Math.PI / 2 - 0.1, // メイン弾より少し左
-                     cooldown: s2BaseInfo.rate || 0.3,
-                     shot_speed_multiplier: 0.8,
-                     start_x_offset: (s2BaseInfo.start_x_pos || 0) * this.currentScaleFactor, // 発射位置オフセット
-                     start_y_offset: (s2BaseInfo.start_y_pos || 0) * this.currentScaleFactor,
-                 }));
-            }
-        }
+    }
 
+    // パッシブスキルの発動
+    _passiveskillrun()
+    {
+        // HPが半分以上ならダメカ50%
+        if(this.PassiveSkillTh * this.MaxHP < this.NowHP){
+            this.PassiveSkillDemageCut = this.BasePassiveSkillDemageCut;
+        }else{
+            this.PassiveSkillDemageCut = 0.0;
+        }
+    } 
 
-        if (patternsForPhase.length > 0) {
-            this.attackPatterns.push({ phase_duration: Infinity, patterns: patternsForPhase }); // プレイヤーは通常1フェーズ
+    // ULTを発動する
+    _playULT(DeltaTime){
+        // ボタンを押したか確認
+		
+
+        if(this.WakeUpULT == true){
+            // 発動時間が終わったかを確認する
+            if(this.ULTNowDuringTime > this.ULTDuringTime){
+                this.WakeUpULT = false;
+                // 発動時間のカウンタをリセット
+                this.ULTNowDuringTime = 0;
+
+                // 変更したパラメータをもとに戻す
+                this.trackingStrengthPower = this.BasetrackingStrengthPower;
+
+            }else{
+                // 発動中のためカウンタを変更する
+                this.ULTNowDuringTime += DeltaTime;
+            }
         }
     }
 }

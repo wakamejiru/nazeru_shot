@@ -7,33 +7,12 @@ import {
     main_bulled_info_list, 
     sub_bulled_info_list, 
     MainBulletEnum, 
-    SubBulletEnum } from '../game_status.js';
-
+    SubBulletEnum ,
+    SkillTypeEnum} from '../game_status.js';
+import { Bullet } from '../bullet.js'; // Bulletクラスもインポート
 
 export class PlayerBase {    
-    
-
-    // """charachter_name:"タイプ1",
-    //         avatar_image_key:"avatarTypeA",
-    //         sprite_base_draw_width: 40,      // アバターの (ピクセル)
-    //         sprite_base_draw_height: 40,     // アバターの (ピクセル)
-    //         hitpoint_image_key: "HitImageTypeA", // ヒットポイントの画像
-    //         hitpoint_radius:8.0,
-    
-    //         character_spped:50,
-    //         character_maxhp:100,
-    //         character_mag:0.5,
-    //         character_skill1: skill_info_list[SkillTypeEnum.skill_Type1],
-    //         character_ULT: ult_info_list[UltTypeEnum.ult_Type1],
-    //         character_m_bullet1: MainBulletEnum.M_BULLET_1,
-    //         character_m_bullet2: MainBulletEnum.NONE,
-    //         character_s_bullet1: SubBulletEnum.S_BULLET_1,
-    //         character_s_bullet2: SubBulletEnum.S_BULLET_2,
-    //         character_s_bullet3: SubBulletEnum.NONE,
-    //         character_s_bullet4: SubBulletEnum.NONE,
-    //         character_s_bullet5: SubBulletEnum.NONE
-    //         """
-
+    // コンストラクタ
     constructor(InitialX, InitialY, AssetManager, Canvas, CharacterConfig, NowPlayAreaWidth, NowPlayAreaHeight) {
         this.x = InitialX; //現在のぽじっしょん
         this.y = InitialY;
@@ -49,28 +28,33 @@ export class PlayerBase {
         this.CharacterName = CharacterConfig.charachter_name;
         this.AvatorImageKey = CharacterConfig.avatar_image_key;
         
-        this.SpriteBaseDrawWidth = characterConfig.sprite_base_draw_width || 40;
-        this.SpriteBaseDrawHeight = characterConfig.sprite_base_draw_height || 40;
+        this.SpriteBaseDrawWidth = CharacterConfig.sprite_base_draw_width || 40;
+        this.SpriteBaseDrawHeight = CharacterConfig.sprite_base_draw_height || 40;
         
         this.SpriteDrawWidth = this.SpriteBaseDrawWidth;
         this.SpriteDrawHeight = this.SpriteBaseDrawHeight;
 
 
-        this.HitpointImageKey = characterConfig.hitpoint_image_key;
-        this.HitpointBaseRadius = characterConfig.hitpoint_radius;
+        this.HitpointImageKey = CharacterConfig.hitpoint_image_key;
+        this.HitpointBaseRadius = CharacterConfig.hitpoint_radius;
         this.HitpointRadius = this.HitpointBaseRadius;
 
-        this.BaseSpeed = characterConfig.character_speed;
+        this.BaseSpeed = CharacterConfig.character_speed;
         this.NowSpeed = this.BaseSpeed;
-        this.SlowMoveFactor = 0.5; // 一律で半分
+        this.SlowMoveFactor = CharacterConfig.slowMoveFactor; // 一律で半分
 
-        this.MaxHP = characterConfig.character_maxhp;
-        this.NowHP = characterConfig.slowMoveFactor;
+        this.MaxHP = CharacterConfig.character_maxhp;
+        this.NowHP = this.MaxHP;
         
         this.SpriteAvator = this.AvatorImageKey ? this.AssetManager.getImage(this.AvatorImageKey) : null;
         this.SpriteHitpoint = this.HitpointImageKey ? this.AssetManager.getImage(this.HitpointImageKey) : null;
 
         // スキル/攻撃パターン管理
+        this.BasetrackingStrengthPower = 0.0;
+        this.trackingStrengthPower =  0.0; // 追尾性能 
+        this.CharacterSkillType1 = CharacterConfig.character_skill1;
+        this.CharacterSkillType2 = CharacterConfig.character_skill2;
+        this.CharacterULTType = CharacterConfig.character_ULT;
 
         // 移動用
         this.dx = 0;
@@ -85,30 +69,40 @@ export class PlayerBase {
         this.NowPlayAreaHeight = NowPlayAreaHeight;
 
         // メインの弾とサブの弾のkey
-        this.MBulletKey = characterConfig.character_m_bullet;
-        this.SBulletKey = characterConfig.character_s_bullet;
-        this.Skill1Key = characterConfig.character_skill1;
-        this.Skill2Key = characterConfig.character_skill2;
-        this.PussivSkillKey = characterConfig.passiv_skill;
-        this.UltKey = characterConfig.character_ULT;
+        this.MBulletKey = CharacterConfig.character_m_bullet;
+        this.SBulletKey = CharacterConfig.character_s_bullet;
+        this.Skill1Key = CharacterConfig.character_skill1;
+        this.Skill2Key = CharacterConfig.character_skill2;
+        this.PussivSkillKey = CharacterConfig.passiv_skill;
+        this.UltKey = CharacterConfig.character_ULT;
         // 弾のinfoを引き出す
 		this.MainBulletInfo = this.GetBulletInfo(this.MBulletKey, true);
 		this.SubBulletInfo = this.GetBulletInfo(this.SBulletKey, false);
+        this.MainBulletWaitTime = 0;
+        this.SubBulletWaitTime = 0;
     }
 
     //  Bulletのデータをもらい受ける
     // IsMainSub ture:Main fa;se:Sub
 	GetBulletInfo(BulletKey, IsMainSub)
 	{
-        if(!BulletKey || BulletKey == (IsMainSub) ? MainBulletEnum.NONE : SubBulletEnum.NONE)
+		const BulletDefinition = (IsMainSub) ? main_bulled_info_list[BulletKey] : sub_bulled_info_list[BulletKey];
+
+        if(!BulletKey)
         {
             return null;
         }
 
-		const BulletDefinition = (IsMainSub) ? main_bulled_info_list[BulletKey] : sub_bulled_info_list[BulletKey];
         
 		return { ...BulletDefinition };
 	}
+
+    // 有効ならtrue
+	isvalidbulled(bullet_info)
+	{
+		return bullet_info !== null;
+	}
+
 
 
 
@@ -126,10 +120,10 @@ export class PlayerBase {
         this.Canvas = NewCanvas;
 
         // 画像のサイズを合わせる
-        this.SpriteDrawWidth = this.SpriteBaseDrawWidth * this.currentScaleFactor;
-        this.SpriteDrawHeight = this.SpriteBaseDrawHeight * this.currentScaleFactor;
-        this.hitpoint_radius = this.HitpointBaseRadius * this.currentScaleFactor;
-        this.NowSpeed = this.BaseSpeed * this.currentScaleFactor;
+        this.SpriteDrawWidth = this.SpriteBaseDrawWidth * this.CurrentScaleFactor;
+        this.SpriteDrawHeight = this.SpriteBaseDrawHeight * this.CurrentScaleFactor;
+        this.hitpoint_radius = this.HitpointBaseRadius * this.CurrentScaleFactor;
+        this.NowSpeed = this.BaseSpeed * this.CurrentScaleFactor;
 
         // 新しいサイズの座標に合わせる
         this.x = relativeCenterX * NewGamePlayerSizeWidth;
@@ -142,34 +136,36 @@ export class PlayerBase {
         const HalfScaledWidth = this.SpriteDrawWidth / 2;
         const HalfScaledHeight = this.SpriteDrawHeight / 2;
         this.x = Math.max(HalfScaledWidth, Math.min(this.x, NewGamePlayerSizeWidth - HalfScaledWidth));
-        this.y = Math.max(HalfScaledHeight, Math.min(this.y, NewPlayerSizeHeight - HalfScaledHeight));
+        this.y = Math.max(HalfScaledHeight, Math.min(this.y, NewGamePlayerSizeHeight - HalfScaledHeight));
         
         // Bulletの情報もスケール変更する
         const scalebulletProperties = (BulletInfos, BaseBulletList, BulletKey) => {
-            if (!this.isvalidbulled(BulletInfos) || !BulletKey || BulletKey === MainBulletEnum.NONE || bulletKey === SubBulletEnum.NONE) {
+            if (!this.isvalidbulled(BulletInfos) || !BulletKey) {
                 return;
             }
 
             const BaseInfo = BaseBulletList[BulletKey];
-             if (!baseInfo) {
+             if (!BaseInfo) {
                 console.warn(`弾の情報がない: ${BulletKey}`);
                 return;
             }
 
-            bulletInfos.start_x_pos = (BaseInfo.bullet_pointRadius || 0) * this.bullet_pointRadius;
+            
 
-            bulletInfos.x_speed = (BaseInfo.x_speed || 0) * this.currentScaleFactor;
-            bulletInfos.y_speed = (BaseInfo.y_speed || 0) * this.currentScaleFactor; // Y方向の反転はcreateBulletInstanceで行う
-            bulletInfos.accel_x = (BaseInfo.accel_x || 0) * this.currentScaleFactor;
-            bulletInfos.accel_y = (BaseInfo.accel_y || 0) * this.currentScaleFactor; // Y方向の反転はcreateBulletInstanceで行う
-            bulletInfos.jeak_x = (BaseInfo.jeak_x || 0) * this.currentScaleFactor;
-            bulletInfos.jeak_y = (BaseInfo.jeak_y || 0) * this.currentScaleFactor;   // Y方向の反転はcreateBulletInstanceで行う
-            bulletInfos.bulled_maxSpeed = (BaseInfo.bulled_maxSpeed || 10000) * this.currentScaleFactor;
+            BulletInfos.bullet_pointRadius = (BaseInfo.bullet_pointRadius || 0) * this.CurrentScaleFactor;
+
+            BulletInfos.x_speed = (BaseInfo.x_speed || 0) * this.CurrentScaleFactor;
+            BulletInfos.y_speed = (BaseInfo.y_speed || 0) * this.CurrentScaleFactor; // Y方向の反転はcreateBulletInstanceで行う
+            BulletInfos.accel_x = (BaseInfo.accel_x || 0) * this.CurrentScaleFactor;
+            BulletInfos.accel_y = (BaseInfo.accel_y || 0) * this.CurrentScaleFactor; // Y方向の反転はcreateBulletInstanceで行う
+            BulletInfos.jeak_x = (BaseInfo.jeak_x || 0) * this.CurrentScaleFactor;
+            BulletInfos.jeak_y = (BaseInfo.jeak_y || 0) * this.CurrentScaleFactor;   // Y方向の反転はcreateBulletInstanceで行う
+            BulletInfos.bulled_maxSpeed = (BaseInfo.bulled_maxSpeed || 10000) * this.CurrentScaleFactor;
             
             const sizeMultiplier = BaseInfo.bulled_size_mag || 1.0;
-            bulletInfos.bullet_width = (BaseInfo.bullet_width || 5) * sizeMultiplier * this.currentScaleFactor;
-            bulletInfos.bullet_height = (BaseInfo.bullet_height || 5) * sizeMultiplier * this.currentScaleFactor;
-            bulletInfos.sine_amplitude = (BaseInfo.sine_amplitude || 0) * this.currentScaleFactor;
+            BulletInfos.bullet_width = (BaseInfo.bullet_width || 5) * sizeMultiplier * this.CurrentScaleFactor;
+            BulletInfos.bullet_height = (BaseInfo.bullet_height || 5) * sizeMultiplier * this.CurrentScaleFactor;
+            BulletInfos.sine_amplitude = (BaseInfo.sine_amplitude || 0) * this.CurrentScaleFactor;
         };
 
         scalebulletProperties(this.MainBulletInfo, main_bulled_info_list, this.MBulletKey);
@@ -194,16 +190,16 @@ export class PlayerBase {
 
         // キーの入力により移動させる
         if (Keys.ArrowUp && this.y > HalfScaledHeight){
-            this.dy = -MoveLengthY;
+            this.dy = -this.MoveLengthY;
         }
         else if (Keys.ArrowDown && this.y < this.NowPlayAreaHeight - HalfScaledHeight){
-            this.dy = MoveLengthY;  
+            this.dy = this.MoveLengthY;  
         } 
         if (Keys.ArrowLeft && this.x > HalfScaledWidth){
-            this.dx = -MoveLengthX;
+            this.dx = -this.MoveLengthX;
         }
         else if (Keys.ArrowRight && this.x < this.NowPlayAreaWidth - HalfScaledWidth) {
-            this.dx = MoveLengthX;
+            this.dx = this.MoveLengthX;
         }
         // 移動距離を計算
         const magnitude = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
@@ -217,32 +213,67 @@ export class PlayerBase {
         this.y = Math.max(HalfScaledHeight, Math.min(this.y, this.NowPlayAreaHeight - HalfScaledHeight));
     }
 
-    createBulletInstance(Keys, PlayerBulletsArray, TargetEnemy, BulletInfo, CurrentTime, DeltaTime)
+    // 球を作る．returnでクールタイムが帰ってくる
+    createBulletInstance(Keys, PlayerBulletsArray, TargetEnemy, BulletInfo, CurrentTime, DeltaTime, NowWaitTime)
     {
+
+        // 球のクールタイム計算
+        if (NowWaitTime > 0) { // クールダウン中かチェック
+            NowWaitTime -= DeltaTime; // クールダウンタイマーを減算
+            if (NowWaitTime < 0) NowWaitTime = 0;
+            return NowWaitTime;
+        }
+
+
+
         // 弾が出る基準点の中心を計算する
-        const StartDrawX = this.x - BulletInfo.SpriteDrawWidth / 2;
-        const StartDrawY = this.y - BulletInfo.SpriteDrawHeight / 2;
+        const StartDrawX = this.x;
+        const StartDrawY = this.y;
+        
+        // 各角度を計算する
+        // OneThingの角度を計算する
+
+        function getonethingangle(BulletNumber, SettingFullAngle) {
+            let OneThingPointRadius = SettingFullAngle / ((BulletNumber == 0) ? 1 : (BulletNumber - 1)); // 0割り防止
+            
+            // 全周が180度の倍率ではないかつ，偶数本数のときは垂直方向が基準位置にならない
+            let StartAngle = 0;
+            if ((SettingFullAngle % 180 !== 0) && (BulletNumber %2 !== 0)){
+                // 偶数かつ180度方向の場合垂直方向が基準値にならない
+                StartAngle = 90 - (Math.floor(BulletNumber/2 - 1) * OneThingPointRadius) - OneThingPointRadius/2 ;
+            }
+            {
+                // 奇数もしくは偶数だけど全周の場合，垂直方向を基準値化できる
+                StartAngle = 90 - (Math.floor(BulletNumber/2) * OneThingPointRadius);
+            }
+            return { OneThingPointRadius, StartAngle};
+        }
+        
         
 
+
         // メインの弾から計算する
-        const BulletNumber =  BulletInfo.bullet_namber;
+        const BulletNumber =  BulletInfo.bullet_number;
         // 半径(低速モード時は倍率をかける)
-        const BulletPointRadius =  BulletInfo.bullet_pointRadius * (Keys.ArrowZ == true) ? bulletInfos.z_bullet_pointRadius_mag : 1.0;
+        const BulletPointRadius =  BulletInfo.bullet_pointRadius * ((Keys.ArrowZ == true) ? bulletInfos.z_bullet_pointRadius_mag : 1.0);
         // 一射の角度を計算(ここ再確認)
         const BulletPointAngleFull = BulletInfo.bullet_pointAngle;
-        const OneStepBulletPointAngle = BulletPointAngleFull / BulletNumber;
+        const ResultPointAngle = getonethingangle(BulletNumber, BulletPointAngleFull);
+        const OneStepBulletPointAngle = ResultPointAngle.OneThingPointRadius;
         // 最初に書く角度
-        const StartPointAngleNumber = 90 - BulletPointAngleFull / 2;
+        const StartPointAngleNumber = ResultPointAngle.StartAngle;
 
         // 打ち出し角度
         // 打ち出し角度により，横方向の速度を変更する必要がある
         // 基本位置と計算は同じ
         // 一射の角度を計算(ここ再確認)(低速モード時は倍率をかける)
-        const ShotBulletAngleFull = BulletInfo.Bullet_Angle * (Keys.ArrowZ == true) ? bulletInfos.z_bullet_angle_mag : 1.0;;
+        const ShotBulletAngleFull = BulletInfo.Bullet_Angle * ((Keys.ArrowZ == true) ? bulletInfos.z_bullet_angle_mag : 1.0);
+        const ResultShotAngle = getonethingangle(BulletNumber, ShotBulletAngleFull);
 
-        const ShotOneStepBulletAngle = ShotBulletAngleFull / BulletNumber;
+
+        const ShotOneStepBulletAngle = ResultShotAngle.OneThingPointRadius;
         // 最初に書く角度
-        const ShotStartAngleNumber = 90 - ShotOneStepBulletAngle / 2;
+        const ShotStartAngleNumber = ResultShotAngle.StartAngle;
 
 
         // 弾の個数をだけ作成
@@ -258,66 +289,55 @@ export class PlayerBase {
             const ShotAngleDeg = ShotStartAngleNumber + i * ShotOneStepBulletAngle;
             const ShotAngleRad = ShotAngleDeg * Math.PI / 180;
             const ShiftShotXspped = BulletInfo.x_speed + BulletInfo.y_speed * Math.cos(ShotAngleRad);
+            const ShiftShotXaccelX = BulletInfo.accel_x + BulletInfo.accel_y * Math.cos(ShotAngleRad);
+            const ShiftShotXjeakX = BulletInfo.jeak_x + BulletInfo.jeak_y * Math.cos(ShotAngleRad);
+            
             // 上記処理を加速度，加加速度にも行う
             
              const bulletOptions = {
-                    vx: bulletinfos.x_speed,
-                    vy: -bulletinfos.y_speed, 
-                    ax: bulletinfos.accel_x,
-                    ay: -bulletinfos.accel_y,
-                    jx: bulletinfos.jeak_x,
-                    jy: -bulletinfos.jeak_y,
-                    BulletImageKey: bulletinfos.ball_image_key,
-                    shape: bulletinfos.ball_shape,
-                    width: bulletinfos.bullet_width, 
-                    height: bulletinfos.bullet_height,
-                    orientation: bulletinfos.orientation,
-                    color: bulletinfos.color, 
-                    damage: bulletinfos.damage, 
-                    life: bulletinfos.bulled_life,
-                    maxSpeed: bulletinfos.bulled_maxSpeed,
-                    target: enemyInstance, // 追尾する場合
+                    vx: ShiftShotXspped,
+                    vy: -BulletInfo.y_speed, 
+                    ax: ShiftShotXaccelX,
+                    ay: -BulletInfo.accel_y,
+                    jx: ShiftShotXjeakX,
+                    jy: -BulletInfo.jeak_y,
+                    BulletImageKey: BulletInfo.ball_image_key,
+                    shape: BulletInfo.ball_shape,
+                    width: BulletInfo.bullet_width, 
+                    height: BulletInfo.bullet_height,
+                    orientation: BulletInfo.orientation,
+                    color: BulletInfo.color, 
+                    damage: BulletInfo.damage, 
+                    life: BulletInfo.bulled_life,
+                    maxSpeed: BulletInfo.bulled_maxSpeed,
+                    target: TargetEnemy, // 追尾する場合
                     trackingStrength: this.trackingStrengthPower, // 0なら追尾しない。追尾させる場合は0より大きい値
                     globalAlpha: 0.9,
-                     sine_wave_enabled: bulletinfos.sine_wave_enabled,
-                    sine_amplitude: bulletinfos.sine_amplitude,
-                    sine_angular_frequency: bulletinfos.sine_angular_frequency,
-                    sine_phase_offset: bulletinfos.sine_phase_offset,
-                    sine_axis: bulletinfos.sine_axis || "x",
-                    sine_decay_rate: bulletinfos.sine_decay_rate,
+                     sine_wave_enabled: BulletInfo.sine_wave_enabled,
+                    sine_amplitude: BulletInfo.sine_amplitude,
+                    sine_angular_frequency: BulletInfo.sine_angular_frequency,
+                    sine_phase_offset: BulletInfo.sine_phase_offset,
+                    sine_axis: BulletInfo.sine_axis || "x",
+                    sine_decay_rate: BulletInfo.sine_decay_rate,
                 };
 
             // 作ったインスタンスをpushする
-            playerBulletsArray.push(new Bullet(StartPointX, StartPointY, this.AssetManager, bulletOptions));
+            PlayerBulletsArray.push(new Bullet(StartPointX, StartPointY, this.AssetManager, bulletOptions));
         }
+
+        return this.BulletInfo.rate; // クールダウン再セット
     }
     
     // 攻撃実行のメインロジック
-    _shoot(Keys, PlayerBulletsArray, TargetEnemy
-        , CurrentTime, DeltaTime) {
+    _shoot(Keys, PlayerBulletsArray, TargetEnemy, CurrentTime, DeltaTime) {
         // 大体はこちらで設計可能
 
-
-
-        // メインに対して処理を行う
-        this.MainBulletInfo;
-        
-        
-               
-        
-                // Zが押されていた場合集中するような処理をとる
-                if (keys['z']) {
-                    if(bulletinfos.sine_wave_enabled == true)
-                    {
-                        bulletOptions.sine_decay_rate =1.5;
-                    }else
-                    {
-                        startX = AvatorDrawX + (bulletinfos.start_x_pos / 3);
-                    }
-                }
-        
+       
+        this.MainBulletWaitTime = this.createBulletInstance(Keys, PlayerBulletsArray, TargetEnemy, this.MainBulletInfo, CurrentTime, DeltaTime, this.MainBulletWaitTime);
+            
+        // サブに対して処理を行う
+        //this.SubBulletWaitTime = this.createBulletInstance(Keys, PlayerBulletsArray, TargetEnemy, this.SubBulletInfo, CurrentTime, DeltaTime, this.SubBulletWaitTime);
                 
-
     }
 
     // skillの発動の確認を行う
@@ -392,5 +412,10 @@ export class PlayerBase {
         ctx.fillRect(barX, barY, CurrentHpWidth > 0 ? CurrentHpWidth : 0, ScaledHpBarHeight);
         ctx.strokeStyle = 'white';
         ctx.strokeRect(barX, barY, ScaledPlayerHpBarWidth, ScaledHpBarHeight);
+    }
+
+    // trueならスキルが有効
+    isvalidskill(skilltypekey){
+        ireturn (skilltypekey !== SkillTypeEnum.NONE);
     }
 }
