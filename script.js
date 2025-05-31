@@ -1,3 +1,9 @@
+// ここまで見に来たということは熱心なナゼルファンなのか
+// 熱心な技術ヲタクなのであろう
+// といわけで制作秘話をここに乗せる
+
+
+
 // script.js (メインファイル)
 import { Enemy } from './enemy.js';
 import { Bullet } from './bullet.js'; // Bulletクラスもインポート

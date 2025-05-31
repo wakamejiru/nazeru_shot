@@ -1080,11 +1080,15 @@ export const  enemy_info_list = {
         enemy_maxhp:200000,
         enemy_mag:0,
         e_ult_type: EnemyUltTypeEnum.E_ULT_1,
-        e_limit_break_point: 0.6, // 発狂ラインは割合で示す
+        e_limit_break_point: 0.6, // スペルカード使用タイミング
         move_wait_duration: 2.0,
         next_move_interval: 2.0,
         shooting_phases_number: 5.0, // 攻撃スキルの数
-
+        enemy_hp_guage: 5, // HPゲージ数
+        enemy_play_ult: 0.5, // 発狂タイミング
+        // 通常攻撃の種類
+        attack_variation: 5,
+        attack_watingtime:2.0,
     }
 
 

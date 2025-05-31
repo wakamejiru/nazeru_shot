@@ -1,6 +1,6 @@
 // EnemyBase.js
 import { Bullet } from '../bullet.js'; // パスはプロジェクト構成に合わせてください
-import { main_bulled_info_list, sub_bulled_info_list, EnemyTypeEnum } from '../game_status.js';
+import { main_bulled_info_list, sub_bulled_info_list, EnemyTypeEnum, EnemySkillTypeEnum } from '../game_status.js';
 
 export class EnemyBase {
     constructor(InitialX, InitialY, AssetManager, ShootingCanvas, EnemyConfig) {
@@ -26,7 +26,12 @@ export class EnemyBase {
         
         this.MaxHP = EnemyConfig.enemy_maxhp;
         this.NowHP = this.MaxHP;
-        
+        this.EnemyHPGuage = EnemyConfig.enemy_hp_guage;
+        this.EnemyPlayULT = EnemyConfig.enemy_play_ult;
+
+
+
+
         this.SpriteEnemy = this.EnemyImageKey ? this.AssetManager.getImage(this.EnemyImageKey) : null;
         if (this.EnemyImageKey && !this.SpriteEnemy) {
             console.warn(`Enemy sprite for key "${this.EnemyImageKey}" not loaded.`);
@@ -48,10 +53,14 @@ export class EnemyBase {
 
         // 攻撃パターンシーケンス管理
         this.SkillStateNumber = EnemySkillTypeEnum.E_SKILL_1; // game_status.jsからのフェーズ設定
+        this.EnemySkillNumber = EnemySkillTypeEnum.shooting_phases_number;
 
-        // スキルの待機時間
-        this.SkillWaitTime = 2.0;
-        this.NowSkillWaitTime = this.SkillWaitTime;
+
+       // スキルの待機時間
+       this.AttackWatingTime = EnemyConfig.attack_watingtime;
+       this.NowAttackWatingTime = 0;
+       this.AttackState = 0;
+       this.AttackVariation = EnemyConfig.attack_variation;
     }
 
     // スケールの大きさを変更する
@@ -190,8 +199,8 @@ export class EnemyBase {
 
     // ダメージを受けた時の処理
     takeDamage(amount) {
-        this.hp -= amount;
-        if (this.hp < 0) this.hp = 0;
+        this.NowHP -= amount;
+        if (this.NowHP < 0) this.NowHP = 0;
         // (オプション) ダメージエフェクトやヒット時処理
     }
 }
