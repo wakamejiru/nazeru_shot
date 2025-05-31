@@ -8,35 +8,16 @@ import { Bullet } from '../bullet.js'; // Bulletクラスもインポート
 // CenterX,CenterY:開始点
 // 欠損パターン(何％落ち)
 
-// vx: ShiftShotXspped,
-//                     vy: -BulletInfo.y_speed, 
-//                     ax: ShiftShotXaccelX,
-//                     ay: -BulletInfo.accel_y,
-//                     jx: ShiftShotXjeakX,
-//                     jy: -BulletInfo.jeak_y,
-//                     BulletImageKey: BulletInfo.ball_image_key,
-//                     shape: BulletInfo.ball_shape,
-//                     width: BulletInfo.bullet_width, 
-//                     height: BulletInfo.bullet_height,
-//                     orientation: BulletInfo.orientation,
-//                     color: BulletInfo.color, 
-//                     damage: BulletInfo.damage, 
-//                     life: BulletInfo.bulled_life,
-//                     maxSpeed: BulletInfo.bulled_maxSpeed,
-//                     target: TargetEnemy, // 追尾する場合
-//                     trackingStrength: this.trackingStrengthPower, // 0なら追尾しない。追尾させる場合は0より大きい値
-//                     globalAlpha: 0.9,
-//                     sine_wave_enabled: BulletInfo.sine_wave_enabled,
-//                     sine_amplitude: BulletInfo.sine_amplitude,
-//                     sine_angular_frequency: BulletInfo.sine_angular_frequency,
-//                     sine_phase_offset: BulletInfo.sine_phase_offset,
-//                     sine_axis: BulletInfo.sine_axis || "x",
-//                     sine_decay_rate: BulletInfo.sine_decay_rate,
 
+// 球の入れ方は、初速の角度を渡すパターンと、指定座標に移動させるパターンを用意
+// 後者の場合、移動の加速度は設定できるが、終端速度は設定できない(PID制御を用いる)
+// 連続してほかの動作を行う、複雑な処理はStateマシンを使って上から指定を行う、
+// しかし、量が多くなると厄介なので、一つのenemyに対して利用量を定めるべき
 
-// 必要なもの
+// 停止した時に何秒か待機できるようにする
 
-function RoundShotFunc(CenterX, CenterY, BulletNumber, StartAngle, DeficitPercent, Opitons){
+function RoundShotFunc(EnemyBulletList, CenterX, CenterY, BulletNumber, 
+    StartAngle, DeficitPercent, Opitons, AssetManager){
     // 作ったインスタンスをpushする
     StartPointX = CenterX;
     StartPointX = CenterY;
@@ -51,15 +32,40 @@ function RoundShotFunc(CenterX, CenterY, BulletNumber, StartAngle, DeficitPercen
         // 停止条件も変更する必要がある
 
 
-        // 速度を触る
-        const SpeedX = Opitons.x_speed * Math.cos(PointAngleRad);
-        const SpeedY = Opitons.y_speed * Math.sin(PointAngleRad);
 
+        // 速度を触る
+        const SpeedX = Opitons.x_speed * Math.cos(RadiusAngle);
+        const SpeedY = Opitons.y_speed * Math.sin(RadiusAngle);
+        const BulletAccelX = Opitons.accel_x * Math.cos(RadiusAngle);
+        const BulletAccelY = Opitons.accel_y * Math.sin(RadiusAngle);
+        const BulletJerkX = Opitons.jeak_x * Math.cos(RadiusAngle);
+        const BulletJerkY = Opitons.jeak_y * Math.sin(RadiusAngle);
+// 将来的にかかかそくどまで考慮できるようにする
+        ///        const BulletSnapX = Opitons.snap_Y * Math.sin(RadiusAngle);
+//        const BulletSnapY = Opitons.snap_Y * Math.sin(RadiusAngle);
+            const bulletOptions = {
+                vx: SpeedX, // ピクセル/秒
+                vy: SpeedY, // ピクセル/秒
+                // 後で速度を追記
+
+
+
+
+
+
+
+
+                radius: Opitons.bulletRadius,
+                damage: Opitons.bulletDamage,
+                life: Opitons.bulletHP,
+                maxSpeed: Opitons.bulletSpeed,
+
+                target: Opitons.playerInstance, // 追尾する場合
+                trackingStrength: Opitons.trackingStrength // 0なら追尾しない。追尾させる場合は0より大きい値
+            };
+        EnemyBulletList.push(new Bullet(StartPointX, StartPointY, AssetManager, bulletOptions));
 
     }
 
-
-
-    PlayerBulletsArray.push(new Bullet(StartPointX, StartPointY, this.AssetManager, bulletOptions));
 
 }

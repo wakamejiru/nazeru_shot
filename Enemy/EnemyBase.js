@@ -3,14 +3,14 @@ import { Bullet } from '../bullet.js'; // パスはプロジェクト構成に�
 import { main_bulled_info_list, sub_bulled_info_list, EnemyTypeEnum } from '../game_status.js';
 
 export class EnemyBase {
-    constructor(InitialX, InitialY, AssetManager, ShootingCanvas, EnemyConfig, ETypeTypeID) {
+    constructor(InitialX, InitialY, AssetManager, ShootingCanvas, EnemyConfig) {
         this.x = InitialX;
         this.y = InitialY;
         this.AssetManager = AssetManager;
         this.Canvas = ShootingCanvas; // ゲームプレイ領域のCanvas
         this.CurrentScaleFactor = 1.0;
 
-        this.EnemyTypeID = ETypeTypeID; // 識別用
+        this.EnemyTypeID = EnemyConfig.ETypeTypeID; // 識別用
         this.EnemyName = EnemyConfig.enemy_name;
 
         this.EnemyImageKey = EnemyConfig.enemy_image_key;
