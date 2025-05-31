@@ -108,11 +108,10 @@ export class PlayerBase {
 
     // 大きさを変動する，(スキルや，弾の発射以外なら使える)
     // ここで引数にしているのは実際に弾幕部分のゲーム画面のサイズでcanbvasではない
-    updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth, 
-        NewGamePlayerSizeHeight, NewGamePlayerSizeWidth) {
+    updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth) {
         // 古いゲーム画面のサイズをもらう
-        const oldEffectiveCanvasWidth = OldGamePlayerSizeHeight;
-        const oldEffectiveCanvasHeight = OldGamePlayerSizeWidth;
+        const oldEffectiveCanvasWidth =  this.Canvas.width;
+        const oldEffectiveCanvasHeight = this.Canvas.height;
         const relativeCenterX = this.x / oldEffectiveCanvasWidth;
         const relativeCenterY = this.y / oldEffectiveCanvasHeight;
 
@@ -126,17 +125,17 @@ export class PlayerBase {
         this.NowSpeed = this.BaseSpeed * this.CurrentScaleFactor;
 
         // 新しいサイズの座標に合わせる
-        this.x = relativeCenterX * NewGamePlayerSizeWidth;
-        this.y = relativeCenterY * NewGamePlayerSizeHeight;
-        this.NowPlayAreaHeight = NewGamePlayerSizeHeight;
-        this.NowPlayAreaWidth = NewGamePlayerSizeWidth; 
+        this.x = relativeCenterX * this.Canvas.width;
+        this.y = relativeCenterY * this.Canvas.height;
+        this.NowPlayAreaHeight = this.Canvas.height;
+        this.NowPlayAreaWidth = this.Canvas.width; 
 
 
         // 範囲外になることを防止する
         const HalfScaledWidth = this.SpriteDrawWidth / 2;
         const HalfScaledHeight = this.SpriteDrawHeight / 2;
-        this.x = Math.max(HalfScaledWidth, Math.min(this.x, NewGamePlayerSizeWidth - HalfScaledWidth));
-        this.y = Math.max(HalfScaledHeight, Math.min(this.y, NewGamePlayerSizeHeight - HalfScaledHeight));
+        this.x = Math.max(HalfScaledWidth, Math.min(this.x, this.Canvas.width - HalfScaledWidth));
+        this.y = Math.max(HalfScaledHeight, Math.min(this.y, this.Canvas.height - HalfScaledHeight));
         
         // Bulletの情報もスケール変更する
         const scalebulletProperties = (BulletInfos, BaseBulletList, BulletKey) => {
@@ -214,7 +213,7 @@ export class PlayerBase {
     }
 
     // 球を作る．returnでクールタイムが帰ってくる
-    createBulletInstance(Keys, PlayerBulletsArray, TargetEnemy, BulletInfo, CurrentTime, DeltaTime, NowWaitTime)
+    createBulletInstance(Keys, PlayerBulletsArray, TargetEnemy, BulletInfo, DeltaTime, NowWaitTime)
     {
 
         // 球のクールタイム計算
@@ -313,7 +312,7 @@ export class PlayerBase {
                     target: TargetEnemy, // 追尾する場合
                     trackingStrength: this.trackingStrengthPower, // 0なら追尾しない。追尾させる場合は0より大きい値
                     globalAlpha: 0.9,
-                     sine_wave_enabled: BulletInfo.sine_wave_enabled,
+                    sine_wave_enabled: BulletInfo.sine_wave_enabled,
                     sine_amplitude: BulletInfo.sine_amplitude,
                     sine_angular_frequency: BulletInfo.sine_angular_frequency,
                     sine_phase_offset: BulletInfo.sine_phase_offset,
@@ -325,18 +324,18 @@ export class PlayerBase {
             PlayerBulletsArray.push(new Bullet(StartPointX, StartPointY, this.AssetManager, bulletOptions));
         }
 
-        return this.BulletInfo.rate; // クールダウン再セット
+        return BulletInfo.rate; // クールダウン再セット
     }
     
     // 攻撃実行のメインロジック
-    _shoot(Keys, PlayerBulletsArray, TargetEnemy, CurrentTime, DeltaTime) {
+    _shoot(Keys, PlayerBulletsArray, TargetEnemy, DeltaTime) {
         // 大体はこちらで設計可能
 
        
-        this.MainBulletWaitTime = this.createBulletInstance(Keys, PlayerBulletsArray, TargetEnemy, this.MainBulletInfo, CurrentTime, DeltaTime, this.MainBulletWaitTime);
+        this.MainBulletWaitTime = this.createBulletInstance(Keys, PlayerBulletsArray, TargetEnemy, this.MainBulletInfo, DeltaTime, this.MainBulletWaitTime);
             
         // サブに対して処理を行う
-        //this.SubBulletWaitTime = this.createBulletInstance(Keys, PlayerBulletsArray, TargetEnemy, this.SubBulletInfo, CurrentTime, DeltaTime, this.SubBulletWaitTime);
+        this.SubBulletWaitTime = this.createBulletInstance(Keys, PlayerBulletsArray, TargetEnemy, this.SubBulletInfo, DeltaTime, this.SubBulletWaitTime);
                 
     }
 
@@ -416,6 +415,6 @@ export class PlayerBase {
 
     // trueならスキルが有効
     isvalidskill(skilltypekey){
-        ireturn (skilltypekey !== SkillTypeEnum.NONE);
+        return (skilltypekey !== SkillTypeEnum.NONE);
     }
 }

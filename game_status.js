@@ -334,27 +334,33 @@ export const  sub_bulled_info_list = {
     },
     [SubBulletEnum.S_BULLET_1]: // 斜め15度に発射
     {
-        start_x_pos:5,
-        start_y_pos:0,
-        ballet_name:"サブウエポン1",
+        bullet_number :6, // バレットの数は3
+        Bullet_Angle :60, // バレットの放射角度(R)
+        z_bullet_angle_mag: 0.3, // 低速モード時の集中率
+        // 半径と設置角度からバレットの放出点を計算することができる        
+        bullet_pointAngle: 0, //バレットの設置角度(R)
+        bullet_pointRadius: 0, // バレットの設置半径
+        z_bullet_pointRadius_mag: 0.3, // 低速モード時の集中率
+
+        ballet_name:"メインウエポン1",
         ball_image_key: "bulletTypeA",
-        x_speed:100,
-        y_speed:800,
+        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
+        bullet_width: 8.0,
+        bullet_height: 8.0,
+        orientation: 0.0, // 回転数
+        x_speed:0,
+        y_speed:1200,
         accel_x:0,
         accel_y:0,
         jeak_x:0,
         jeak_y:0,
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 5.0,
-        bullet_height: 5.0,
-        orientation: 0.0, // 回転数
-        color: 'rgba(255, 0, 0, 0.7)',
+        color: 'rgb(255, 255, 255)',
         damage: 5,
-        bulled_life: 1,
+        bulled_life: 3,
         bulled_maxSpeed: 10000,
-        bulled_size_mag: 0.5,
         rate:0.2,
-         // --- サインカーブ専用パラメータ ---
+
+        // --- サインカーブ専用パラメータ ---
         sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
         sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
         sine_angular_frequency: Math.PI * 4, // 角周波数 (ラジアン/秒)。値が大きいほど波が細かくなる。
@@ -791,7 +797,7 @@ export const  character_info_list = {
         hitpoint_image_key: "HitImageTypeA", // ヒットポイントの画像
         hitpoint_radius:8.0,
 
-        character_speed:50,
+        character_speed:200,
         character_maxhp:100,
         character_mag:0.5,
         character_skill1: skill_info_list[SkillTypeEnum.SKILL_1],
@@ -1002,6 +1008,16 @@ export const EnemySkillTypeEnum = Object.freeze({
   E_SKILL_3: "skill_3",
   E_SKILL_4: "skill_4",
   E_SKILL_5: "skill_5",
+  E_SKILL_6: "skill_6",
+  E_SKILL_7: "skill_7",
+  E_SKILL_8: "skill_8",
+  E_SKILL_9: "skill_9",
+  E_SKILL_10: "skill_10",
+  E_SKILL_11: "skill_11",
+  E_SKILL_12: "skill_12",
+  E_SKILL_13: "skill_13",
+  E_SKILL_14: "skill_14",
+  E_SKILL_15: "skill_15",
 });
 
 export const EnemyUltTypeEnum = Object.freeze({
@@ -1051,17 +1067,11 @@ export const enemys_skill_list =
 export const  enemy_info_list = {
     [EnemyTypeEnum.NONE]:
     {
-        charachter_name:"NONE",
-        avatar_image_key:"",
-        character_radius:0,
-        character_speed:0,
-        character_maxhp:0,
-        character_mag:0,
-        enemy_skill_list: skill_info_list[SkillTypeEnum.NONE],
+        enemy_name:"NONE",
     },
     [EnemyTypeEnum.E_TYPE_1]:
     {
-        enemy_name:"ENEMY",
+        enemy_name:"ENEMY1",
         enemy_image_key:"EnemyTypeA",
         enemy_hitpoint_radius:100,
         enemy_width:150,
@@ -1071,6 +1081,10 @@ export const  enemy_info_list = {
         enemy_mag:0,
         e_ult_type: EnemyUltTypeEnum.E_ULT_1,
         e_limit_break_point: 0.6, // 発狂ラインは割合で示す
+        move_wait_duration: 2.0,
+        next_move_interval: 2.0,
+        shooting_phases_number: 5.0, // 攻撃スキルの数
+
     }
 
 

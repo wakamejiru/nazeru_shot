@@ -1,13 +1,12 @@
 // script.js (メインファイル)
-import { Player } from './player.js';
 import { Enemy } from './enemy.js';
 import { Bullet } from './bullet.js'; // Bulletクラスもインポート
 import { CharacterTypeEnum, imageAssetPaths, character_info_list, EnemyTypeEnum } from './game_status.js'; // game_status.js から必要なものをインポート
 import { AssetManager } from './asset_manager.js'; // AssetManagerをインポート
 import { PlayerType1 } from './Player/Type1Player.js';
 
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const ShootingCanvas = document.getElementById('shootinggameCanvas');
+const ctx = ShootingCanvas.getContext('2d');
 
 // キャンバスのサイズ設定
 const BASE_WIDTH = 600;  // ゲームの基準幅
@@ -45,34 +44,24 @@ async function initializeGame() {
     try {
         await assetManager.loadAllAssets();
         console.log("All assets loaded.");
-
-        const selectedCharType = CharacterTypeEnum.TYPE_7; // 例
         
         // 借り初期値を入れる
         const initialPlayerX = 0;
         const initialPlayerY = 0;
 
-        // player = new Player(
-        //     initialPlayerX,
-        //     initialPlayerY,
-        //     selectedCharType,
-        //     assetManager,
-        //     canvas
-		// );
-
-        player = new PlayerType1(initialPlayerX, initialPlayerY, assetManager, canvas, canvas.width, canvas.height);
+        player = new PlayerType1(initialPlayerX, initialPlayerY, assetManager, ShootingCanvas, ShootingCanvas.width, ShootingCanvas.height);
 
         const EnemyType = EnemyTypeEnum.E_TYPE_1;
 
         // Enemy インスタンスの生成 (Player と同様に assetManager や characterType を渡す)
-        enemy = new Enemy( BASE_WIDTH / 2, BASE_HEIGHT * 0.3, EnemyType, assetManager, canvas);
+        enemy = new Enemy( BASE_WIDTH / 2, BASE_HEIGHT * 0.3, EnemyType, assetManager, ShootingCanvas);
 
 
         resizeGame();
 
         // 初期時の場所を変更
-        player.x = canvas.width / 2;          // X方向: canvasの幅の中心
-        player.y = canvas.height * 0.9;       // Y方向: canvasの高さの上から90%の位置 (つまり下から10%の位置)
+        player.x = ShootingCanvas.width / 2;          // X方向: ShootingCanvasの幅の中心
+        player.y = ShootingCanvas.height * 0.9;       // Y方向: ShootingCanvasの高さの上から90%の位置 (つまり下から10%の位置)
 
 
         requestAnimationFrame(gameLoop);
@@ -143,14 +132,14 @@ async function changePlayerCharacter(newCharacterType) {
             currentY,
             newCharacterType,
             assetManager,
-            canvas
+            ShootingCanvas
         );
 
         // 新しいプレイヤーに現在のゲームスケールを適用
         // Playerコンストラクタは内部スケールを1.0で初期化し、
         // updateScaleで渡されたスケールに基づいて位置やサイズを調整するため、
         // 保存したx,yを渡しても、updateScaleが適切に処理してくれるはずです。
-        player.updateScale(scaleFactor, canvas); //
+        player.updateScale(scaleFactor, ShootingCanvas); //
 
         console.log(`Player character changed to ${newCharacterType}.`);
 
@@ -171,8 +160,14 @@ function handleResize() {
 
 // 画面リサイズ処理関数
 function resizeGame() {
+
+    // 基準値
+    const NowScaleCanvasWidth = BASE_WIDTH ;//ShootingCanvas.width;
+    const NowScaleCanvasHeight = BASE_HEIGHT;//ShootingCanvas.height;
+
+
     const screenOccupationRatio = 0.8; // ★ キャンバスを画面の8割の大きさにするための比率
-    const aspectRatio = BASE_WIDTH / BASE_HEIGHT;
+    const aspectRatio = NowScaleCanvasWidth / NowScaleCanvasHeight;
 
     // キャンバスが利用可能な「目標の」最大幅と高さを計算 (実際のウィンドウサイズの8割)
     let targetAvailableWidth = window.innerWidth * screenOccupationRatio;
@@ -198,26 +193,19 @@ function resizeGame() {
     currentWidth = newCanvasWidth;
     currentHeight = newCanvasHeight;
 
-    canvas.width = currentWidth;
-    canvas.height = currentHeight;
+    ShootingCanvas.width = currentWidth;
+    ShootingCanvas.height = currentHeight;
 
     // スケールファクターの計算
     // (最終的なキャンバスの幅 / ゲームの基準幅) または (最終的なキャンバスの高さ / ゲームの基準高さ)
-    // 縦横比が維持されていれば、どちらで計算しても同じ値になる
-    scaleFactor = currentWidth / BASE_WIDTH;
-    // もし詳細に分岐するなら:
-    // if (targetAvailableAspectRatio > aspectRatio) {
-    //     scaleFactor = currentHeight / BASE_HEIGHT;
-    // } else {
-    //     scaleFactor = currentWidth / BASE_WIDTH;
-    // }
+    scaleFactor = currentWidth / NowScaleCanvasWidth;
 
     // 既存のゲームオブジェクトの位置やサイズを再計算
     if (player) {
-        player.updateScale(scaleFactor, canvas, BASE_WIDTH, BASE_HEIGHT, currentWidth, currentHeight); // Playerクラスにスケール更新メソッドを追加する例
+        player.updateScale(scaleFactor, ShootingCanvas, NowScaleCanvasWidth, NowScaleCanvasHeight); // Playerクラスにスケール更新メソッドを追加する例
     }
     if (enemy) {
-        enemy.updateScale(scaleFactor, canvas, BASE_WIDTH, BASE_HEIGHT);   // Enemyクラスにスケール更新メソッドを追加する例
+        enemy.updateScale(scaleFactor, ShootingCanvas, NowScaleCanvasWidth, NowScaleCanvasHeight);   // Enemyクラスにスケール更新メソッドを追加する例
     }
 }
 
@@ -238,9 +226,9 @@ function resizeGame() {
 //         bullet.update(deltaTime, playerInstance); // 追尾対象としてplayerインスタンスを渡す例
 //         // 画面外判定などは bullet.x, bullet.y, bullet.radius/width/height を使う
 //         return bullet.x > - (bullet.isCircle ? bullet.radius : bullet.width/2) &&
-//                bullet.x < canvas.width + (bullet.isCircle ? bullet.radius : bullet.width/2) &&
+//                bullet.x < ShootingCanvas.width + (bullet.isCircle ? bullet.radius : bullet.width/2) &&
 //                bullet.y > - (bullet.isCircle ? bullet.radius : bullet.height/2) &&
-//                bullet.y < canvas.height + (bullet.isCircle ? bullet.radius : bullet.height/2) &&
+//                bullet.y < ShootingCanvas.height + (bullet.isCircle ? bullet.radius : bullet.height/2) &&
 //                (bullet.life > 0);
 //     });
 // }
@@ -251,8 +239,8 @@ function movePlayerBullets(deltaTime, playerInstance) {
         if (bullet.isHit) return false;
         bullet.update(deltaTime, playerInstance); // プレイヤー弾が追尾しないなら引数なし
         const b = bullet;
-        return b.x + b.width/2 > 0 && b.x - b.width/2 < canvas.width &&
-               b.y + b.height/2 > 0 && b.y - b.height/2 < canvas.height &&
+        return b.x + b.width/2 > 0 && b.x - b.width/2 < ShootingCanvas.width &&
+               b.y + b.height/2 > 0 && b.y - b.height/2 < ShootingCanvas.height &&
                (b.life > 0);
     });
 }
@@ -323,11 +311,11 @@ function gameOver() {
     console.log("ゲームオーバー！");
     cancelAnimationFrame(animationFrameId);
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, ShootingCanvas.width, ShootingCanvas.height);
     ctx.font = '40px Arial';
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
-    ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+    ctx.fillText('Game Over', ShootingCanvas.width / 2, ShootingCanvas.height / 2);
 }
 
 // ゲーム勝利処理
@@ -337,16 +325,16 @@ function gameWin() {
     console.log("勝利！");
     cancelAnimationFrame(animationFrameId);
     ctx.fillStyle = 'rgba(0, 128, 0, 0.7)'; // 緑っぽい背景
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, ShootingCanvas.width, ShootingCanvas.height);
     ctx.font = '60px Arial';
     ctx.fillStyle = 'yellow';
     ctx.textAlign = 'center';
-    ctx.fillText('勝利！', canvas.width / 2, canvas.height / 2);
+    ctx.fillText('勝利！', ShootingCanvas.width / 2, ShootingCanvas.height / 2);
 }
 
 // 描画のクリア
 function clearCanvas() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, ShootingCanvas.width, ShootingCanvas.height);
 }
 
 let animationFrameId; // ゲームループのIDを保持
@@ -371,6 +359,9 @@ function gameLoop(currentTime) {
     const clampedDeltaTime = Math.min(deltaTime, 0.1); // 例: 最大0.1秒に制限
 
     clearCanvas();
+
+    // Playerのスキル判定を行う
+    player._skillrun(clampedDeltaTime);
 
     player.move(keys, clampedDeltaTime);
     if (enemy) enemy.move(clampedDeltaTime);

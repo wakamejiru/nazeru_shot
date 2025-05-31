@@ -1,0 +1,197 @@
+// EnemyBase.js
+import { Bullet } from '../bullet.js'; // パスはプロジェクト構成に合わせてください
+import { main_bulled_info_list, sub_bulled_info_list, EnemyTypeEnum } from '../game_status.js';
+
+export class EnemyBase {
+    constructor(InitialX, InitialY, AssetManager, ShootingCanvas, EnemyConfig, ETypeTypeID) {
+        this.x = InitialX;
+        this.y = InitialY;
+        this.AssetManager = AssetManager;
+        this.Canvas = ShootingCanvas; // ゲームプレイ領域のCanvas
+        this.CurrentScaleFactor = 1.0;
+
+        this.EnemyTypeID = ETypeTypeID; // 識別用
+        this.EnemyName = EnemyConfig.enemy_name;
+
+        this.EnemyImageKey = EnemyConfig.enemy_image_key;
+        
+        this.BaseEnemyWidth = EnemyConfig.enemy_width;
+        this.EnemyWidth = this.BaseEnemyWidth;
+
+        this.BaseEnemyHeight = EnemyConfig.enemy_height;
+        this.EnemyHeight = this.BaseEnemyHeight;
+        
+        this.BaseEnemySpeed = EnemyConfig.enemy_speed;
+        this.EnemySpeed = this.BaseEnemySpeed;
+        
+        this.MaxHP = EnemyConfig.enemy_maxhp;
+        this.NowHP = this.MaxHP;
+        
+        this.SpriteEnemy = this.EnemyImageKey ? this.AssetManager.getImage(this.EnemyImageKey) : null;
+        if (this.EnemyImageKey && !this.SpriteEnemy) {
+            console.warn(`Enemy sprite for key "${this.EnemyImageKey}" not loaded.`);
+        }
+
+        // 移動AI用
+        this.MoveAreaTopY = this.EnemyHeight / 2;
+        this.MoveAreaBottomY = this.Canvas.height / 3 - this.EnemyHeight / 2;
+        this.MoveAreaLeftX = this.EnemyWidth / 2;
+        this.MoveAreaRightX = this.Canvas.width - this.EnemyWidth / 2;
+
+        this.TargetX = this.x;
+        this.TargetY = this.y;
+        this.MoveWaitTimer = 0; // ターゲット到達後の待機タイマー
+        this.MoveWaitDuration = EnemyConfig.move_wait_duration;
+        this.NextMoveTargetInterval = EnemyConfig.next_move_interval;
+        this.NextMoveTargetTimer = this.NextMoveTargetInterval;
+
+
+        // 攻撃パターンシーケンス管理
+        this.SkillStateNumber = EnemySkillTypeEnum.E_SKILL_1; // game_status.jsからのフェーズ設定
+
+        // スキルの待機時間
+        this.SkillWaitTime = 2.0;
+        this.NowSkillWaitTime = this.SkillWaitTime;
+    }
+
+    // スケールの大きさを変更する
+    updateScale(NewScaleFactor, NewGameplayCanvas, BaseGameplayWidth, BaseGameplayHeight) {
+        const OldEffectiveGameplayWidth = this.Canvas.width;
+        const OldEffectiveGameplayHeight = this.Canvas.height;
+        const RelativeX = this.x / OldEffectiveGameplayWidth;
+        const RelativeY = this.y / OldEffectiveGameplayHeight;
+
+        const RelativeTargetX = this.TargetX / OldEffectiveGameplayWidth;
+        const RelativeTargetY = this.TargetY / OldEffectiveGameplayHeight;
+
+        this.CurrentScaleFactor = newScaleFactor;
+        this.Canvas = newGameplayCanvas;
+
+        this.EnemyWidth = this.BaseEnemyWidth * newScaleFactor;
+        this.EnemyHeight = this.BaseEnemyHeight * newScaleFactor;
+        this.EnemySpeed = this.BaseEnemySpeed * newScaleFactor;
+        // this.EnemyHitpointRadius = this.BaseEnemyHitpointRadius * newScaleFactor;
+
+        this.x = RelativeX * this.Canvas.width;
+        this.y = RelativeY * this.Canvas.height;
+        this.TargetX = RelativeTargetX * this.Canvas.width;
+        this.TargetY = RelativeTargetY * this.Canvas.height;
+
+        this.x = Math.max(this.EnemyWidth / 2, Math.min(this.x, this.Canvas.width - this.EnemyWidth / 2));
+        this.y = Math.max(this.EnemyHeight / 2, Math.min(this.y, this.Canvas.height - this.EnemyHeight / 2));
+
+        // 移動範囲も更新
+        this.MoveAreaTopY = this.EnemyHeight / 2;
+        this.MoveAreaBottomY = Math.max(this.MoveAreaTopY, this.Canvas.height / 3 - (this.EnemyHeight / 2));
+        this.MoveAreaLeftX = this.EnemyWidth / 2;
+        this.MoveAreaRightX = Math.max(this.MoveAreaLeftX, this.Canvas.width - (this.EnemyWidth / 2));
+        
+        this.TargetX = Math.max(this.moveAreaLeftX, Math.min(this.targetX, this.moveAreaRightX));
+        this.TargetY = Math.max(this.moveAreaTopY, Math.min(this.targetY, this.moveAreaBottomY));
+    }
+
+
+    // 新しい移動先を指定
+    setNewTarget() {
+        this.MoveAreaTopY = this.EnemyHeight / 2;
+        this.MoveAreaBottomY = Math.max(this.MoveAreaTopY, this.Canvas.height / 3 - (this.EnemyHeight / 2));
+        this.MoveAreaLeftX = this.EnemyWidth / 2;
+        this.MoveAreaRightX = Math.max(this.MoveAreaLeftX, this.Canvas.width - (this.EnemyWidth / 2));
+
+        const RandomXRange = this.MoveAreaRightX - this.MoveAreaLeftX;
+        this.TargetX = (RandomXRange <= 0) ? (this.MoveAreaLeftX + this.MoveAreaRightX) / 2 : this.MoveAreaLeftX + Math.random() * RandomXRange;
+        
+        const RandomYRange = this.MoveAreaBottomY - this.MoveAreaTopY;
+        this.TargetY = (RandomYRange <= 0) ? (this.MoveAreaTopY + this.MoveAreaBottomY) / 2 : this.MoveAreaTopY + Math.random() * RandomYRange;
+    }
+
+    move(DeltaTime) {
+        if (this.NowHP <= 0) return;
+
+        // スキル実行中は停止する
+        this.NextMoveTargetTimer -= DeltaTime;
+        if (this.NextMoveTargetTimer <= 0) {
+            this.setNewTarget();
+            this.NextMoveTargetTimer = this.NextMoveTargetInterval;
+            this.MoveWaitTimer = 0; // 新しいターゲットが設定されたら即座に移動開始
+        }
+
+        if (this.MoveWaitTimer > 0) {
+            this.MoveWaitTimer -= DeltaTime;
+            return;
+        }
+
+        const Dx = this.TargetX - this.x;
+        const Dy = this.TargetY - this.y;
+        const Distance = Math.sqrt(Dx * Dx + Dy * Dy);
+
+        if (Distance < (this.EnemySpeed * DeltaTime) || Distance < 1.0) { // ほぼ到達
+            this.x = this.TargetX;
+            this.y = this.TargetY;
+            this.MoveWaitTimer = this.MoveWaitDuration;
+            return;
+        }
+
+        this.x += (Dx / Distance) * this.EnemySpeed * DeltaTime;
+        this.y += (Dy / Distance) * this.EnemySpeed * DeltaTime;
+
+        // 念のため移動後もクランプ
+        this.x = Math.max(this.MoveAreaLeftX, Math.min(this.x, this.MoveAreaRightX));
+        this.y = Math.max(this.MoveAreaTopY, Math.min(this.y, this.MoveAreaBottomY));
+    }
+
+    
+
+    // 弾を打ち出す
+    _shoot(BulletArray, TargetPlayer, CurrentTime, DeltaTime) {
+        if (this.NowHP <= 0) {
+            return;
+        }
+
+        // 通常攻撃は3パターン用意
+        // 
+        // 3パターンのうち
+    }
+
+    _skilrun()
+    {
+        // 一定条件下でスキルを使う
+        // HP何割削れたかで決める
+
+    }
+
+    // 描く
+    draw(ctx) {
+        if (this.NowHP <= 0 || !this.SpriteEnemy) return;
+        const DrawX = this.x - this.EnemyWidth / 2;
+        const DrawY = this.y - this.EnemyHeight / 2;
+        ctx.drawImage(this.SpriteEnemy, DrawX, DrawY, this.EnemyWidth, this.EnemyHeight);
+    }
+
+    // HPバーを描く
+    drawHpBar(ctx, HPBarHeightParam) { // HP_BAR_HEIGHT_PARAM から変更
+        if (this.NowHP <= 0 || !this.MaxHP || this.MaxHP <= 0) return;
+
+        const BarWidth = this.EnemyWidth * 0.8; // 敵の幅の8割程度に
+        const BarX = this.x - BarWidth / 2;    // 敵の中心に合わせる
+        const BarY = this.y - this.EnemyHeight / 2 - HPBarHeightParam - (5 * this.CurrentScaleFactor); // 敵の少し上
+
+        const CurrentHpPercentage = this.NowHP / this.MaxHP;
+        const CurrentHpWidth = CurrentHpPercentage * BarWidth;
+
+        ctx.fillStyle = 'rgba(80, 0, 0, 0.8)'; // 半透明背景
+        ctx.fillRect(BarX, BarY, BarWidth, HPBarHeightParam);
+        ctx.fillStyle = 'rgba(255, 0, 0, 0.8)'; // 半透明前景
+        ctx.fillRect(BarX, BarY, CurrentHpWidth > 0 ? CurrentHpWidth : 0, HPBarHeightParam);
+        // HPバーの枠線
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.strokeRect(BarX, BarY, BarWidth, HPBarHeightParam);
+    }
+
+    // ダメージを受けた時の処理
+    takeDamage(amount) {
+        this.hp -= amount;
+        if (this.hp < 0) this.hp = 0;
+        // (オプション) ダメージエフェクトやヒット時処理
+    }
+}

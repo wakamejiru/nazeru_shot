@@ -34,10 +34,10 @@ export class PlayerType1 extends PlayerBase {
         // スキルの内容は基本自由にさせたいので各クラスで別々に書く
         // スキルによっては発動有効時間が置かれる
         this.skill1WaitTime = 6.0; // 6秒
-        this.skill1NowWaitTime = skill1WaitTime; // カウンタ
+        this.skill1NowWaitTime = this.skill1WaitTime; // カウンタ
         
         this.skill2WaitTime = 10.0; // 6秒
-        this.skill2NowWaitTime = skill2WaitTime; // カウンタ
+        this.skill2NowWaitTime = this.skill2WaitTime; // カウンタ
         this.skill2DuringTime = 5.0;
         this.skill2NowDuringTime = 0; // カウンタ
         this.WakeUpSkill2 = false;
@@ -55,22 +55,20 @@ export class PlayerType1 extends PlayerBase {
         
     }
 
-    updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth, 
-        NewGamePlayerSizeHeight, NewGamePlayerSizeWidth)
+    updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth)
     {
         // 規定クラスコンストラクタで呼び出し
-        super.updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth, 
-        NewGamePlayerSizeHeight, NewGamePlayerSizeWidth);
+        super.updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight);
 
         // このクラス内でサイズを使っている部分を変更
 
     }
 
     // 弾を打つ
-    _shoot(Keys, PlayerBulletsArray, TargetEnemy, CurrentTime, DeltaTime){
+    _shoot(Keys, PlayerBulletsArray, TargetEnemy, DeltaTime){
         
         // Type1は既定クラスのshotをそのまま使える
-        super._shoot(Keys, PlayerBulletsArray, TargetEnemy, CurrentTime, DeltaTime);
+        super._shoot(Keys, PlayerBulletsArray, TargetEnemy, DeltaTime);
 
     }
 
@@ -79,9 +77,9 @@ export class PlayerType1 extends PlayerBase {
     _skillrun(DeltaTime)
     {
         // Skill1の判定&処理を行う
-        _skillrun1(DeltaTime);
+        this._skillrun1(DeltaTime);
         // Skill2の判定&処理を行う
-        _skillrun2(DeltaTime);
+        this._skillrun2(DeltaTime);
         // ULTの判定&処理を行う
         this._playULT(DeltaTime);
         // Passiveskillの処理
@@ -104,7 +102,7 @@ export class PlayerType1 extends PlayerBase {
 			{
 
                 this.NowHP += this.Skill1HPRecovery;
-                this.NowHP = Math.max(this.NowHP, this.MaxHP); // Maxは超えないように
+                this.NowHP = Math.min(this.NowHP, this.MaxHP); // NowHP と MaxHP のうち、小さい方を選択
 
                 this.skill1NowWaitTime = this.skill1WaitTime; // クールダウン再セット
 			}
