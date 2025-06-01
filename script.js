@@ -9,7 +9,11 @@ import { Enemy } from './enemy.js';
 import { Bullet } from './bullet.js'; // Bulletクラスもインポート
 import { CharacterTypeEnum, imageAssetPaths, character_info_list, EnemyTypeEnum } from './game_status.js'; // game_status.js から必要なものをインポート
 import { AssetManager } from './asset_manager.js'; // AssetManagerをインポート
+// Playerのクラスを作成する
 import { PlayerType1 } from './Player/Type1Player.js';
+
+// 敵のクラスを作成する
+import { EnemyType1 } from './Enemy/EnemyType1.js';
 
 const ShootingCanvas = document.getElementById('shootinggameCanvas');
 const ctx = ShootingCanvas.getContext('2d');
@@ -60,8 +64,9 @@ async function initializeGame() {
         const EnemyType = EnemyTypeEnum.E_TYPE_1;
 
         // Enemy インスタンスの生成 (Player と同様に assetManager や characterType を渡す)
-        enemy = new Enemy( BASE_WIDTH / 2, BASE_HEIGHT * 0.3, EnemyType, assetManager, ShootingCanvas);
+//         enemy = new Enemy( BASE_WIDTH / 2, BASE_HEIGHT * 0.3, EnemyType, assetManager, ShootingCanvas);
 
+        enemy = new EnemyType1(BASE_WIDTH / 2, BASE_HEIGHT * 0.3, assetManager, ShootingCanvas);
 
         resizeGame();
 
@@ -79,7 +84,7 @@ async function initializeGame() {
 
 
 // 弾を格納する配列
-let bullets = []; // 敵の弾
+let enemybullets = []; // 敵の弾
 let playerBullets = []; //プレイヤーの弾
 
 // キー入力状態
@@ -217,27 +222,25 @@ function resizeGame() {
 
 
 // 弾の描画
-// function drawEnemyBullets(ctx) {
-//     bullets.forEach(bullet => bullet.draw(ctx));
-// }
+function drawEnemyBullets(ctx) {
+    enemybullets.forEach(bullet => bullet.draw(ctx));
+}
 
   function drawPlayerBullets(ctx) {
      playerBullets.forEach(bullet => bullet.draw(ctx));
  }
 
 // 敵の弾の移動と画面外判定
-// function moveEnemyBullets(deltaTime, playerInstance) {
-//     bullets = bullets.filter(bullet => {
-//         if (bullet.isHit) return false;
-//         bullet.update(deltaTime, playerInstance); // 追尾対象としてplayerインスタンスを渡す例
-//         // 画面外判定などは bullet.x, bullet.y, bullet.radius/width/height を使う
-//         return bullet.x > - (bullet.isCircle ? bullet.radius : bullet.width/2) &&
-//                bullet.x < ShootingCanvas.width + (bullet.isCircle ? bullet.radius : bullet.width/2) &&
-//                bullet.y > - (bullet.isCircle ? bullet.radius : bullet.height/2) &&
-//                bullet.y < ShootingCanvas.height + (bullet.isCircle ? bullet.radius : bullet.height/2) &&
-//                (bullet.life > 0);
-//     });
-// }
+function moveEnemyBullets(deltaTime, playerInstance) {
+    enemybullets = enemybullets.filter(bullet => {
+        if (bullet.isHit) return false;
+        bullet.update(deltaTime, playerInstance); // 追尾対象としてplayerインスタンスを渡す例
+        // 画面外判定などは bullet.x, bullet.y, bullet.radius/width/height を使う
+        return bullet.x < ShootingCanvas.width + bullet.width/2 &&
+               bullet.y < ShootingCanvas.height + bullet.height/2 &&
+               (bullet.life > 0);
+    });
+}
 
 // プレイヤーの弾の移動と画面外判定
 function movePlayerBullets(deltaTime, playerInstance) {
@@ -374,15 +377,15 @@ function gameLoop(currentTime) {
 
     player._shoot(keys, playerBullets, enemy, clampedDeltaTime);
 
-    //if (enemy) enemy.shoot(bullets, Bullet, player, clampedDeltaTime); // 追尾用にplayer, タイマー更新用にdeltaTime
+    if (enemy) enemy._shoot(enemybullets, Bullet, player, clampedDeltaTime); // 追尾用にplayer, タイマー更新用にdeltaTime
 
-    //moveEnemyBullets(clampedDeltaTime, player); // 追尾対象としてplayerを渡す
+    moveEnemyBullets(clampedDeltaTime, player); // 追尾対象としてplayerを渡す
     movePlayerBullets(clampedDeltaTime, player);
 
     player.draw(ctx, keys);
     if (enemy) enemy.draw(ctx);
 
-    //drawEnemyBullets(ctx);
+    drawEnemyBullets(ctx);
     drawPlayerBullets(ctx);
 
     // HPバーのスケール変更はここで行う

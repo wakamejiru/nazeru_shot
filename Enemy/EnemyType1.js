@@ -1,5 +1,7 @@
 // Type1Enemyのクラス
 import { EnemyBase } from "./EnemyBase.js";
+import { RoundShotFunc } from "./EnemyShot.js";
+
 
 import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum, 
     main_bulled_info_list, sub_bulled_info_list, 
@@ -8,7 +10,7 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
 
     export class EnemyType1 extends EnemyBase
     {
-        constructor(InitialX, InitialY, AssetManager, ShootingCanvas, EnemyConfig, ETypeTypeID) {
+        constructor(InitialX, InitialY, AssetManager, ShootingCanvas) {
             
             const myEnemyTypeID = enemy_info_list[EnemyTypeEnum.E_TYPE_1];
 
@@ -28,7 +30,7 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                 attack_variation: myEnemyTypeID.myEnemyTypeID,
                 attack_watingtime: myEnemyTypeID.attack_watingtime
             };
-            super(InitialX, InitialY, AssetManager, ShootingCanvas, EnemyConfig);
+            super(InitialX, InitialY, AssetManager, ShootingCanvas, BaseConfig);
             // スキル内容の初期化を行う
             // InitializeSkillSetting();
         }
@@ -39,19 +41,21 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
     {
         // スキルのアップスケールはここで行う
         // 規定クラスコンストラクタで呼び出し
-        super.updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight);
+        super.updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth);
 
         // このクラス内でサイズを使っている部分を変更
 
 
     }
 
+    // 移動を行う
     move(DeltaTime){
         super.move(DeltaTime);
 
     }
 
-    _shoot(BulletArray, TargetPlayer, CurrentTime, DeltaTime){
+    // 通常攻撃を放つ
+    _shoot(EnemyBulletArray, TargetPlayer, CurrentTime, DeltaTime){
         if (this.NowHP <= 0) {
             return;
         }
@@ -62,24 +66,68 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
             if (this.NowAttackWatingTime < 0) this.NowAttackWatingTime = 0;
         }else
         {
-            // 攻撃カウンタをリセット
-            this.NowAttackWatingTime = this.AttackWatingTime;
+           this.SkillActiveFlag = true;
+		}
 
+        if (this.SkillActiveFlag == true){
             // 攻撃を放出する
             switch(this.AttackState)
             {        
                 case 0:
+                    const BulletNumber = 12;
+                    const StartAngle = 0;
+                    const DeficitPercent = 0;
+
+                    const BulletOptions = {
+                        x_speed: 1000,
+                        y_speed: 1000,
+                        accel_x: 200,
+                        accel_y: 200,
+                        jeak_x:  100,
+                        jeak_y:  100,
+                        bulletRadius: 1000,
+                        bulletDamage: 25,
+                        bulletHP: 15,
+                        bulletMaxSpeed: 250000,
+                        playerInstance: TargetPlayer,
+                        trackingStrength: 0,
+                        BulletImageKey: "bulletTypeA",
+                        shape: "rectangle"
+                    };
+
                     // 一巡目のスキル内容を書く
+                    // 自分中心から弾を出す
+                    RoundShotFunc(EnemyBulletArray, this.x, this.y, 
+                                        BulletNumber, StartAngle, DeficitPercent, 
+                                        BulletOptions, this.AssetManager);
 
-                    // 次のアタックシーケンスに移行させる
-                    this.AttackState = 1;
+
+                    // 攻撃のながさが終わったかを確認する
+                    this.AttackDuringTime1 = 3.0;
+
+                    this.NowAttackDuringTime += DeltaTime;
+                    // 攻撃区間を終了するかの判定を行う
+                    super.isAttackendfuc(this.NowAttackDuringTime, this.AttackDuringTime1, 1);
+
+                   
                     break;
-                case 1:
 
+                case 1:
+                    // 二巡目のスキル内容を書く
+                    this.AttackState = 2;
+                    break;
+
+                case 2:
+                    // 三巡目のスキル内容を書く
+                    this.AttackState = 0;
                     break;
 
             }
-		}
+        } 
+        // 攻撃カウンタをリセット これは通常攻撃の終わりに実行
+        this.NowAttackWatingTime = this.AttackWatingTime;
+
+       
         
 
     }
@@ -89,6 +137,14 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
         // 一定条件下でスキルを使う
         // HP何割削れたかで決める
 
+    }
+
+    draw(ctx){
+        super.draw(ctx)
+    }
+
+    drawHpBar(ctx, EnemyscaledHpBarHeight){
+        super.drawHpBar(ctx, EnemyscaledHpBarHeight);
     }
 
     }

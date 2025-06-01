@@ -58,7 +58,7 @@ export class PlayerType1 extends PlayerBase {
     updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth)
     {
         // 規定クラスコンストラクタで呼び出し
-        super.updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight);
+        super.updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth);
 
         // このクラス内でサイズを使っている部分を変更
 

@@ -16,11 +16,11 @@ import { Bullet } from '../bullet.js'; // Bulletクラスもインポート
 
 // 停止した時に何秒か待機できるようにする
 
-function RoundShotFunc(EnemyBulletList, CenterX, CenterY, BulletNumber, 
+export function RoundShotFunc(EnemyBulletList, CenterX, CenterY, BulletNumber, 
     StartAngle, DeficitPercent, Opitons, AssetManager){
     // 作ったインスタンスをpushする
-    StartPointX = CenterX;
-    StartPointX = CenterY;
+    let StartPointX = CenterX;
+    let StartPointY = CenterY;
 
     // 何度ごとに，射出するかを決める
     const OneStepAngle = 360/BulletNumber;
@@ -58,10 +58,15 @@ function RoundShotFunc(EnemyBulletList, CenterX, CenterY, BulletNumber,
                 radius: Opitons.bulletRadius,
                 damage: Opitons.bulletDamage,
                 life: Opitons.bulletHP,
-                maxSpeed: Opitons.bulletSpeed,
+                maxSpeed: Opitons.bulletMaxSpeed,
 
                 target: Opitons.playerInstance, // 追尾する場合
-                trackingStrength: Opitons.trackingStrength // 0なら追尾しない。追尾させる場合は0より大きい値
+                trackingStrength: Opitons.trackingStrength, // 0なら追尾しない。追尾させる場合は0より大きい値
+
+                // 弾の画像と形状
+                BulletImageKey: Opitons.BulletImageKey,
+                shape: Opitons.shape,
+
             };
         EnemyBulletList.push(new Bullet(StartPointX, StartPointY, AssetManager, bulletOptions));
 

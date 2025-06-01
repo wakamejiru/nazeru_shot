@@ -56,11 +56,15 @@ export class EnemyBase {
         this.EnemySkillNumber = EnemySkillTypeEnum.shooting_phases_number;
 
 
-       // スキルの待機時間
+       // 通常攻撃の待機時間
        this.AttackWatingTime = EnemyConfig.attack_watingtime;
        this.NowAttackWatingTime = 0;
        this.AttackState = 0;
        this.AttackVariation = EnemyConfig.attack_variation;
+       this.SkillActiveFlag = false;
+        
+       this.NowAttackDuringTime = 0; // 攻撃の継続時間の情報 
+
     }
 
     // スケールの大きさを変更する
@@ -73,12 +77,12 @@ export class EnemyBase {
         const RelativeTargetX = this.TargetX / OldEffectiveGameplayWidth;
         const RelativeTargetY = this.TargetY / OldEffectiveGameplayHeight;
 
-        this.CurrentScaleFactor = newScaleFactor;
-        this.Canvas = newGameplayCanvas;
+        this.CurrentScaleFactor = NewScaleFactor;
+        this.Canvas = NewGameplayCanvas;
 
-        this.EnemyWidth = this.BaseEnemyWidth * newScaleFactor;
-        this.EnemyHeight = this.BaseEnemyHeight * newScaleFactor;
-        this.EnemySpeed = this.BaseEnemySpeed * newScaleFactor;
+        this.EnemyWidth = this.BaseEnemyWidth * NewScaleFactor;
+        this.EnemyHeight = this.BaseEnemyHeight * NewScaleFactor;
+        this.EnemySpeed = this.BaseEnemySpeed * NewScaleFactor;
         // this.EnemyHitpointRadius = this.BaseEnemyHitpointRadius * newScaleFactor;
 
         this.x = RelativeX * this.Canvas.width;
@@ -95,8 +99,8 @@ export class EnemyBase {
         this.MoveAreaLeftX = this.EnemyWidth / 2;
         this.MoveAreaRightX = Math.max(this.MoveAreaLeftX, this.Canvas.width - (this.EnemyWidth / 2));
         
-        this.TargetX = Math.max(this.moveAreaLeftX, Math.min(this.targetX, this.moveAreaRightX));
-        this.TargetY = Math.max(this.moveAreaTopY, Math.min(this.targetY, this.moveAreaBottomY));
+        this.TargetX = Math.max(this.MoveAreaLeftX, Math.min(this.TargetX, this.MoveAreaRightX));
+        this.TargetY = Math.max(this.MoveAreaTopY, Math.min(this.TargetY, this.MoveAreaBottomY));
     }
 
 
@@ -202,5 +206,19 @@ export class EnemyBase {
         this.NowHP -= amount;
         if (this.NowHP < 0) this.NowHP = 0;
         // (オプション) ダメージエフェクトやヒット時処理
+    }
+
+    // 攻撃終了フラグを計算する
+    // return 次のステイと(攻撃区間が変わっていない間はstateは移動しないようにする)
+    isAttackendfuc(NowTime, AttackTimeTh, NextState){
+        
+        if(NowTime > AttackTimeTh){
+                    
+                    // 次のアタックシーケンスに移行させる
+                    this.AttackState = NextState;
+                    this.SkillActiveFlag = false;
+                    // カウンタをリセット
+                    this.NowAttackDuringTime = 0;
+        }
     }
 }
