@@ -28,7 +28,8 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                 enemy_hp_guage: myEnemyTypeID.enemy_hp_guage,
                 enemy_play_ult: myEnemyTypeID.enemy_play_ult,
                 attack_variation: myEnemyTypeID.myEnemyTypeID,
-                attack_watingtime: myEnemyTypeID.attack_watingtime
+                attack_watingtime: myEnemyTypeID.attack_watingtime,
+                e_limit_break_point: myEnemyTypeID.e_limit_break_point
             };
             super(InitialX, InitialY, AssetManager, ShootingCanvas, BaseConfig);
             // スキル内容の初期化を行う
@@ -77,38 +78,45 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
 
                     // ここである程度間引いてやらないとビームみたいになる
 
+                    if(this.NowAttackRateTimer < this.AttackRateTimer){
+                        this.NowAttackRateTimer += DeltaTime;
+                    }else{
+                        this.NowAttackRateTimer = 0; // リセット
+                        const BulletNumber = 72;
+                        const DeficitPercent = 0;
+                        this.AttackCounter += 1;
+                                                 
+                        let StartAngle = (this.AttackCounter % 2 == 0) ? (2) : 0;
+                        StartAngle += (this.AttackCounter % 3 == 0) ? (4) : 0;
+                        const BulletOptions = {
+                            x_speed: 500,
+                            y_speed: 500,
+                            accel_x: 200,
+                            accel_y: 200,
+                            jeak_x:  100,
+                            jeak_y:  100,
+                            bulletWidht: 30,
+                            bulletheight: 30,
 
-                    const BulletNumber = 12;
-                    const StartAngle = 0;
-                    const DeficitPercent = 0;
-
-                    const BulletOptions = {
-                        x_speed: 1000,
-                        y_speed: 1000,
-                        accel_x: 200,
-                        accel_y: 200,
-                        jeak_x:  100,
-                        jeak_y:  100,
-                        bulletWidht: 30,
-                        bulletheight: 30,
-
-                        bulletRadius: 1000,
-                        bulletDamage: 25,
-                        bulletHP: 15,
-                        bulletMaxSpeed: 250000,
-                        playerInstance: TargetPlayer,
-                        trackingStrength: 0,
-                        BulletImageKey: "bulletTypeA",
-                        shape: "rectangle"
-                    };
-
-                    // 一巡目のスキル内容を書く
-                    // 自分中心から弾を出す
-                    RoundShotFunc(EnemyBulletArray, this.x, this.y, 
-                                        BulletNumber, StartAngle, DeficitPercent, 
-                                        BulletOptions, this.AssetManager);
+                            bulletRadius: 1000,
+                            bulletDamage: 25,
+                            bulletHP: 15,
+                            bulletMaxSpeed: 250000,
+                            playerInstance: TargetPlayer,
+                            trackingStrength: 0,
+                            BulletImageKey: "bulletTypeA",
+                            shape: "rectangle"
+                        };
+                        //発射レート
+                        this.AttackRateTimer = 0.1;
+                        // 一巡目のスキル内容を書く
+                        // 自分中心から弾を出す
+                        RoundShotFunc(EnemyBulletArray, this.x, this.y, 
+                                            BulletNumber, StartAngle, DeficitPercent, 
+                                            BulletOptions, this.AssetManager);
 
 
+                    }
                     // 攻撃のながさが終わったかを確認する
                     this.AttackDuringTime1 = 3.0;
 

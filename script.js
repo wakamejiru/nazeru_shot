@@ -393,8 +393,7 @@ function gameLoop(currentTime) {
     const scaledHpBarHeight = HP_BAR_HEIGHT * scaleFactor;
     const scaledPlayerHpBarWidth = PLAYER_HP_BAR_WIDTH * scaleFactor;
     player.drawHpBar(ctx, scaledHpBarHeight, scaledPlayerHpBarWidth);
-
-    const EnemyscaledHpBarHeight = HP_BAR_HEIGHT * scaleFactor;
+    const EnemyscaledHpBarHeight = 7.0; //HPバーの幅
     if (enemy) enemy.drawHpBar(ctx, EnemyscaledHpBarHeight);
 
 

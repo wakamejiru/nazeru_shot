@@ -28,8 +28,14 @@ export class EnemyBase {
         this.NowHP = this.MaxHP;
         this.EnemyHPGuage = EnemyConfig.enemy_hp_guage;
         this.EnemyPlayULT = EnemyConfig.enemy_play_ult;
+        // スペルの発動条件
+        this.ELimitBreakPoint = EnemyConfig.e_limit_break_point;
 
-
+ 
+        // 弾の発射レートの管理用タイマ
+        this.AttackRateTimer = 0;
+        this.NowAttackRateTimer = 0;
+        this.AttackCounter = 0; // 通常攻撃汎用カウンタ
 
 
         this.SpriteEnemy = this.EnemyImageKey ? this.AssetManager.getImage(this.EnemyImageKey) : null;
@@ -188,23 +194,78 @@ export class EnemyBase {
     }
 
     // HPバーを描く
-    drawHpBar(ctx, HPBarHeightParam) { // HP_BAR_HEIGHT_PARAM から変更
+    drawHpBar(ctx, HPRingLineWidth) { // HP_BAR_HEIGHT_PARAM から変更
         if (this.NowHP <= 0 || !this.MaxHP || this.MaxHP <= 0) return;
 
-        const BarWidth = this.EnemyWidth * 0.8; // 敵の幅の8割程度に
-        const BarX = this.x - BarWidth / 2;    // 敵の中心に合わせる
-        const BarY = this.y - this.EnemyHeight / 2 - HPBarHeightParam - (5 * this.CurrentScaleFactor); // 敵の少し上
+        // HPバーを相手のキャラの周囲を円を描くような体力表示に変更
+        const CenterX = this.x;
+        const CenterY = this.y;
+
+        const HPWidth = HPRingLineWidth * this.CurrentScaleFactor;
+
+        // キャラクターのwidthとheightの長いほうを有効にして
+        const LengthMaxSide = (this.EnemyWidth > this.EnemyHeight) ? this.EnemyWidth : this.EnemyHeight;
+        const HPRadius = LengthMaxSide * 0.7;
 
         const CurrentHpPercentage = this.NowHP / this.MaxHP;
-        const CurrentHpWidth = CurrentHpPercentage * BarWidth;
 
-        ctx.fillStyle = 'rgba(80, 0, 0, 0.8)'; // 半透明背景
-        ctx.fillRect(BarX, BarY, BarWidth, HPBarHeightParam);
-        ctx.fillStyle = 'rgba(255, 0, 0, 0.8)'; // 半透明前景
-        ctx.fillRect(BarX, BarY, CurrentHpWidth > 0 ? CurrentHpWidth : 0, HPBarHeightParam);
-        // HPバーの枠線
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.strokeRect(BarX, BarY, BarWidth, HPBarHeightParam);
+        // 円弧の開始角度と終了角度
+        const StartAngle = -Math.PI / 2; // 円の上部 (12時の方向)
+        const EndAngleFullCircle = StartAngle + (Math.PI * 2); // 背景用の完全な円
+        const EndAngleCurrentHp = StartAngle + (CurrentHpPercentage * (Math.PI * 2)); // 現在のHPの割合に応じた角度
+
+        ctx.save();
+        ctx.lineCap = 'round';
+
+        // 1. HPバーの背景 (常に描画)
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(37, 26, 26, 0.6)';
+        ctx.lineWidth = HPWidth;
+        ctx.arc(CenterX, CenterY, HPRadius, 0, Math.PI * 2, false); // 全周
+        ctx.stroke();
+
+        // 2. 次に現在のHPを表示する
+         if (CurrentHpPercentage > 0) {
+            ctx.beginPath();
+            
+            // ★ HPの割合に応じて前景色を決定
+            let CurrentForegroundColor;
+                CurrentForegroundColor = 'rgba(255, 0, 0, 0.6)';  // 通常時の色 (赤)
+
+            ctx.strokeStyle = CurrentForegroundColor;
+            ctx.lineWidth = HPWidth;
+            ctx.arc(CenterX, CenterY, HPRadius, StartAngle, EndAngleCurrentHp, false);
+            ctx.stroke();
+        }
+
+        // リミット位置に達していない場合表記を行う
+        if (this.ELimitBreakPoint < CurrentHpPercentage) {
+            const LimitBreakAngle = StartAngle + (this.ELimitBreakPoint * (Math.PI * 2));
+            
+            
+            // HPマーカーの角度幅(Radiusにする)
+            const HpLimitBreakMarkerAngularWidthRad = 1 * (Math.PI / 180);
+            const MarkerStartAngle = LimitBreakAngle - (HpLimitBreakMarkerAngularWidthRad / 2);
+            const MarkerEndAngle = LimitBreakAngle + (HpLimitBreakMarkerAngularWidthRad / 2);
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.6)'; // 緑色
+            ctx.lineWidth = HPWidth; // HPバーと同じ太さ
+            ctx.arc(CenterX, CenterY, HPRadius, MarkerStartAngle, MarkerEndAngle, false);
+            ctx.stroke();
+        }
+
+        // 背景や枠を書く
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(44, 43, 43, 0.6)';
+        ctx.lineWidth = 1 * this.CurrentScaleFactor; // 枠線の太さもスケール
+        ctx.arc(CenterX, CenterY, HPRadius - HPWidth / 2, 0, Math.PI * 2, false); // 内側の枠
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(CenterX, CenterY, HPRadius + HPWidth / 2, 0, Math.PI * 2, false); // 外側の枠
+        ctx.stroke();
+
+        ctx.restore(); // 保存した描画設定を元に戻す
     }
 
     // ダメージを受けた時の処理
@@ -228,6 +289,9 @@ export class EnemyBase {
 
                     // 攻撃終了にあたり，攻撃の間隔タイマもりセット
                     this.NowAttackWatingTime = this.AttackWatingTime;
+
+                    // 攻撃汎用カウンタも削除
+                    this.AttackCounter = 0;
         }
     }
 }
