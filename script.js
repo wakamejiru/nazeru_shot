@@ -235,8 +235,10 @@ function moveEnemyBullets(deltaTime, playerInstance) {
         if (bullet.isHit) return false;
         bullet.update(deltaTime, playerInstance); // 追尾対象としてplayerインスタンスを渡す例
         // 画面外判定などは bullet.x, bullet.y, bullet.radius/width/height を使う
-        return bullet.x < ShootingCanvas.width + bullet.width/2 &&
-               bullet.y < ShootingCanvas.height + bullet.height/2 &&
+        return bullet.x > - (bullet.isCircle ? bullet.radius : bullet.width/2) &&
+               bullet.x < ShootingCanvas.width + (bullet.isCircle ? bullet.radius : bullet.width/2) &&
+               bullet.y > - (bullet.isCircle ? bullet.radius : bullet.height/2) &&
+               bullet.y < ShootingCanvas.height + (bullet.isCircle ? bullet.radius : bullet.height/2) &&
                (bullet.life > 0);
     });
 }
