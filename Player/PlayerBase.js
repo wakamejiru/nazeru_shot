@@ -179,7 +179,7 @@ export class PlayerBase {
         this.dy = 0;
         let CurrentAppliedSpeed = this.NowSpeed;
         // Zキーが押されている時は低速モードで処理を行う
-        if (Keys.ArrowZ) {
+        if (Keys['z']) {
             CurrentAppliedSpeed = this.NowSpeed * this.SlowMoveFactor;
         }
         
@@ -254,7 +254,7 @@ export class PlayerBase {
         // メインの弾から計算する
         const BulletNumber =  BulletInfo.bullet_number;
         // 半径(低速モード時は倍率をかける)
-        const BulletPointRadius =  BulletInfo.bullet_pointRadius * ((Keys.ArrowZ == true) ? bulletInfos.z_bullet_pointRadius_mag : 1.0);
+        const BulletPointRadius =  BulletInfo.bullet_pointRadius * ((Keys['z'] == true) ? BulletInfo.z_bullet_pointRadius_mag : 1.0);
         // 一射の角度を計算(ここ再確認)
         const BulletPointAngleFull = BulletInfo.bullet_pointAngle;
         const ResultPointAngle = getonethingangle(BulletNumber, BulletPointAngleFull);
@@ -266,7 +266,7 @@ export class PlayerBase {
         // 打ち出し角度により，横方向の速度を変更する必要がある
         // 基本位置と計算は同じ
         // 一射の角度を計算(ここ再確認)(低速モード時は倍率をかける)
-        const ShotBulletAngleFull = BulletInfo.Bullet_Angle * ((Keys.ArrowZ == true) ? bulletInfos.z_bullet_angle_mag : 1.0);
+        const ShotBulletAngleFull = BulletInfo.Bullet_Angle * ((Keys["z"] == true) ? BulletInfo.z_bullet_angle_mag : 1.0);
         const ResultShotAngle = getonethingangle(BulletNumber, ShotBulletAngleFull);
 
 
@@ -392,7 +392,7 @@ export class PlayerBase {
         const HitpointDrawX = this.x - HitpointDrawRadius / 2;
         const HitpointDrawY = this.y - HitpointDrawRadius / 2;
         if (this.SpriteHitpoint) { // 低速移動中は表示
-             if(Keys.ArrowZ){ 
+             if(Keys['z']){ 
                 ctx.drawImage(this.SpriteHitpoint, HitpointDrawX, HitpointDrawY, 
                     HitpointDrawRadius, HitpointDrawRadius);
              }

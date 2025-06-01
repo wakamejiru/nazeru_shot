@@ -93,7 +93,7 @@ const keys = {
     ArrowLeft: false,
     ArrowRight: false,
 	' ': false, // スペースキー (キー名は ' ' または 'Space'、ブラウザにより異なる場合があるので注意)
-    ArrowZ: false, // 'z'キーの状態を追加 (小文字で統一)
+    'z': false, // 'z'キーの状態を追加 (小文字で統一)
 };
 
 // キーダウンイベント
