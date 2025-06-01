@@ -74,6 +74,10 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
             switch(this.AttackState)
             {        
                 case 0:
+
+                    // ここである程度間引いてやらないとビームみたいになる
+
+
                     const BulletNumber = 12;
                     const StartAngle = 0;
                     const DeficitPercent = 0;
@@ -85,6 +89,9 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                         accel_y: 200,
                         jeak_x:  100,
                         jeak_y:  100,
+                        bulletWidht: 30,
+                        bulletheight: 30,
+
                         bulletRadius: 1000,
                         bulletDamage: 25,
                         bulletHP: 15,
@@ -123,11 +130,7 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                     break;
 
             }
-        } 
-        // 攻撃カウンタをリセット これは通常攻撃の終わりに実行
-        this.NowAttackWatingTime = this.AttackWatingTime;
-
-       
+        }        
         
 
     }

@@ -54,8 +54,10 @@ export function RoundShotFunc(EnemyBulletList, CenterX, CenterY, BulletNumber,
 
 
 
-
+                width: Opitons.bulletWidht,
+                height: Opitons.bulletheight,
                 radius: Opitons.bulletRadius,
+                
                 damage: Opitons.bulletDamage,
                 life: Opitons.bulletHP,
                 maxSpeed: Opitons.bulletMaxSpeed,

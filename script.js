@@ -5,7 +5,6 @@
 
 
 // script.js (メインファイル)
-import { Enemy } from './enemy.js';
 import { Bullet } from './bullet.js'; // Bulletクラスもインポート
 import { CharacterTypeEnum, imageAssetPaths, character_info_list, EnemyTypeEnum } from './game_status.js'; // game_status.js から必要なものをインポート
 import { AssetManager } from './asset_manager.js'; // AssetManagerをインポート

@@ -58,7 +58,7 @@ export class EnemyBase {
 
        // 通常攻撃の待機時間
        this.AttackWatingTime = EnemyConfig.attack_watingtime;
-       this.NowAttackWatingTime = 0;
+       this.NowAttackWatingTime = 1.5; // 最初の待機時間
        this.AttackState = 0;
        this.AttackVariation = EnemyConfig.attack_variation;
        this.SkillActiveFlag = false;
@@ -121,36 +121,42 @@ export class EnemyBase {
     move(DeltaTime) {
         if (this.NowHP <= 0) return;
 
-        // スキル実行中は停止する
-        this.NextMoveTargetTimer -= DeltaTime;
-        if (this.NextMoveTargetTimer <= 0) {
-            this.setNewTarget();
-            this.NextMoveTargetTimer = this.NextMoveTargetInterval;
-            this.MoveWaitTimer = 0; // 新しいターゲットが設定されたら即座に移動開始
+        // スキル実行中，通常攻撃実行中は停止する
+        if(this.SkillActiveFlag == true){
+            //　攻撃実行中は停止をさせる
+
+        }else{
+
+            this.NextMoveTargetTimer -= DeltaTime;
+            if (this.NextMoveTargetTimer <= 0) {
+                this.setNewTarget();
+                this.NextMoveTargetTimer = this.NextMoveTargetInterval;
+                this.MoveWaitTimer = 0; // 新しいターゲットが設定されたら即座に移動開始
+            }
+
+            if (this.MoveWaitTimer > 0) {
+                this.MoveWaitTimer -= DeltaTime;
+                return;
+            }
+
+            const Dx = this.TargetX - this.x;
+            const Dy = this.TargetY - this.y;
+            const Distance = Math.sqrt(Dx * Dx + Dy * Dy);
+
+            if (Distance < (this.EnemySpeed * DeltaTime) || Distance < 1.0) { // ほぼ到達
+                this.x = this.TargetX;
+                this.y = this.TargetY;
+                this.MoveWaitTimer = this.MoveWaitDuration;
+                return;
+            }
+
+            this.x += (Dx / Distance) * this.EnemySpeed * DeltaTime;
+            this.y += (Dy / Distance) * this.EnemySpeed * DeltaTime;
+
+            // 念のため移動後もクランプ
+            this.x = Math.max(this.MoveAreaLeftX, Math.min(this.x, this.MoveAreaRightX));
+            this.y = Math.max(this.MoveAreaTopY, Math.min(this.y, this.MoveAreaBottomY));
         }
-
-        if (this.MoveWaitTimer > 0) {
-            this.MoveWaitTimer -= DeltaTime;
-            return;
-        }
-
-        const Dx = this.TargetX - this.x;
-        const Dy = this.TargetY - this.y;
-        const Distance = Math.sqrt(Dx * Dx + Dy * Dy);
-
-        if (Distance < (this.EnemySpeed * DeltaTime) || Distance < 1.0) { // ほぼ到達
-            this.x = this.TargetX;
-            this.y = this.TargetY;
-            this.MoveWaitTimer = this.MoveWaitDuration;
-            return;
-        }
-
-        this.x += (Dx / Distance) * this.EnemySpeed * DeltaTime;
-        this.y += (Dy / Distance) * this.EnemySpeed * DeltaTime;
-
-        // 念のため移動後もクランプ
-        this.x = Math.max(this.MoveAreaLeftX, Math.min(this.x, this.MoveAreaRightX));
-        this.y = Math.max(this.MoveAreaTopY, Math.min(this.y, this.MoveAreaBottomY));
     }
 
     
@@ -219,6 +225,9 @@ export class EnemyBase {
                     this.SkillActiveFlag = false;
                     // カウンタをリセット
                     this.NowAttackDuringTime = 0;
+
+                    // 攻撃終了にあたり，攻撃の間隔タイマもりセット
+                    this.NowAttackWatingTime = this.AttackWatingTime;
         }
     }
 }
