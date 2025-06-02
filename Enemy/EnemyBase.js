@@ -69,7 +69,7 @@ export class EnemyBase {
        this.AttackVariation = EnemyConfig.attack_variation;
        this.SkillActiveFlag = false;
         
-       this.NowAttackDuringTime = 0; // 攻撃の継続時間の情報 
+       this.NowAttackLimitCnt = 0; // 攻撃の継続時間の情報 
 
     }
 
@@ -277,15 +277,15 @@ export class EnemyBase {
 
     // 攻撃終了フラグを計算する
     // return 次のステイと(攻撃区間が変わっていない間はstateは移動しないようにする)
-    isAttackendfuc(NowTime, AttackTimeTh, NextState){
+    isAttackendfuc(NowAttack, AttackLimitTh, NextState){
         
-        if(NowTime > AttackTimeTh){
+        if(NowAttack > AttackLimitTh){
                     
                     // 次のアタックシーケンスに移行させる
                     this.AttackState = NextState;
                     this.SkillActiveFlag = false;
                     // カウンタをリセット
-                    this.NowAttackDuringTime = 0;
+                    this.NowAttackLimitCnt = 0;
 
                     // 攻撃終了にあたり，攻撃の間隔タイマもりセット
                     this.NowAttackWatingTime = this.AttackWatingTime;

@@ -378,7 +378,7 @@ function gameLoop(currentTime) {
 
     player._shoot(keys, playerBullets, enemy, clampedDeltaTime);
 
-    if (enemy) enemy._shoot(enemybullets, Bullet, player, clampedDeltaTime); // 追尾用にplayer, タイマー更新用にdeltaTime
+    if (enemy) enemy._shoot(enemybullets, player, clampedDeltaTime); // 追尾用にplayer, タイマー更新用にdeltaTime
 
     moveEnemyBullets(clampedDeltaTime, player); // 追尾対象としてplayerを渡す
     movePlayerBullets(clampedDeltaTime, player);

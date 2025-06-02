@@ -1,6 +1,6 @@
 // Type1Enemyのクラス
 import { EnemyBase } from "./EnemyBase.js";
-import { RoundShotFunc } from "./EnemyShot.js";
+import { RoundShotFunc, FanShotFunc } from "./EnemyShot.js";
 
 
 import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum, 
@@ -56,7 +56,7 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
     }
 
     // 通常攻撃を放つ
-    _shoot(EnemyBulletArray, TargetPlayer, CurrentTime, DeltaTime){
+    _shoot(EnemyBulletArray, TargetPlayer, DeltaTime){
         if (this.NowHP <= 0) {
             return;
         }
@@ -89,14 +89,14 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                         let StartAngle = (this.AttackCounter % 2 == 0) ? (2) : 0;
                         StartAngle += (this.AttackCounter % 3 == 0) ? (4) : 0;
                         const BulletOptions = {
-                            x_speed: 500,
-                            y_speed: 500,
-                            accel_x: 200,
-                            accel_y: 200,
-                            jeak_x:  100,
-                            jeak_y:  100,
-                            bulletWidht: 30,
-                            bulletheight: 30,
+                            x_speed: 200,
+                            y_speed: 200,
+                            accel_x: 0,
+                            accel_y: 0,
+                            jeak_x:  0,
+                            jeak_y:  0,
+                            bulletWidht: 10,
+                            bulletheight: 10,
 
                             bulletRadius: 1000,
                             bulletDamage: 25,
@@ -108,28 +108,112 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                             shape: "rectangle"
                         };
                         //発射レート
-                        this.AttackRateTimer = 0.1;
+                        this.AttackRateTimer = 0.2;
                         // 一巡目のスキル内容を書く
                         // 自分中心から弾を出す
                         RoundShotFunc(EnemyBulletArray, this.x, this.y, 
                                             BulletNumber, StartAngle, DeficitPercent, 
                                             BulletOptions, this.AssetManager);
-
+                        this.NowAttackLimitCnt += 1.0;
+                        
 
                     }
                     // 攻撃のながさが終わったかを確認する
-                    this.AttackDuringTime1 = 3.0;
+                    // 20個打ったら終了
+                    this.AttackLimitCnt = 10;
 
-                    this.NowAttackDuringTime += DeltaTime;
                     // 攻撃区間を終了するかの判定を行う
-                    super.isAttackendfuc(this.NowAttackDuringTime, this.AttackDuringTime1, 1);
+                    super.isAttackendfuc(this.NowAttackLimitCnt, this.AttackLimitCnt, 1);
 
                    
                     break;
 
                 case 1:
-                    // 二巡目のスキル内容を書く
-                    this.AttackState = 2;
+                    // 扇型にの処理弾を3発
+                    // 発射先は相手の現在の位置
+
+                    // ここである程度間引いてやらないとビームみたいになる
+
+                    if(this.NowAttackRateTimer < this.AttackRateTimer){
+                        this.NowAttackRateTimer += DeltaTime;
+                    }else{
+                        this.NowAttackRateTimer = 0; // リセット
+                        const BulletNumberMax = 15; // 扇型にするために徐々に弾を消していかなければならない
+                        const DeficitPercent = 0;
+                        
+                        const ProprtyCoeffient = 2.0;
+                        
+                        const BulletNumber = Math.round( (BulletNumberMax -  (ProprtyCoeffient * this.AttackCounter)));
+
+                        // 扇の角度
+                        const FanAngle = 60;                    
+
+                        // 発射中心は一発ごとに固定
+                        if(this.AttackCounter == 0){
+                            // 発射位置、発射角度を求める
+                            // 発射位置は三回とも変化
+                            // とりあえず自分中心でとりあえず書いてみる
+                            this.NowPlayerPointX = TargetPlayer.x;
+                            this.NowPlayerPointY = TargetPlayer.y;
+                            this.NowEnemyPointX = this.x;
+                            this.NowEnemyPointY = this.y;
+                            this.DeltaX = this.NowPlayerPointX - this.NowEnemyPointX;
+                            this.DeltaY = this.NowPlayerPointY - this.NowEnemyPointY;
+                            // 角度をラジアンで計算
+                            this.AngleRadians = Math.atan2(this.DeltaY, this.DeltaX);
+                            // ラジアンを度数に変換
+                            this.CalculatedFanCenterAngleDegrees = this.AngleRadians * (180 / Math.PI);
+                        }
+
+                        
+                        const BulletOptions = {
+                            x_speed: 40,
+                            y_speed: 40,
+                            accel_x: 30,
+                            accel_y: 30,
+                            jeak_x:  0,
+                            jeak_y:  0,
+                            bulletWidht: 10,
+                            bulletheight: 10,
+
+                            bulletRadius: 1000,
+                            bulletDamage: 25,
+                            bulletHP: 15,
+                            bulletMaxSpeed: 250000,
+                            playerInstance: TargetPlayer,
+                            trackingStrength: 0,
+                            BulletImageKey: "bulletTypeA",
+                            shape: "rectangle"
+                        };
+                        //発射レート
+                        this.AttackRateTimer = 0.2;
+                        // 一巡目のスキル内容を書く
+                        // 自分中心から弾を出す
+                        FanShotFunc(EnemyBulletArray, this.NowEnemyPointX, this.NowEnemyPointY, 
+                                            BulletNumber, 
+                                            FanAngle, 
+                                            this.CalculatedFanCenterAngleDegrees,  // 扇の方向
+                                            BulletOptions, this.AssetManager);
+
+
+                        this.AttackCounter += 1;
+                        
+                        if(BulletNumber == 1){
+                            this.AttackCounter = 0;
+                              this.NowAttackLimitCnt += 1.0;
+                        }
+
+
+                    }
+
+
+                    // 弾をすべて打ち出し終わったら終了するように変更する
+                    this.AttackLimitCnt = 3; // 3回扇を出す
+
+
+                    // 攻撃区間を終了するかの判定を行う
+                    super.isAttackendfuc(this.NowAttackLimitCnt, this.AttackLimitCnt, 2);
+
                     break;
 
                 case 2:
