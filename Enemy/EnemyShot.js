@@ -17,17 +17,17 @@ import { Bullet } from '../bullet.js'; // Bulletクラスもインポート
 // 停止した時に何秒か待機できるようにする
 
 export function RoundShotFunc(EnemyBulletList, CenterX, CenterY, BulletNumber, 
-    StartAngle, DeficitPercent, Opitons, AssetManager){
+    StartAngle,  Opitons, AssetManager, EndAngle){
     // 作ったインスタンスをpushする
     let StartPointX = CenterX;
     let StartPointY = CenterY;
 
     // 何度ごとに，射出するかを決める
-    const OneStepAngle = 360/BulletNumber;
+    const OneStepAngle = (EndAngle - StartAngle)/BulletNumber;
     const FirstAngle = StartAngle;
 
 
-    for(let i = 0; i < 360; i++){
+    for(let i = 0; i < BulletNumber; i++){
         const RadiusAngle = (FirstAngle + (OneStepAngle * i))* Math.PI / 180;
         // 停止条件も変更する必要がある
 
@@ -151,3 +151,17 @@ export function FanShotFunc(
         bulletList.push(new Bullet(originX, originY, assetManager, finalBulletOptions));
     }
 }
+
+
+/**
+ * 指定された中心点から風車状に弾を発射する関数
+ * @param {Array} bulletList - 生成された弾を追加する配列
+ * @param {number} originX - 発射の基点X座標 (扇の要)
+ * @param {number} originY - 発射の基点Y座標 (扇の要)
+ * @param {bool}  ccw true:時計回り false反時計回り
+ * @param {number} numberOfBullets - 玉の数
+ * @param {number} fanSpreadAngleDegrees - 弾数最大値の時の1弾当たりの角度
+ * @param {number} fanCenterAngleDegrees - 扇の中心線の角度 (度数法)
+ * @param {object} baseBulletOptions - 弾の基本設定オブジェクト。
+ * @param {AssetManager} assetManager - アセットマネージャーのインスタンス
+ */

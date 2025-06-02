@@ -88,6 +88,7 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                                                  
                         let StartAngle = (this.AttackCounter % 2 == 0) ? (2) : 0;
                         StartAngle += (this.AttackCounter % 3 == 0) ? (4) : 0;
+                        let EndAngle = StartAngle + 360;
                         const BulletOptions = {
                             x_speed: 200,
                             y_speed: 200,
@@ -112,8 +113,8 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                         // 一巡目のスキル内容を書く
                         // 自分中心から弾を出す
                         RoundShotFunc(EnemyBulletArray, this.x, this.y, 
-                                            BulletNumber, StartAngle, DeficitPercent, 
-                                            BulletOptions, this.AssetManager);
+                                            BulletNumber, StartAngle,  
+                                            BulletOptions, this.AssetManager, EndAngle);
                         this.NowAttackLimitCnt += 1.0;
                         
 
@@ -217,13 +218,14 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
 
 
                     // 攻撃区間を終了するかの判定を行う
-                    super.isAttackendfuc(this.NowAttackLimitCnt, this.AttackLimitCnt, 3);
+                    super.isAttackendfuc(this.NowAttackLimitCnt, this.AttackLimitCnt, 2);
 
                     break;
 
                 case 2:
                     // 三巡目のスキル内容を書く
                     // バームクーヘン型に発射する
+
                     // 扇型にの処理弾を3発
                     // 発射先は相手の現在の位置
 
@@ -233,12 +235,11 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                         this.NowAttackRateTimer += DeltaTime;
                     }else{
                         this.NowAttackRateTimer = 0; // リセット
-                        const BulletNumberMax = 15; // 扇型にするために徐々に弾を消していかなければならないこの現象がなければバームクーヘンになる
-                        
+                        const BulletNumberMax = 15; // バームクーヘン
                         
                         const ProprtyCoeffient = 2.0;
                         
-                        const BulletNumber = BulletNumber;
+                        const BulletNumber = BulletNumberMax;
 
                         // 扇の角度
                         const FanAngle = 60;    
@@ -262,12 +263,15 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                             this.CalculatedFanCenterAngleDegrees = this.AngleRadians * (180 / Math.PI);
                         }
 
-                        
+
+
+                        let StartAngle = this.CalculatedFanCenterAngleDegrees - FanAngle/2;
+                        let EndAngle = this.CalculatedFanCenterAngleDegrees + FanAngle/2;
                         const BulletOptions = {
-                            x_speed: 40,
-                            y_speed: 40,
-                            accel_x: 30,
-                            accel_y: 30,
+                            x_speed: 200,
+                            y_speed: 200,
+                            accel_x: 0,
+                            accel_y: 0,
                             jeak_x:  0,
                             jeak_y:  0,
                             bulletWidht: 10,
@@ -286,21 +290,19 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                         this.AttackRateTimer = 0.2;
                         // 一巡目のスキル内容を書く
                         // 自分中心から弾を出す
-                        FanShotFunc(EnemyBulletArray, this.NowEnemyPointX, this.NowEnemyPointY, 
-                                            BulletNumber, 
-                                            FanAngleOneStep, 
-                                            this.CalculatedFanCenterAngleDegrees,  // 扇の方向
-                                            BulletOptions, this.AssetManager);
+                        RoundShotFunc(EnemyBulletArray, this.x, this.y, 
+                                            BulletNumber, StartAngle,  
+                                            BulletOptions, this.AssetManager, EndAngle);
 
 
                         this.AttackCounter += 1;
                         
-                        if(this.AttackCounter > 5){ // 5初発射でリセット
+                        if(this.AttackCounter > 5){ // 一回につき5発
                             this.AttackCounter = 0;
                             this.NowAttackLimitCnt += 1.0;
 
                             this.NowAttackRateTimer = 0; // ここを変えておかないと、3連続になる
-                            this.AttackRateTimer = 0.5; // 1扇0.5s間隔
+                            this.AttackRateTimer = 0.5; // 1バームクーヘン0.5s間隔
                         }
 
 
@@ -308,12 +310,18 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
 
 
                     // 弾をすべて打ち出し終わったら終了するように変更する
-                    this.AttackLimitCnt = 3; // 3回扇を出す
+                    this.AttackLimitCnt = 3; // 3回バームクーヘンを出す
 
 
                     // 攻撃区間を終了するかの判定を行う
                     super.isAttackendfuc(this.NowAttackLimitCnt, this.AttackLimitCnt, 0);
 
+                    break;
+
+                case 4:
+                    // 4回目の通常攻撃
+                    // 風車上に出す
+                    
                     break;
 
             }
