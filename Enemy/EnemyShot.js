@@ -75,7 +75,7 @@ export function RoundShotFunc(EnemyBulletList, CenterX, CenterY, BulletNumber,
  * @param {number} originX - 発射の基点X座標 (扇の要)
  * @param {number} originY - 発射の基点Y座標 (扇の要)
  * @param {number} numberOfBullets - 扇の段数による弾の数(徐々に減少もしくは徐々に増大)
- * @param {number} fanSpreadAngleDegrees - 扇全体の角度 (度数法)
+ * @param {number} fanSpreadAngleDegrees - 弾数最大値の時の1弾当たりの角度
  * @param {number} fanCenterAngleDegrees - 扇の中心線の角度 (度数法)
  * @param {object} baseBulletOptions - 弾の基本設定オブジェクト。
  * @param {AssetManager} assetManager - アセットマネージャーのインスタンス
@@ -98,7 +98,7 @@ export function FanShotFunc(
     const FanSpreadAngleRad = fanSpreadAngleDegrees * Math.PI / 180;
     const FanCenterAngleRad = fanCenterAngleDegrees * Math.PI / 180;
 
-    let FirstBulletAngleRad = fanCenterAngleDegrees;
+    let FirstBulletAngleRad = FanCenterAngleRad;
     let AngleStepRad = 0;
 
     if (numberOfBullets === 1) {
@@ -106,8 +106,9 @@ export function FanShotFunc(
         FirstBulletAngleRad = FanCenterAngleRad;
     } else {
         // 複数の弾の場合、扇状に均等に配置
-        FirstBulletAngleRad = FanCenterAngleRad - FanSpreadAngleRad / 2;
-        AngleStepRad = FanSpreadAngleRad / (numberOfBullets - 1);
+        FirstBulletAngleRad = FanCenterAngleRad - FanSpreadAngleRad *  numberOfBullets/ 2;
+
+        AngleStepRad = FanSpreadAngleRad;
     }
 
     // baseBulletOptions から速度、加速度、ジャークの「大きさ」を取得

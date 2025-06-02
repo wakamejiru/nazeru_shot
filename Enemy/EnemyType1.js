@@ -138,7 +138,7 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                         this.NowAttackRateTimer += DeltaTime;
                     }else{
                         this.NowAttackRateTimer = 0; // リセット
-                        const BulletNumberMax = 15; // 扇型にするために徐々に弾を消していかなければならない
+                        const BulletNumberMax = 15; // 扇型にするために徐々に弾を消していかなければならないこの現象がなければバームクーヘンになる
                         const DeficitPercent = 0;
                         
                         const ProprtyCoeffient = 2.0;
@@ -146,7 +146,9 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                         const BulletNumber = Math.round( (BulletNumberMax -  (ProprtyCoeffient * this.AttackCounter)));
 
                         // 扇の角度
-                        const FanAngle = 60;                    
+                        const FanAngle = 60;    
+                        const FanAngleOneStep = FanAngle/BulletNumberMax;    
+
 
                         // 発射中心は一発ごとに固定
                         if(this.AttackCounter == 0){
@@ -191,7 +193,7 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                         // 自分中心から弾を出す
                         FanShotFunc(EnemyBulletArray, this.NowEnemyPointX, this.NowEnemyPointY, 
                                             BulletNumber, 
-                                            FanAngle, 
+                                            FanAngleOneStep, 
                                             this.CalculatedFanCenterAngleDegrees,  // 扇の方向
                                             BulletOptions, this.AssetManager);
 
