@@ -1,14 +1,17 @@
 // ここまで見に来たということは熱心なナゼルファンなのか
 // 熱心な技術ヲタクなのであろう
 // といわけで制作秘話をここに乗せる
-
+// 自分は，C++が主な主戦場なので，C++でよく見られる記載を行っている
+// インタプリタ言語はかなり苦手なので非効率な面が多い
+// 開発は5/20あたりで開始し，6月2日にJSで主要機能を果たせることを確認
+// そこから画面構成等を作り出した
 
 
 // script.js (メインファイル)
 
 // 各import
 import { Bullet } from './bullet.js'; // Bulletクラスもインポート
-import { CharacterTypeEnum, imageAssetPaths, character_info_list, EnemyTypeEnum } from './game_status.js'; // game_status.js から必要なものをインポート
+import { CharacterTypeEnum,imageAssetPaths, ImageAssetPaths, character_info_list, EnemyTypeEnum } from './game_status.js'; // game_status.js から必要なものをインポート
 import { AssetManager } from './asset_manager.js'; // AssetManagerをインポート
 // Playerのクラスを作成する
 import { PlayerType1 } from './Player/Type1Player.js';
@@ -16,9 +19,11 @@ import { PlayerType1 } from './Player/Type1Player.js';
 // 敵のクラスを作成する
 import { EnemyType1 } from './Enemy/EnemyType1.js';
 
+import { UpdateLoadingAnimation } form './CreatingMainPicture.js';
+
 // 主要ゲーム画面を宣言
-const ShootingCanvas = document.getElementById('shootinggameCanvas');
-const ctx = ShootingCanvas.getContext('2d');
+const MainCanvas = document.getElementById('shootinggameCanvas');
+const MainCtx = MainCanvas.getContext('2d');
 
 // --- 画面状態の定義 ---
 const SCREEN_STATE = Object.freeze({
@@ -32,59 +37,103 @@ const SCREEN_STATE = Object.freeze({
     GAME_WIN: 'game_win', 
     TUTORIAL_CANVAS: "Tutorial"
 });
-let currentScreen = SCREEN_STATE.LOADING; // ★ 初期画面 (またはMODE_SELECT)
+let CurrentScreen = SCREEN_STATE.LOADING; // ★ 初期画面 (またはMODE_SELECT)
 
 // --- 基本ゲーム画面のCanvasの基準サイズ---
 const OVERALL_BASE_WIDTH = 1920;
 const OVERALL_BASE_HEIGHT = 1080;
 
-let currentTotalWidth = OVERALL_BASE_WIDTH;   // メインCanvasの現在の実際の幅
-let currentTotalHeight = OVERALL_BASE_HEIGHT; // メインCanvasの現在の実際の高さ
-let mainScaleFactor = 1; // メインCanvas全体のスケールファクター 
-const gameplayOffscreenCanvas = document.createElement('canvas');
-const gameplayOffscreenCtx = gameplayOffscreenCanvas.getContext('2d');
+let CurrentTotalWidth = OVERALL_BASE_WIDTH;   // メインCanvasの現在の実際の幅
+let CurrentTotalHeight = OVERALL_BASE_HEIGHT; // メインCanvasの現在の実際の高さ
+let MainScaleFactor = 1; // メインCanvas全体のスケールファクター 
+const GameplayOffscreenCanvas = document.createElement('canvas');
+const GameplayOffscreenCtx = GameplayOffscreenCanvas.getContext('2d');
 
-function resizeGame_() {
-    const screenOccupationRatio = 1.0; // メインCanvasは画面いっぱい、または指定の割合で表示
-    const overallAspectRatio = OVERALL_BASE_WIDTH / OVERALL_BASE_HEIGHT;
+// 枠
+let Player;
+let Enemy;
+const AssetManagerInstance = new AssetManager(ImageAssetPaths);
+// インスタンスを生成しておいておくところ，ロード時に生成してpushしておくのがよい
+let PlayerBulletList = [];
+let EnemyBulletList = [];
+let UpdateLoadingLigicState = 0; // 読み込み順序ステイト
+let LoadingFinished = false; // ロード終了フラグ
 
-    let targetAvailableWidth = window.innerWidth * screenOccupationRatio;
-    let targetAvailableHeight = window.innerHeight * screenOccupationRatio;
-    const windowAspectRatio = targetAvailableWidth / targetAvailableHeight;
+// ゲーム画面のリサイジングを行う
+// ゲーム画面のサイズの変更時，初期起動時に実行する
+function ResizeGame_() {
+    // メイン画面は画面いっぱいに表現する
+    const ScreenOccupationRatio = 1.0;
+    // 画面比率を計算   
+    const OverallAspectRatio = OVERALL_BASE_WIDTH / OVERALL_BASE_HEIGHT;
+    // ウインドウのサイズから，可能な画面サイズを出す
+    let TargetAvailableWidth = window.innerWidth * ScreenOccupationRatio;
+    let TargetAvailableHeight = window.innerHeight * ScreenOccupationRatio;
+    const WindowAspectRatio = TargetAvailableWidth / TargetAvailableHeight; // アスペクト比を取得
 
-    if (windowAspectRatio > overallAspectRatio) {
-        currentTotalHeight = targetAvailableHeight;
-        currentTotalWidth = currentTotalHeight * overallAspectRatio;
+    // どちらの画面サイズが大きいかで優先を付ける
+    if (WindowAspectRatio > OverallAspectRatio) {
+        CurrentTotalHeight = TargetAvailableHeight;
+        CurrentTotalWidth = CurrentTotalHeight * OverallAspectRatio;
     } else {
-        currentTotalWidth = targetAvailableWidth;
-        currentTotalHeight = currentTotalWidth / overallAspectRatio;
+        CurrentTotalWidth = TargetAvailableWidth;
+        CurrentTotalHeight = CurrentTotalWidth / OverallAspectRatio;
     }
 
-    mainCanvas.width = currentTotalWidth;
-    mainCanvas.height = currentTotalHeight;
+    MainCanvas.width = CurrentTotalWidth;
+    MainCanvas.height = CurrentTotalHeight;
 
-    mainScaleFactor = currentTotalHeight / OVERALL_BASE_HEIGHT; // 全体UIのスケール基準
-
-    // ゲームプレイ用オフスクリーンCanvasのサイズもここで更新 (GAMEPLAY画面の時のみ必要かもしれない)
-    // このスケールは、ゲームプレイ領域がOVERALLに対してどう配置されるかによって変わる
-    // 例: ゲームプレイ領域がメインCanvasの高さ全体を使うと仮定
-    const gameplayAreaActualHeight = mainCanvas.height;
-    const gameplayScaleFactor = gameplayAreaActualHeight / GAMEPLAY_BASE_HEIGHT;
-
-    gameplayOffscreenCanvas.width = GAMEPLAY_BASE_WIDTH * gameplayScaleFactor;
-    gameplayOffscreenCanvas.height = GAMEPLAY_BASE_HEIGHT * gameplayScaleFactor; // mainCanvas.height と同じになる
-
-    // 現在の画面がゲームプレイなら、オブジェクトのスケールも更新
-    if (currentScreen === SCREEN_STATE.GAMEPLAY) {
-        if (player) {
-            player.updateScale(gameplayScaleFactor, gameplayOffscreenCanvas, GAMEPLAY_BASE_WIDTH, GAMEPLAY_BASE_HEIGHT);
-        }
-        if (enemy) {
-            enemy.updateScale(gameplayScaleFactor, gameplayOffscreenCanvas, GAMEPLAY_BASE_WIDTH, GAMEPLAY_BASE_HEIGHT);
-        }
-    }
-    // 他の画面も、必要ならリサイズ時に要素の再配置処理を呼ぶ
+    MainScaleFactor = CurrentTotalHeight / OVERALL_BASE_HEIGHT; // 全体UIのスケール基準
 }
+
+/**
+ * ゲームのロード中を表示させる
+ * @param {ctx} NowCtx - 描画を行うctx
+ * @param {number} Scale - 描画先の倍率
+ */
+function DrawLoadingScreen(NowCtx, Scale) {
+    NowCtx.fillStyle = 'gray';
+    NowCtx.fillRect(0, 0, NowCtx.canvas.width, NowCtx.canvas.height);
+    NowCtx.fillStyle = 'white';
+    NowCtx.font = `${30 * NowCtx}px Arial`;
+    NowCtx.textAlign = 'center';
+    NowCtx.fillText("Loading...", NowCtx.canvas.width / 2, NowCtx.canvas.height / 2);
+    // アセット読み込み進捗なども表示可能
+}
+
+/**
+ * ゲームのロードを行う
+ */
+function UpdateLoadingLogic() {
+    // プレイヤーとエネミーの作成も行う
+    switch(UpdateLoadingLigicState){
+        case 0:
+            // Player = new PlayerType1(initialPlayerX, initialPlayerY, assetManager, ShootingCanvas, ShootingCanvas.width, ShootingCanvas.height);
+            // PlayerBulletList.push(Player);
+            break;
+        case 1:
+
+            break;
+        case 2:
+
+            break;  
+        case 3:
+
+            break;
+
+        case 4:
+
+            break;
+
+        case 5:
+
+            break;
+
+    }
+    ++UpdateLoadingLigicState;
+}
+
+
 // キャンバスのサイズ設定
 const BASE_WIDTH = OVERALL_BASE_WIDTH;  // ゲームの基準幅
 const BASE_HEIGHT = OVERALL_BASE_HEIGHT; // ゲームの基準高さ
@@ -119,37 +168,47 @@ const keyToCharacterType = {
 
 };
 
+async function InitializeGame(){
+    // 全アセット読み出し後ローディング画面になる(別スレッド処理となるため考慮しない)
+    await AssetManagerInstance.loadAllAssets();
+
+    // ローディング画面を表示
+    InitilizeLoadingScreen();
+
+}
+
 // 初期化を実行する
 async function initializeGame() {
-    try {
-        await assetManager.loadAllAssets();
-        console.log("All assets loaded.");
+    DrawLoadingScreen(MainCtx, MainScaleFactor);
+//     try {
+//         await assetManager.loadAllAssets();
+//         console.log("All assets loaded.");
         
-        // 借り初期値を入れる
-        const initialPlayerX = 0;
-        const initialPlayerY = 0;
+//         // 借り初期値を入れる
+//         const initialPlayerX = 0;
+//         const initialPlayerY = 0;
 
-        player = new PlayerType1(initialPlayerX, initialPlayerY, assetManager, ShootingCanvas, ShootingCanvas.width, ShootingCanvas.height);
+//         player = new PlayerType1(initialPlayerX, initialPlayerY, assetManager, ShootingCanvas, ShootingCanvas.width, ShootingCanvas.height);
 
-        const EnemyType = EnemyTypeEnum.E_TYPE_1;
+//         const EnemyType = EnemyTypeEnum.E_TYPE_1;
 
-        // Enemy インスタンスの生成 (Player と同様に assetManager や characterType を渡す)
-//         enemy = new Enemy( BASE_WIDTH / 2, BASE_HEIGHT * 0.3, EnemyType, assetManager, ShootingCanvas);
+//         // Enemy インスタンスの生成 (Player と同様に assetManager や characterType を渡す)
+// //         enemy = new Enemy( BASE_WIDTH / 2, BASE_HEIGHT * 0.3, EnemyType, assetManager, ShootingCanvas);
 
-        enemy = new EnemyType1(BASE_WIDTH / 2, BASE_HEIGHT * 0.3, assetManager, ShootingCanvas);
+//         enemy = new EnemyType1(BASE_WIDTH / 2, BASE_HEIGHT * 0.3, assetManager, ShootingCanvas);
 
-        resizeGame();
+//         resizeGame();
 
-        // 初期時の場所を変更
-        player.x = ShootingCanvas.width / 2;          // X方向: ShootingCanvasの幅の中心
-        player.y = ShootingCanvas.height * 0.9;       // Y方向: ShootingCanvasの高さの上から90%の位置 (つまり下から10%の位置)
+//         // 初期時の場所を変更
+//         player.x = ShootingCanvas.width / 2;          // X方向: ShootingCanvasの幅の中心
+//         player.y = ShootingCanvas.height * 0.9;       // Y方向: ShootingCanvasの高さの上から90%の位置 (つまり下から10%の位置)
 
 
-        requestAnimationFrame(gameLoop);
+//         requestAnimationFrame(gameLoop);
 
-    } catch (error) {
-        console.error("Failed to initialize game:", error);
-    }
+//     } catch (error) {
+//         console.error("Failed to initialize game:", error);
+//     }
 }
 
 
@@ -235,7 +294,7 @@ async function changePlayerCharacter(newCharacterType) {
 
 function handleResize() {
     // ウィンドウサイズが変わったときに行いたい処理をここに書く
-    resizeGame(); // ← あなたのゲームのキャンバスリサイズ関数
+    //resizeGame(); // ← あなたのゲームのキャンバスリサイズ関数
 }
 
 
@@ -421,6 +480,37 @@ function clearCanvas() {
 let animationFrameId; // ゲームループのIDを保持
 // 画面のリフレッシュレート違いによる問題を解消
 let lastTime = 0;
+
+
+/**
+ * ゲームを進行するノーマルループ
+ * @param {number} CurrentTime - 現在の経過時間
+ * @param {number} centerX - 発射の基点X座標
+ * @param {number} centerY - 発射の基点Y座標
+ * @param {bool}  ccw true:時計回り false反時計回り
+ * @param {number}  WindmillPointRadius 打ち出し半径の長さ
+ * @param {number}  WindmillPointRadiusfunc 打ち出し半径の長さの変異処理の関数
+ * @param {number}  bulletAngleStart 開始角度(度数法)
+ * @param {number}  bulletAngleEnd 終了角度(度数法)
+ * @param {number} numberOfBullets - 球の数
+ * @param {object} baseBulletOptions - 弾の基本設定オブジェクト。
+ * @param {AssetManager} assetManager - アセットマネージャーのインスタンス
+ * @param {AssetManager} shotCnt - ここの数値をずらしていくことで、発射角度がshitし、風車方になる
+ * @param {AssetManager} shotAngleSpeed - shotCntにつけるシフト量回転の速度を表す
+ */
+function GameLoop(CurrentTime){
+     switch (CurrentScreen) {
+        case SCREEN_STATE.LOADING:
+            UpdateLoadingLogic();
+            UpdateLoadingAnimation(clampedDeltaTime);
+            break;
+        case SCREEN_STATE.MODE_SELECT:
+            updateModeSelectLogic(clampedDeltaTime); // (作成する場合)
+            drawModeSelectScreen(mainCtx, mainScaleFactor);
+            break;
+    }
+}
+
 
 function gameLoop(currentTime) {
     if (isGameOver || isGameWin) {

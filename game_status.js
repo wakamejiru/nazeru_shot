@@ -746,13 +746,19 @@ export const  sub_bulled_info_list = {
 };
 
 // AssetManagerで使う画像パスのリスト
+export const ImageAssetPaths = Object.freeze({
+    AvatarTypeA: "image/avatar/avator1.png",
+    HitImageTypeA: "image/avatar/HitImage.svg",
+    BulletTypeA: "image/canon/cirlce1.svg",
+    EnemyTypeA: "image/enemy/Enemy1.png"
+});
+// AssetManagerで使う画像パスのリスト
 export const imageAssetPaths = Object.freeze({
     avatarTypeA: "image/avatar/avator1.png",
     HitImageTypeA: "image/avatar/HitImage.svg",
     bulletTypeA: "image/canon/cirlce1.svg",
     EnemyTypeA: "image/enemy/Enemy1.png"
 });
-
 
 // キャラクター情報から作成する
 // 一番上から名前
