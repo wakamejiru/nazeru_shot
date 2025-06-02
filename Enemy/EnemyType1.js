@@ -202,7 +202,10 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                         
                         if(BulletNumber == 1){
                             this.AttackCounter = 0;
-                              this.NowAttackLimitCnt += 1.0;
+                            this.NowAttackLimitCnt += 1.0;
+
+                            this.NowAttackRateTimer = 0; // ここを変えておかないと、3連続になる
+                            this.AttackRateTimer = 0.5; // 1扇0.5s間隔
                         }
 
 
@@ -214,13 +217,103 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
 
 
                     // 攻撃区間を終了するかの判定を行う
-                    super.isAttackendfuc(this.NowAttackLimitCnt, this.AttackLimitCnt, 2);
+                    super.isAttackendfuc(this.NowAttackLimitCnt, this.AttackLimitCnt, 3);
 
                     break;
 
                 case 2:
                     // 三巡目のスキル内容を書く
-                    this.AttackState = 0;
+                    // バームクーヘン型に発射する
+                    // 扇型にの処理弾を3発
+                    // 発射先は相手の現在の位置
+
+                    // ここである程度間引いてやらないとビームみたいになる
+
+                    if(this.NowAttackRateTimer < this.AttackRateTimer){
+                        this.NowAttackRateTimer += DeltaTime;
+                    }else{
+                        this.NowAttackRateTimer = 0; // リセット
+                        const BulletNumberMax = 15; // 扇型にするために徐々に弾を消していかなければならないこの現象がなければバームクーヘンになる
+                        
+                        
+                        const ProprtyCoeffient = 2.0;
+                        
+                        const BulletNumber = BulletNumber;
+
+                        // 扇の角度
+                        const FanAngle = 60;    
+                        const FanAngleOneStep = FanAngle/BulletNumberMax;    
+
+
+                        // 発射中心は一発ごとに固定
+                        if(this.AttackCounter == 0){
+                            // 発射位置、発射角度を求める
+                            // 発射位置は三回とも変化
+                            // とりあえず自分中心でとりあえず書いてみる
+                            this.NowPlayerPointX = TargetPlayer.x;
+                            this.NowPlayerPointY = TargetPlayer.y;
+                            this.NowEnemyPointX = this.x;
+                            this.NowEnemyPointY = this.y;
+                            this.DeltaX = this.NowPlayerPointX - this.NowEnemyPointX;
+                            this.DeltaY = this.NowPlayerPointY - this.NowEnemyPointY;
+                            // 角度をラジアンで計算
+                            this.AngleRadians = Math.atan2(this.DeltaY, this.DeltaX);
+                            // ラジアンを度数に変換
+                            this.CalculatedFanCenterAngleDegrees = this.AngleRadians * (180 / Math.PI);
+                        }
+
+                        
+                        const BulletOptions = {
+                            x_speed: 40,
+                            y_speed: 40,
+                            accel_x: 30,
+                            accel_y: 30,
+                            jeak_x:  0,
+                            jeak_y:  0,
+                            bulletWidht: 10,
+                            bulletheight: 10,
+
+                            bulletRadius: 1000,
+                            bulletDamage: 25,
+                            bulletHP: 15,
+                            bulletMaxSpeed: 250000,
+                            playerInstance: TargetPlayer,
+                            trackingStrength: 0,
+                            BulletImageKey: "bulletTypeA",
+                            shape: "rectangle"
+                        };
+                        //発射レート
+                        this.AttackRateTimer = 0.2;
+                        // 一巡目のスキル内容を書く
+                        // 自分中心から弾を出す
+                        FanShotFunc(EnemyBulletArray, this.NowEnemyPointX, this.NowEnemyPointY, 
+                                            BulletNumber, 
+                                            FanAngleOneStep, 
+                                            this.CalculatedFanCenterAngleDegrees,  // 扇の方向
+                                            BulletOptions, this.AssetManager);
+
+
+                        this.AttackCounter += 1;
+                        
+                        if(this.AttackCounter > 5){ // 5初発射でリセット
+                            this.AttackCounter = 0;
+                            this.NowAttackLimitCnt += 1.0;
+
+                            this.NowAttackRateTimer = 0; // ここを変えておかないと、3連続になる
+                            this.AttackRateTimer = 0.5; // 1扇0.5s間隔
+                        }
+
+
+                    }
+
+
+                    // 弾をすべて打ち出し終わったら終了するように変更する
+                    this.AttackLimitCnt = 3; // 3回扇を出す
+
+
+                    // 攻撃区間を終了するかの判定を行う
+                    super.isAttackendfuc(this.NowAttackLimitCnt, this.AttackLimitCnt, 0);
+
                     break;
 
             }
