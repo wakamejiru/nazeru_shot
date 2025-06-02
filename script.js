@@ -5,6 +5,8 @@
 
 
 // script.js (メインファイル)
+
+// 各import
 import { Bullet } from './bullet.js'; // Bulletクラスもインポート
 import { CharacterTypeEnum, imageAssetPaths, character_info_list, EnemyTypeEnum } from './game_status.js'; // game_status.js から必要なものをインポート
 import { AssetManager } from './asset_manager.js'; // AssetManagerをインポート
@@ -14,12 +16,78 @@ import { PlayerType1 } from './Player/Type1Player.js';
 // 敵のクラスを作成する
 import { EnemyType1 } from './Enemy/EnemyType1.js';
 
+// 主要ゲーム画面を宣言
 const ShootingCanvas = document.getElementById('shootinggameCanvas');
 const ctx = ShootingCanvas.getContext('2d');
 
+// --- 画面状態の定義 ---
+const SCREEN_STATE = Object.freeze({
+    LOADING: 'loading',
+    MODE_SELECT: 'mode_select_settings',
+    STAGE_SELECT: 'stage_select',
+    CHARACTER_SELECT: 'character_select',
+    DIFFICULTY_POPUP: 'difficulty_popup', // これは他の画面上のポップアップとしても実装可能
+    GAMEPLAY: 'gameplay',
+    GAME_OVER: 'game_over',
+    GAME_WIN: 'game_win', 
+    TUTORIAL_CANVAS: "Tutorial"
+});
+let currentScreen = SCREEN_STATE.LOADING; // ★ 初期画面 (またはMODE_SELECT)
+
+// --- 基本ゲーム画面のCanvasの基準サイズ---
+const OVERALL_BASE_WIDTH = 1920;
+const OVERALL_BASE_HEIGHT = 1080;
+
+let currentTotalWidth = OVERALL_BASE_WIDTH;   // メインCanvasの現在の実際の幅
+let currentTotalHeight = OVERALL_BASE_HEIGHT; // メインCanvasの現在の実際の高さ
+let mainScaleFactor = 1; // メインCanvas全体のスケールファクター 
+const gameplayOffscreenCanvas = document.createElement('canvas');
+const gameplayOffscreenCtx = gameplayOffscreenCanvas.getContext('2d');
+
+function resizeGame_() {
+    const screenOccupationRatio = 1.0; // メインCanvasは画面いっぱい、または指定の割合で表示
+    const overallAspectRatio = OVERALL_BASE_WIDTH / OVERALL_BASE_HEIGHT;
+
+    let targetAvailableWidth = window.innerWidth * screenOccupationRatio;
+    let targetAvailableHeight = window.innerHeight * screenOccupationRatio;
+    const windowAspectRatio = targetAvailableWidth / targetAvailableHeight;
+
+    if (windowAspectRatio > overallAspectRatio) {
+        currentTotalHeight = targetAvailableHeight;
+        currentTotalWidth = currentTotalHeight * overallAspectRatio;
+    } else {
+        currentTotalWidth = targetAvailableWidth;
+        currentTotalHeight = currentTotalWidth / overallAspectRatio;
+    }
+
+    mainCanvas.width = currentTotalWidth;
+    mainCanvas.height = currentTotalHeight;
+
+    mainScaleFactor = currentTotalHeight / OVERALL_BASE_HEIGHT; // 全体UIのスケール基準
+
+    // ゲームプレイ用オフスクリーンCanvasのサイズもここで更新 (GAMEPLAY画面の時のみ必要かもしれない)
+    // このスケールは、ゲームプレイ領域がOVERALLに対してどう配置されるかによって変わる
+    // 例: ゲームプレイ領域がメインCanvasの高さ全体を使うと仮定
+    const gameplayAreaActualHeight = mainCanvas.height;
+    const gameplayScaleFactor = gameplayAreaActualHeight / GAMEPLAY_BASE_HEIGHT;
+
+    gameplayOffscreenCanvas.width = GAMEPLAY_BASE_WIDTH * gameplayScaleFactor;
+    gameplayOffscreenCanvas.height = GAMEPLAY_BASE_HEIGHT * gameplayScaleFactor; // mainCanvas.height と同じになる
+
+    // 現在の画面がゲームプレイなら、オブジェクトのスケールも更新
+    if (currentScreen === SCREEN_STATE.GAMEPLAY) {
+        if (player) {
+            player.updateScale(gameplayScaleFactor, gameplayOffscreenCanvas, GAMEPLAY_BASE_WIDTH, GAMEPLAY_BASE_HEIGHT);
+        }
+        if (enemy) {
+            enemy.updateScale(gameplayScaleFactor, gameplayOffscreenCanvas, GAMEPLAY_BASE_WIDTH, GAMEPLAY_BASE_HEIGHT);
+        }
+    }
+    // 他の画面も、必要ならリサイズ時に要素の再配置処理を呼ぶ
+}
 // キャンバスのサイズ設定
-const BASE_WIDTH = 600;  // ゲームの基準幅
-const BASE_HEIGHT = 800; // ゲームの基準高さ
+const BASE_WIDTH = OVERALL_BASE_WIDTH;  // ゲームの基準幅
+const BASE_HEIGHT = OVERALL_BASE_HEIGHT; // ゲームの基準高さ
 
 const STATS_AREA_BASE_WIDTH = 200; // ★ 情報表示領域の基準幅 (例: 200px)
 
@@ -179,7 +247,7 @@ function resizeGame() {
     const NowScaleCanvasHeight = BASE_HEIGHT;//ShootingCanvas.height;
 
 
-    const screenOccupationRatio = 0.8; // ★ キャンバスを画面の8割の大きさにするための比率
+    const screenOccupationRatio = 1.0; // ★ キャンバスを画面の8割の大きさにするための比率
     const aspectRatio = NowScaleCanvasWidth / NowScaleCanvasHeight;
 
     // キャンバスが利用可能な「目標の」最大幅と高さを計算 (実際のウィンドウサイズの8割)
