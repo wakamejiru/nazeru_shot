@@ -19,7 +19,7 @@ import { PlayerType1 } from './Player/Type1Player.js';
 // 敵のクラスを作成する
 import { EnemyType1 } from './Enemy/EnemyType1.js';
 
-import { UpdateLoadingAnimation } form './CreatingMainPicture.js';
+import { UpdateLoadingAnimation } from './CreatingMainPicture.js';
 
 // 主要ゲーム画面を宣言
 const MainCanvas = document.getElementById('shootinggameCanvas');
@@ -58,6 +58,8 @@ let PlayerBulletList = [];
 let EnemyBulletList = [];
 let UpdateLoadingLigicState = 0; // 読み込み順序ステイト
 let LoadingFinished = false; // ロード終了フラグ
+
+let LastTime = 0; // 時間管理用カウンタタイマ
 
 // ゲーム画面のリサイジングを行う
 // ゲーム画面のサイズの変更時，初期起動時に実行する
@@ -172,14 +174,16 @@ async function InitializeGame(){
     // 全アセット読み出し後ローディング画面になる(別スレッド処理となるため考慮しない)
     await AssetManagerInstance.loadAllAssets();
 
-    // ローディング画面を表示
-    InitilizeLoadingScreen();
+    await preloadLoadingScreenAssets(); // ★まずローディングアニメーション用画像を読み込む
+
+    // ゲームループを開始
+    requestAnimationFrame(GameLoop);
 
 }
 
 // 初期化を実行する
 async function initializeGame() {
-    DrawLoadingScreen(MainCtx, MainScaleFactor);
+    
 //     try {
 //         await assetManager.loadAllAssets();
 //         console.log("All assets loaded.");
@@ -499,14 +503,26 @@ let lastTime = 0;
  * @param {AssetManager} shotAngleSpeed - shotCntにつけるシフト量回転の速度を表す
  */
 function GameLoop(CurrentTime){
+    // 現在の経過時間から差分を求める
+    const deltaTime = (CurrentTime - LastTime) / 1000; // 秒単位
+    if (!LastTime) { // 最初のフレームの初期化
+        LastTime = CurrentTime;
+        requestAnimationFrame(GameLoop);
+        return;
+    }
+    LastTime = CurrentTime;
+
+    // ゼロ除算や極端なdeltaTimeを防ぐ（ブラウザがバックグラウンドになった場合など）
+    const ClampedDeltaTime = Math.min(deltaTime, 0.1); // 例: 最大0.1秒に制限
+
      switch (CurrentScreen) {
         case SCREEN_STATE.LOADING:
             UpdateLoadingLogic();
-            UpdateLoadingAnimation(clampedDeltaTime);
+            UpdateLoadingAnimation(ClampedDeltaTime);
             break;
         case SCREEN_STATE.MODE_SELECT:
-            updateModeSelectLogic(clampedDeltaTime); // (作成する場合)
-            drawModeSelectScreen(mainCtx, mainScaleFactor);
+            UpdateLoadingLogic();
+            UpdateLoadingAnimation(ClampedDeltaTime); // (作成する場合)
             break;
     }
 }
@@ -570,4 +586,4 @@ function gameLoop(currentTime) {
 // --- 初期化処理 ---
 // リサイズしたときに自動的にリスナーが走る
 window.addEventListener('resize', handleResize);
-initializeGame();
+InitializeGame();
