@@ -20,6 +20,9 @@ const ctx = ShootingCanvas.getContext('2d');
 // キャンバスのサイズ設定
 const BASE_WIDTH = 600;  // ゲームの基準幅
 const BASE_HEIGHT = 800; // ゲームの基準高さ
+
+const STATS_AREA_BASE_WIDTH = 200; // ★ 情報表示領域の基準幅 (例: 200px)
+
 let currentWidth = BASE_WIDTH;
 let currentHeight = BASE_HEIGHT;
 let scaleFactor = 1;     // 現在のスケールファクター

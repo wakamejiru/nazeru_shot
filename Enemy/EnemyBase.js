@@ -68,6 +68,8 @@ export class EnemyBase {
        this.AttackState = 0;
        this.AttackVariation = EnemyConfig.attack_variation;
        this.SkillActiveFlag = false;
+
+       this.CanMoveFlag = true; // trueの時は移動OK,false時は移動不可
         
        this.NowAttackLimitCnt = 0; // 攻撃の継続時間の情報 
 
@@ -127,9 +129,8 @@ export class EnemyBase {
     move(DeltaTime) {
         if (this.NowHP <= 0) return;
 
-        // スキル実行中，通常攻撃実行中は停止する
-        if(this.SkillActiveFlag == true){
-            //　攻撃実行中は停止をさせる
+        // 移動不可中は停止
+        if(this.CanMoveFlag == false){
 
         }else{
 
