@@ -167,10 +167,11 @@ export function FanShotFunc(
  * @param {object} baseBulletOptions - 弾の基本設定オブジェクト。
  * @param {AssetManager} assetManager - アセットマネージャーのインスタンス
  * @param {AssetManager} shotCnt - ここの数値をずらしていくことで、発射角度がshitし、風車方になる
+ * @param {AssetManager} shotAngleSpeed - shotCntにつけるシフト量回転の速度を表す
  */
-export function windmillshotfunc(bulletList, centerX, centerY, ccw, WindmillPointRadius,
-    WindmillPointRadiusfunc, bulletAngleStart, bulletAngleEnd, numberOfBullets ,baseBulletOptions,
-    assetManager, shotCnt
+export function windmillshotfunc(EnemyBulletList, centerX, centerY, ccw, WindmillPointRadius,
+    WindmillPointRadiusfunc, bulletAngleStart, bulletAngleEnd, numberOfBullets ,Opitons,
+    AssetManager, shotCnt, shotAngleSpeed
 ){
      // 作ったインスタンスをpushする
     let StartPointX = centerX;
@@ -181,14 +182,19 @@ export function windmillshotfunc(bulletList, centerX, centerY, ccw, WindmillPoin
     // 何度ごとに，射出するかを決める
     const OneStepAngle = (bulletAngleStart - bulletAngleEnd) / BulletNumber;
 
-    const FirstAngle = bulletAngleStart;
+    const FirstAngle = bulletAngleStart + shotCnt*shotAngleSpeed;
 
+    const StartRoopNumber = (ccw == true)? 0 :  BulletNumber;
+    const EndRoopNumber = (ccw == true)? BulletNumber :  0; 
+    const ShitRoopNumber = (ccw == true) ? 1 : -1;
 
-    for(let i = 0; i < BulletNumber; i++){
+    for(let i = StartRoopNumber; i < EndRoopNumber; i+=ShitRoopNumber){
         const RadiusAngle = (FirstAngle + (OneStepAngle * i))* Math.PI / 180;
         // 停止条件も変更する必要がある
 
-
+        // 打ち出し距離を設定されたRadiusで変化させる
+        StartPointX += WindmillPointRadius * Math.cos(RadiusAngle);
+        StartPointY += WindmillPointRadius * Math.sin(RadiusAngle);
 
         // 速度を触る
         const SpeedX = Opitons.x_speed * Math.cos(RadiusAngle);
@@ -198,8 +204,8 @@ export function windmillshotfunc(bulletList, centerX, centerY, ccw, WindmillPoin
         const BulletJerkX = Opitons.jeak_x * Math.cos(RadiusAngle);
         const BulletJerkY = Opitons.jeak_y * Math.sin(RadiusAngle);
 // 将来的にかかかそくどまで考慮できるようにする
-        ///        const BulletSnapX = Opitons.snap_Y * Math.sin(RadiusAngle);
-//        const BulletSnapY = Opitons.snap_Y * Math.sin(RadiusAngle);
+        // const BulletSnapX = Opitons.snap_Y * Math.sin(RadiusAngle);
+        // const BulletSnapY = Opitons.snap_Y * Math.sin(RadiusAngle);
             const bulletOptions = {
                 vx: SpeedX, // ピクセル/秒
                 vy: SpeedY, // ピクセル/秒

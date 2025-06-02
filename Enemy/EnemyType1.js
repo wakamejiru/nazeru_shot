@@ -1,6 +1,6 @@
 // Type1Enemyのクラス
 import { EnemyBase } from "./EnemyBase.js";
-import { RoundShotFunc, FanShotFunc } from "./EnemyShot.js";
+import { RoundShotFunc, FanShotFunc, windmillshotfunc } from "./EnemyShot.js";
 
 
 import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum, 
@@ -314,13 +314,60 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
 
 
                     // 攻撃区間を終了するかの判定を行う
-                    super.isAttackendfuc(this.NowAttackLimitCnt, this.AttackLimitCnt, 0);
+                    super.isAttackendfuc(this.NowAttackLimitCnt, this.AttackLimitCnt, 4);
 
                     break;
 
                 case 4:
                     // 4回目の通常攻撃
                     // 風車上に出す
+
+                    if(this.NowAttackRateTimer < this.AttackRateTimer){
+                        this.NowAttackRateTimer += DeltaTime;
+                    }else{
+                        this.NowAttackRateTimer = 0; // リセット
+                        const BulletNumber = 12;
+                        const DeficitPercent = 0;
+                        this.AttackCounter += 1;
+                                                 
+                        let StartAngle = 0;
+                        let EndAngle = StartAngle + 360;
+                        const BulletOptions = {
+                            x_speed: 200,
+                            y_speed: 200,
+                            accel_x: 0,
+                            accel_y: 0,
+                            jeak_x:  0,
+                            jeak_y:  0,
+                            bulletWidht: 10,
+                            bulletheight: 10,
+
+                            bulletRadius: 1000,
+                            bulletDamage: 25,
+                            bulletHP: 15,
+                            bulletMaxSpeed: 250000,
+                            playerInstance: TargetPlayer,
+                            trackingStrength: 0,
+                            BulletImageKey: "bulletTypeA",
+                            shape: "rectangle"
+                        };
+                        //発射レート
+                        this.AttackRateTimer = 0.1;
+                        const ccw = true;
+                        // 一巡目のスキル内容を書く
+                        // 自分中心から弾を出す
+                        windmillshotfunc(EnemyBulletArray, this.x, this.y, ccw, 0, null, StartAngle, EndAngle, BulletNumber, 
+                            BulletOptions, this.AssetManager, this.AttackCounter, 5);
+                        this.NowAttackLimitCnt += 1.0;
+                        
+
+                    }
+                    // 攻撃のながさが終わったかを確認する
+                    // 20個打ったら終了
+                    this.AttackLimitCnt = 30;
+
+                    // 攻撃区間を終了するかの判定を行う
+                    super.isAttackendfuc(this.NowAttackLimitCnt, this.AttackLimitCnt, 0);
                     
                     break;
 
