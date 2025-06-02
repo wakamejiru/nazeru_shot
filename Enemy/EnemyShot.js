@@ -156,12 +156,72 @@ export function FanShotFunc(
 /**
  * 指定された中心点から風車状に弾を発射する関数
  * @param {Array} bulletList - 生成された弾を追加する配列
- * @param {number} originX - 発射の基点X座標 (扇の要)
- * @param {number} originY - 発射の基点Y座標 (扇の要)
+ * @param {number} centerX - 発射の基点X座標
+ * @param {number} centerY - 発射の基点Y座標
  * @param {bool}  ccw true:時計回り false反時計回り
- * @param {number} numberOfBullets - 玉の数
- * @param {number} fanSpreadAngleDegrees - 弾数最大値の時の1弾当たりの角度
- * @param {number} fanCenterAngleDegrees - 扇の中心線の角度 (度数法)
+ * @param {number}  WindmillPointRadius 打ち出し半径の長さ
+ * @param {number}  WindmillPointRadiusfunc 打ち出し半径の長さの変異処理の関数
+ * @param {number}  bulletAngleStart 開始角度(度数法)
+ * @param {number}  bulletAngleEnd 終了角度(度数法)
+ * @param {number} numberOfBullets - 球の数
  * @param {object} baseBulletOptions - 弾の基本設定オブジェクト。
  * @param {AssetManager} assetManager - アセットマネージャーのインスタンス
+ * @param {AssetManager} shotCnt - ここの数値をずらしていくことで、発射角度がshitし、風車方になる
  */
+export function windmillshotfunc(bulletList, centerX, centerY, ccw, WindmillPointRadius,
+    WindmillPointRadiusfunc, bulletAngleStart, bulletAngleEnd, numberOfBullets ,baseBulletOptions,
+    assetManager, shotCnt
+){
+     // 作ったインスタンスをpushする
+    let StartPointX = centerX;
+    let StartPointY = centerY;
+
+    let BulletNumber = numberOfBullets;
+
+    // 何度ごとに，射出するかを決める
+    const OneStepAngle = (bulletAngleStart - bulletAngleEnd) / BulletNumber;
+
+    const FirstAngle = bulletAngleStart;
+
+
+    for(let i = 0; i < BulletNumber; i++){
+        const RadiusAngle = (FirstAngle + (OneStepAngle * i))* Math.PI / 180;
+        // 停止条件も変更する必要がある
+
+
+
+        // 速度を触る
+        const SpeedX = Opitons.x_speed * Math.cos(RadiusAngle);
+        const SpeedY = Opitons.y_speed * Math.sin(RadiusAngle);
+        const BulletAccelX = Opitons.accel_x * Math.cos(RadiusAngle);
+        const BulletAccelY = Opitons.accel_y * Math.sin(RadiusAngle);
+        const BulletJerkX = Opitons.jeak_x * Math.cos(RadiusAngle);
+        const BulletJerkY = Opitons.jeak_y * Math.sin(RadiusAngle);
+// 将来的にかかかそくどまで考慮できるようにする
+        ///        const BulletSnapX = Opitons.snap_Y * Math.sin(RadiusAngle);
+//        const BulletSnapY = Opitons.snap_Y * Math.sin(RadiusAngle);
+            const bulletOptions = {
+                vx: SpeedX, // ピクセル/秒
+                vy: SpeedY, // ピクセル/秒
+                // 後で速度を追記
+
+                width: Opitons.bulletWidht,
+                height: Opitons.bulletheight,
+                radius: Opitons.bulletRadius,
+                
+                damage: Opitons.bulletDamage,
+                life: Opitons.bulletHP,
+                maxSpeed: Opitons.bulletMaxSpeed,
+
+                target: Opitons.playerInstance, // 追尾する場合
+                trackingStrength: Opitons.trackingStrength, // 0なら追尾しない。追尾させる場合は0より大きい値
+
+                // 弾の画像と形状
+                BulletImageKey: Opitons.BulletImageKey,
+                shape: Opitons.shape,
+
+            };
+        EnemyBulletList.push(new Bullet(StartPointX, StartPointY, AssetManager, bulletOptions));
+
+    }
+}
