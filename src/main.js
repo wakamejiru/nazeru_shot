@@ -5,7 +5,9 @@
 // インタプリタ言語はかなり苦手なので非効率な面が多い
 // 開発は5/20あたりで開始し，6月2日にJSで主要機能を果たせることを確認
 // そこから画面構成等を作り出した
-// 6/3にグラフィックをPixiJSにすることを決定し，本格的な開発を開始
+// 6/3にグラフィックをPixiJS，コントローラ適用のためHTML5にすることを決定し，本格的な開発を開始
+// どうやらシャニマスも同様のシステムで動いているらしい，一番プレイ時間が長いゲームに回帰するとは思わなんだ
+// https://tech.drecom.co.jp/cedec-2018-shinycolors/#index-cut-topics
 
 // フォントNoto Serif JP Medium
 
@@ -13,9 +15,11 @@
 // script.js (メインファイル)
 
 // 各import
-import { AssetManager } from './asset_manager.js'; // AssetManagerをインポート
+//import { AssetManager } from './asset_manager.js'; // AssetManagerをインポート
+import * as LoadScreen from './Screens/CreatingLoadScreen.js';
 
-import { UpdateLoadingAnimation, PreloadLoadingScreenAssets, DrawLoadingScreen} from './CreatingMainPicture.js';
+import * as Utils from "./utils.js";
+
 // 使用する画面の一覧(State)
 const SCREEN_STATE = Object.freeze({
     LOADING: 'loading',
@@ -24,13 +28,10 @@ const SCREEN_STATE = Object.freeze({
     DIFFICULTY_SELECT: 'difficulty_setting', // これは他の画面上のポップアップとしても実装可能
     STAGE_SELECT: 'stage_select',
     CHARACTER_SELECT: 'character_select',
-    GAMEPLAY: 'gameplay',
-    GAME_OVER: 'game_over',
-    GAME_WIN: 'game_win', 
-    TUTORIAL_CANVAS: "Tutorial"
+    GAMEPLAY: 'gameplay'
 });
 
-const AssetManagerInstance = new AssetManager(ImageAssetPaths);
+// const AssetManagerInstance = new AssetManager(ImageAssetPaths);
 
 let CurrentScreen = SCREEN_STATE.LOADING; // ★ 初期画面 (またはMODE_SELECT)
 
@@ -42,11 +43,14 @@ const OverallAspectRatio = OVERALL_BASE_WIDTH / OVERALL_BASE_HEIGHT; // 画面�
 let CurrentTotalWidth = OVERALL_BASE_WIDTH;   // メインCanvasの現在の実際の幅
 let CurrentTotalHeight = OVERALL_BASE_HEIGHT; // メインCanvasの現在の実際の高さ
 let MainScaleFactor = CurrentTotalWidth/OVERALL_BASE_WIDTH;
-const App = new PIXI.Application({ width: OVERALL_BASE_WIDTH, height: OVERALL_BASE_HEIGHT });
-document.body.appendChild(App.view);
+// HTMLファイルで定義されたCanvas要素を取得
+const MainGameCanvas = document.getElementById('MainGameCanvas');
+
+const App = new PIXI.Application();
+await App.init({view: MainGameCanvas, width: OVERALL_BASE_WIDTH, height: OVERALL_BASE_HEIGHT, background: 'gray', resizeTo: window });
 
 let LastTime = 0; // メインループ時間管理用カウンタタイマ
-
+let UpdateLoadingLigicState = 0; // 初期化に用いるステイと処理
 /**
  * ゲーム画面のリサイジングを行う
  */
@@ -75,20 +79,84 @@ function ResizeGame() {
     App.renderer.resize(CurrentTotalWidth, CurrentTotalHeight);
 
     MainScaleFactor = CurrentTotalHeight / OVERALL_BASE_HEIGHT; // 全体UIのスケール基準
-    // すべての生成済みインスタンスにUpscaleを行う
+    // すべての画面，及び生成済みのインスタンスにUpscaleを行う
+    LoadScreen.ResizePixiLoadingScreen(App, MainScaleFactor);
 }
 
 /**
  * 初期化を行う関数
  */
 async function InitializeGame(){
+    // 画像の情報は各クラスもしくは各ファイルで所有させるためここでの一括ロードは行わない
+    // しかし，Initial時に全て読み出すので，あまり重さは変わらないはず
     // 全アセット読み出し後ローディング画面になる(別スレッド処理となるため考慮しない)
-    await AssetManagerInstance.loadAllAssets();
+    // await AssetManagerInstance.loadAllAssets();
 
-    await PreloadLoadingScreenAssets(); // ★まずローディングアニメーション用画像を読み込む
+    
+    await LoadScreen.PreloadLoadingScreenAssetsForPixi() // ローディングアニメーション用画像を読み込む
+    Utils.Wait(0.2); // 上記のロードが終わらないと，ResizeGameでlistが完成しておらず仕様を満たさない
+    // 各画面のInitilizeを始める
+    LoadScreen.SetupPixiLoadingScreen(App, MainScaleFactor);
+
     ResizeGame();
     // ゲームループを開始
     requestAnimationFrame(GameLoop);
+}
+
+
+/**
+ * ゲームのロードを行う
+ * @note ここで使用するクラスのシングルトンインスタンスを全て生成する
+ */
+function UpdateLoadingLogic() {
+    // プレイヤーとエネミーの作成も行う
+    switch(UpdateLoadingLigicState){
+        case 0:
+
+            // Player = new PlayerType1(initialPlayerX, initialPlayerY, assetManager, ShootingCanvas, ShootingCanvas.width, ShootingCanvas.height);
+            // PlayerBulletList.push(Player);
+            break;
+        case 1:
+
+            break;
+        case 2:
+
+            break;  
+        case 3:
+
+            break;
+
+        case 4:
+
+            break;
+
+        case 5:
+
+            break;
+        case 6:
+
+            break;
+        case 7:
+
+            break;
+        case 8:
+
+            break;
+        case 9:
+
+            break;
+        case 10:
+            break;
+        case 11:
+            break;
+        case 12:
+            //CurrentScreen = SCREEN_STATE.MODE_SELECT;
+            break;
+
+    }
+    Utils.Wait(0.1);
+
+   ++UpdateLoadingLigicState;
 }
 
 // キー入力状態
@@ -142,9 +210,9 @@ function GameLoop(CurrentTime){
 
      switch (CurrentScreen) {
         case SCREEN_STATE.LOADING:
+            LoadScreen.setPixiLoadingScreenVisible(true); // ロード画面を起動
             UpdateLoadingLogic();
-            UpdateLoadingAnimation(ClampedDeltaTime);
-            DrawLoadingScreen(MainCtx ,MainScaleFactor);
+            LoadScreen.UpdatePixiLoadingAnimation(ClampedDeltaTime); // 画像を更新
             break;
         case SCREEN_STATE.GAME_TITLE:
 

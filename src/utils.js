@@ -7,7 +7,7 @@
  * @param {number} seconds - 待機する秒数
  * @returns {Promise<void>} 待機後に解決されるPromise
  */
-function wait(seconds) {
+export function Wait(seconds) {
   return new Promise(resolve => {
     setTimeout(resolve, seconds * 1000); // setTimeoutはミリ秒単位で指定
   });
