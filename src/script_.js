@@ -5,6 +5,9 @@
 // インタプリタ言語はかなり苦手なので非効率な面が多い
 // 開発は5/20あたりで開始し，6月2日にJSで主要機能を果たせることを確認
 // そこから画面構成等を作り出した
+// 6/3にグラフィックをPixiJSにすることを決定し，本格的な開発を開始
+
+// フォントNoto Serif JP Medium
 
 
 // script.js (メインファイル)
@@ -29,9 +32,9 @@ const MainCtx = MainCanvas.getContext('2d');
 const SCREEN_STATE = Object.freeze({
     LOADING: 'loading',
     MODE_SELECT: 'mode_select_settings',
+    DIFFICULTY_SELECT: 'difficulty_setting', // これは他の画面上のポップアップとしても実装可能
     STAGE_SELECT: 'stage_select',
     CHARACTER_SELECT: 'character_select',
-    DIFFICULTY_POPUP: 'difficulty_popup', // これは他の画面上のポップアップとしても実装可能
     GAMEPLAY: 'gameplay',
     GAME_OVER: 'game_over',
     GAME_WIN: 'game_win', 
@@ -57,12 +60,13 @@ const AssetManagerInstance = new AssetManager(ImageAssetPaths);
 let PlayerBulletList = [];
 let EnemyBulletList = [];
 let UpdateLoadingLigicState = 0; // 読み込み順序ステイト
-let LoadingFinished = false; // ロード終了フラグ
+let LoadingFinished = false; // ロード終了フラリサイジング
 
 let LastTime = 0; // 時間管理用カウンタタイマ
 
-// ゲーム画面のリサイジングを行う
-// ゲーム画面のサイズの変更時，初期起動時に実行する
+/**
+ * ゲーム画面のリサイジングを行う
+ */
 function ResizeGame_() {
     // メイン画面は画面いっぱいに表現する
     const ScreenOccupationRatio = 1.0;
@@ -95,7 +99,7 @@ function UpdateLoadingLogic() {
     // プレイヤーとエネミーの作成も行う
     switch(UpdateLoadingLigicState){
         case 0:
-            wait(0.1);
+
             // Player = new PlayerType1(initialPlayerX, initialPlayerY, assetManager, ShootingCanvas, ShootingCanvas.width, ShootingCanvas.height);
             // PlayerBulletList.push(Player);
             break;
@@ -116,9 +120,30 @@ function UpdateLoadingLogic() {
         case 5:
 
             break;
+        case 6:
+
+            break;
+        case 7:
+
+            break;
+        case 8:
+
+            break;
+        case 9:
+
+            break;
+        case 10:
+            break;
+        case 11:
+            break;
+        case 12:
+            CurrentScreen = SCREEN_STATE.MODE_SELECT;
+            break;
 
     }
-   // ++UpdateLoadingLigicState;
+    wait(0.1);
+
+   ++UpdateLoadingLigicState;
 }
 
 
@@ -156,6 +181,9 @@ const keyToCharacterType = {
 
 };
 
+/**
+ * 初期化を行う関数
+ */
 async function InitializeGame(){
     // 全アセット読み出し後ローディング画面になる(別スレッド処理となるため考慮しない)
     await AssetManagerInstance.loadAllAssets();
@@ -503,6 +531,9 @@ function GameLoop(CurrentTime){
             DrawLoadingScreen(MainCtx ,MainScaleFactor);
             break;
         case SCREEN_STATE.MODE_SELECT:
+
+
+
             break;
     }
 

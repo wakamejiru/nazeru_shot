@@ -1,6 +1,7 @@
-import { ImageAssetPaths } from './game_status.js'; 
+import { ImageAssetPaths } from '../game_status.js'; 
+// 初期ロード画面
 
-// ローディングアニメーションフレームのキー配列
+
 // ローディングアニメーションフレームのキー配列
 export const LoadingAnimationFrames = [
   "loadingFrame1",
@@ -130,4 +131,58 @@ export async function PreloadLoadingScreenAssets() {
     }
     await Promise.all(promises);
     console.log("Loading screen animation frames loaded.");
+}
+
+/**
+ * ゲームのロードを行う
+ */
+function UpdateLoadingLogic() {
+    // プレイヤーとエネミーの作成も行う
+    switch(UpdateLoadingLigicState){
+        case 0:
+
+            // Player = new PlayerType1(initialPlayerX, initialPlayerY, assetManager, ShootingCanvas, ShootingCanvas.width, ShootingCanvas.height);
+            // PlayerBulletList.push(Player);
+            break;
+        case 1:
+
+            break;
+        case 2:
+
+            break;  
+        case 3:
+
+            break;
+
+        case 4:
+
+            break;
+
+        case 5:
+
+            break;
+        case 6:
+
+            break;
+        case 7:
+
+            break;
+        case 8:
+
+            break;
+        case 9:
+
+            break;
+        case 10:
+            break;
+        case 11:
+            break;
+        case 12:
+            CurrentScreen = SCREEN_STATE.MODE_SELECT;
+            break;
+
+    }
+    wait(0.1);
+
+   ++UpdateLoadingLigicState;
 }
