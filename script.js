@@ -19,7 +19,7 @@ import { PlayerType1 } from './Player/Type1Player.js';
 // 敵のクラスを作成する
 import { EnemyType1 } from './Enemy/EnemyType1.js';
 
-import { UpdateLoadingAnimation } from './CreatingMainPicture.js';
+import { UpdateLoadingAnimation, PreloadLoadingScreenAssets, DrawLoadingScreen} from './CreatingMainPicture.js';
 
 // 主要ゲーム画面を宣言
 const MainCanvas = document.getElementById('shootinggameCanvas');
@@ -89,27 +89,13 @@ function ResizeGame_() {
 }
 
 /**
- * ゲームのロード中を表示させる
- * @param {ctx} NowCtx - 描画を行うctx
- * @param {number} Scale - 描画先の倍率
- */
-function DrawLoadingScreen(NowCtx, Scale) {
-    NowCtx.fillStyle = 'gray';
-    NowCtx.fillRect(0, 0, NowCtx.canvas.width, NowCtx.canvas.height);
-    NowCtx.fillStyle = 'white';
-    NowCtx.font = `${30 * NowCtx}px Arial`;
-    NowCtx.textAlign = 'center';
-    NowCtx.fillText("Loading...", NowCtx.canvas.width / 2, NowCtx.canvas.height / 2);
-    // アセット読み込み進捗なども表示可能
-}
-
-/**
  * ゲームのロードを行う
  */
 function UpdateLoadingLogic() {
     // プレイヤーとエネミーの作成も行う
     switch(UpdateLoadingLigicState){
         case 0:
+            wait(0.1);
             // Player = new PlayerType1(initialPlayerX, initialPlayerY, assetManager, ShootingCanvas, ShootingCanvas.width, ShootingCanvas.height);
             // PlayerBulletList.push(Player);
             break;
@@ -132,7 +118,7 @@ function UpdateLoadingLogic() {
             break;
 
     }
-    ++UpdateLoadingLigicState;
+   // ++UpdateLoadingLigicState;
 }
 
 
@@ -174,8 +160,8 @@ async function InitializeGame(){
     // 全アセット読み出し後ローディング画面になる(別スレッド処理となるため考慮しない)
     await AssetManagerInstance.loadAllAssets();
 
-    await preloadLoadingScreenAssets(); // ★まずローディングアニメーション用画像を読み込む
-
+    await PreloadLoadingScreenAssets(); // ★まずローディングアニメーション用画像を読み込む
+    ResizeGame_();
     // ゲームループを開始
     requestAnimationFrame(GameLoop);
 
@@ -505,11 +491,6 @@ let lastTime = 0;
 function GameLoop(CurrentTime){
     // 現在の経過時間から差分を求める
     const deltaTime = (CurrentTime - LastTime) / 1000; // 秒単位
-    if (!LastTime) { // 最初のフレームの初期化
-        LastTime = CurrentTime;
-        requestAnimationFrame(GameLoop);
-        return;
-    }
     LastTime = CurrentTime;
 
     // ゼロ除算や極端なdeltaTimeを防ぐ（ブラウザがバックグラウンドになった場合など）
@@ -519,12 +500,13 @@ function GameLoop(CurrentTime){
         case SCREEN_STATE.LOADING:
             UpdateLoadingLogic();
             UpdateLoadingAnimation(ClampedDeltaTime);
+            DrawLoadingScreen(MainCtx ,MainScaleFactor);
             break;
         case SCREEN_STATE.MODE_SELECT:
-            UpdateLoadingLogic();
-            UpdateLoadingAnimation(ClampedDeltaTime); // (作成する場合)
             break;
     }
+
+    requestAnimationFrame(GameLoop); // ★ ここで GameLoop を再帰的に呼び出す
 }
 
 
@@ -587,3 +569,14 @@ function gameLoop(currentTime) {
 // リサイズしたときに自動的にリスナーが走る
 window.addEventListener('resize', handleResize);
 InitializeGame();
+
+/**
+ * 指定された秒数だけ待機する関数
+ * @param {number} seconds - 待機する秒数
+ * @returns {Promise<void>} 待機後に解決されるPromise
+ */
+function wait(seconds) {
+  return new Promise(resolve => {
+    setTimeout(resolve, seconds * 1000); // setTimeoutはミリ秒単位で指定
+  });
+}

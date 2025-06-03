@@ -1,12 +1,59 @@
 import { ImageAssetPaths } from './game_status.js'; 
 
 // ローディングアニメーションフレームのキー配列
+// ローディングアニメーションフレームのキー配列
 export const LoadingAnimationFrames = [
-    "loadingFrame1",
-    "loadingFrame2",
-    "loadingFrame3",
-    "loadingFrame4",
-    // ... imageAssetPaths に登録したキーを順番に ...
+  "loadingFrame1",
+  "loadingFrame2",
+  "loadingFrame3",
+  "loadingFrame4",
+  "loadingFrame5",
+  "loadingFrame6",
+  "loadingFrame7",
+  "loadingFrame8",
+  "loadingFrame9",
+  "loadingFrame10",
+  "loadingFrame11",
+  "loadingFrame12",
+  "loadingFrame13",
+  "loadingFrame14",
+  "loadingFrame15",
+  "loadingFrame16",
+  "loadingFrame17",
+  "loadingFrame18",
+  "loadingFrame19",
+  "loadingFrame20",
+  "loadingFrame21",
+  "loadingFrame22",
+  "loadingFrame23",
+  "loadingFrame24",
+  "loadingFrame25",
+  "loadingFrame26",
+  "loadingFrame27",
+  "loadingFrame28",
+  "loadingFrame29",
+  "loadingFrame30",
+  "loadingFrame31",
+  "loadingFrame32",
+  "loadingFrame33",
+  "loadingFrame34",
+  "loadingFrame35",
+  "loadingFrame36",
+  "loadingFrame37",
+  "loadingFrame38",
+  "loadingFrame39",
+  "loadingFrame40",
+  "loadingFrame41",
+  "loadingFrame42",
+  "loadingFrame43",
+  "loadingFrame44",
+  "loadingFrame45",
+  "loadingFrame46",
+  "loadingFrame47",
+  "loadingFrame48",
+  "loadingFrame49",
+  "loadingFrame50",
+  "loadingFrame51",
 ];
 
 let CurrentLoadingFrameIndex = 0;
@@ -34,7 +81,7 @@ export function UpdateLoadingAnimation(DeltaTime) {
  * @param {ctx} NowScale - 　画面の描画倍率
  * @param {ctx} AssetManager - 画像の管理クラスインスタンス
 */
-export function DrawLoadingScreen(NowCtx, NowScale, AssetManager) {
+export function DrawLoadingScreen(NowCtx, NowScale) {
     NowCtx.fillStyle = 'black';
     NowCtx.fillRect(0, 0, NowCtx.canvas.width, NowCtx.canvas.height);
 
@@ -45,7 +92,7 @@ export function DrawLoadingScreen(NowCtx, NowScale, AssetManager) {
         const DrawHeight = Image.naturalHeight * NowScale * 0.5;
         const DrawX = (NowCtx.canvas.width - DrawWidth) / 2;
         const DrawY = (NowCtx.canvas.height - DrawHeight) / 2 - (50 * NowScale); // 少し上に
-        NowCtx.DrawImage(Image, DrawX, DrawY, DrawWidth, DrawHeight);
+        NowCtx.drawImage(Image, DrawX, DrawY, DrawWidth, DrawHeight);
     } else {
         // アニメーション画像がまだない場合のフォールバック
         NowCtx.fillStyle = 'white';
@@ -57,14 +104,6 @@ export function DrawLoadingScreen(NowCtx, NowScale, AssetManager) {
     NowCtx.fillStyle = 'white';
     NowCtx.font = `${24 * NowScale}px Arial`;
     NowCtx.textAlign = 'center';
-    // メインアセットの読み込み進捗を表示
-    const progress = AssetManager ? AssetManager.getLoadingProgress() : 0;
-
-    if (AllMainAssetsLoaded) {
-        NowCtx.font = `${20 * scale}px Arial`;
-        NowCtx.fillText("Loading Complete! Click to Start", ctx.canvas.width / 2, ctx.canvas.height / 2 + 100 * scale);
-        // ここでクリックイベントを待って次の画面に遷移するロジックを追加
-    }
 }
 
 /**
