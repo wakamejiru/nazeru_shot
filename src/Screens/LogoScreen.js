@@ -132,10 +132,11 @@ export class LogoScreen extends BaseScreen{
 
       // 画像からみて中央，かつYは上から少し離れた位置にする
       this.InfomationAttentionImage.x = (this.App.screen.width /2)  - (this.InfomationAttentionImage.width / 2); // 画面の一番左上に合わせる
-      this.InfomationAttentionImage.y = this.App.screen.Height * 0.1; // 少しずらしておく
-
-      this.InfomationContainer.addChild(this.InfomationAttentionImage);
+      this.InfomationAttentionImage.y = 50; // 少しずらしておく
       this.InfomationContainer.addChild(this.InfomationBackgroundImage);
+      this.InfomationContainer.addChild(this.InfomationAttentionImage);
+
+      // さらに文字を追加する
 
       this.InfomationContainer.visible = false;
       this.LogoContainer.visible = false;
