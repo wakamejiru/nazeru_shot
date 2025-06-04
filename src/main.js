@@ -18,6 +18,7 @@
 //import { AssetManager } from './asset_manager.js'; // AssetManagerをインポート
 import * as BaseScreen from './Screens/BaseScreen.js'
 import * as LoadScreen from './Screens/LoadScreen.js';
+import * as LogoScreen from './Screens/LogoScreen.js';
 
 import * as Utils from "./utils.js";
 
@@ -117,6 +118,7 @@ async function InitializeGame(){
     NowScreenInstance.InitializeScreen(MainScaleFactor);
     NowScreenInstance.StartScreen();
 
+
     ResizeGame();
     // ゲームループを開始
     requestAnimationFrame(GameLoop);
@@ -127,13 +129,14 @@ async function InitializeGame(){
  * ゲームのロードを行う
  * @note ここで使用するクラスのシングルトンインスタンスを全て生成する
  */
-function UpdateLoadingLogic() {
+async function UpdateLoadingLogic() {
     // プレイヤーとエネミーの作成も行う
     switch(UpdateLoadingLigicState){
         case 0:
 
-            // Player = new PlayerType1(initialPlayerX, initialPlayerY, assetManager, ShootingCanvas, ShootingCanvas.width, ShootingCanvas.height);
-            // PlayerBulletList.push(Player);
+            ScreenList.push(new LogoScreen.LogoScreen(App, BaseScreen.SCREEN_STATE.LOGO_SCREEN));
+            GetScreenInstance(BaseScreen.SCREEN_STATE.LOGO_SCREEN).InitializeScreen();
+
             break;
         case 1:
 
@@ -165,15 +168,17 @@ function UpdateLoadingLogic() {
 
             break;
         case 10:
+
             break;
         case 11:
+            
             break;
         case 12:
-            //CurrentScreen = SCREEN_STATE.MODE_SELECT;
+            CurrentScreen = BaseScreen.SCREEN_STATE.LOGO_SCREEN;
             break;
 
     }
-    Utils.Wait(0.1);
+    await Utils.Wait(1);
 
    ++UpdateLoadingLigicState;
 }
@@ -238,7 +243,7 @@ function GameLoop(CurrentTime){
     if(NextScreen != CurrentScreen){
         // 遷移するので処理を行う
         PreviousScrren = CurrentScreen;
-        CurrentScreen = NextScreen;
+        NextScreen = CurrentScreen;
         NowScreenInstance.EndScreen();
         NowScreenInstance = GetScreenInstance(CurrentScreen);
         NowScreenInstance.StartScreen();

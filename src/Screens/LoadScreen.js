@@ -1,5 +1,5 @@
 import { ImageAssetPaths } from '../game_status.js'; 
-import { BaseScreen, FRAME_DURATION } from './BaseScreen.js';
+import { BaseScreen, FRAME_DURATION, SCREEN_STATE } from './BaseScreen.js';
 // 初期ロード画面
 
 // ローディングアニメーションフレームのキー配列

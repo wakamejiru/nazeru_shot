@@ -1,6 +1,6 @@
 // ロゴの表示を行う
 import { ImageAssetPaths } from '../game_status.js'; 
-import { BaseScreen, FRAME_DURATION } from './BaseScreen.js';
+import { BaseScreen, FRAME_DURATION, SCREEN_STATE } from './BaseScreen.js';
 // 初期ロード画面
 
 export const LogoAnimationFrames = [
@@ -68,6 +68,7 @@ export class LogoScreen extends BaseScreen{
     constructor(App, ScreenState){
         super(App, ScreenState);
         this.NowScreenState = 0; // 0の場合infomation // 1の場合LOGO
+        this.LogoScreenAnimationSprites=[];
     }
 
     /**
@@ -75,22 +76,64 @@ export class LogoScreen extends BaseScreen{
    * @param {boolean} Visible - true:ON false:OFF
    */
   InitializeScreen(InitialScale){
+      // 画面を作成する
+      this.ScreenContainer = new PIXI.Container();
 
-        // 画面を作成する
-        this.ScreenContainer = new PIXI.Container();
-        this.App.stage.addChild(this.ScreenContainer); // メインステージに追加
+      // 二個画面を用意する
+      this.InfomationContainer = new PIXI.Container();
+      this.LogoContainer = new PIXI.Container();
+      this.ScreenContainer.addChild(this.InfomationContainer);
+      this.ScreenContainer.addChild(this.LogoContainer);
 
-        LoadingScreenAnimationSprites.forEach((sprite, index) => {
-            sprite.anchor.set(0); // 画像も左上が座標軸
-            sprite.scale.set(InitialScale); // 初期スケールと画像サイズ調整
-            sprite.x = 0; // 画面の一番左上に合わせる
-            sprite.y = 0;
-            sprite.visible = (index === 0); // 最初のフレームのみ表示
-            this.ScreenContainer.addChild(sprite);
-        });
+      this.App.stage.addChild(this.ScreenContainer); // メインステージに追加
 
-        super.SetScreenVisible(false); // 初期は非表示
-    }
+      // ロゴのアニメーションを作成
+      // this.LoadlogoScreenAssetsForPixi();
+      // // アニメーションの設定
+      // this.LogoAnimation = new PIXI.AnimatedSprite(this.LogoScreenAnimationSprites);
+      // this.LogoAnimation.loop = false;          // ループ再生を有効にする
+      // this.LogoAnimation.anchor.set(0.5);      // アンカーを中央に設定 (任意)
+      // this.LogoContainer.addChild(this.LogoAnimation);
+
+      // 白色の背景を追加
+      this.LogoBackground = new PIXI.Graphics();
+      this.LogoBackground.beginFill(0xffffff); // 塗りつぶし色を白に設定
+      this.LogoBackground.drawRect(0, 0, this.App.screen.width, this.App.screen.height); // (0,0)の位置から指定した幅と高さで四角形を描画
+      this.LogoBackground.endFill();
+
+      this.LogoContainer.addChild(this.LogoBackground);
+
+      // アニメーションを停止する
+      // 初期Frameで停止
+      // this.LogoAnimation.gotoAndStop(0);
+
+
+      // Infomation画像を作成する
+      const InfomationBackgroundImagePath = "infomationBackground";
+      const InfomationAttentionImagePath = "infomationAttention";
+      this.InfomationBackgroundImage = new PIXI.Sprite(InfomationBackgroundImagePath);
+      this.InfomationAttentionImage = new PIXI.Sprite(InfomationAttentionImagePath);
+
+      // 画像のアンカーを設定
+      this.InfomationBackgroundImage.anchor.set(0);// 左上が座標
+      this.InfomationAttentionImage.anchor.set(0);// 左上が座標
+      this.InfomationBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+      this.InfomationAttentionImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+
+      // 画像の位置を調整
+      this.InfomationBackgroundImage.x = 0; // 画面の一番左上に合わせる
+      this.InfomationBackgroundImage.y = 0;
+
+      // 画像からみて中央，かつYは上から少し離れた位置にする
+      this.InfomationBackgroundImage.x = (this.App.screen.width /2)  - (this.InfomationBackgroundImage.width / 2); // 画面の一番左上に合わせる
+      this.InfomationBackgroundImage.y = this.App.screen.Height * 0.1; // 少しずらしておく
+
+
+      this.InfomationContainer.visible = false;
+      this.LogoContainer.visible = false;
+      super.SetScreenVisible(false); // 初期は非表示
+      this.DebugTime = 0;
+  }
 
     /**
    * リサイズ処理を行う
@@ -100,23 +143,45 @@ export class LogoScreen extends BaseScreen{
     ResizeScreen(App, CurrentOverallScale){
         if (!this.ScreenContainer) return;
 
-        LoadingScreenAnimationSprites.forEach(sprite => {
-            const BaseTextureWidth = sprite.texture.orig.width;
-            const BaseTextureHeight = sprite.texture.orig.height;
-            const AspectRatio = BaseTextureWidth / BaseTextureHeight;
+        // LoadingScreenAnimationSprites.forEach(sprite => {
+        //     const BaseTextureWidth = sprite.texture.orig.width;
+        //     const BaseTextureHeight = sprite.texture.orig.height;
+        //     const AspectRatio = BaseTextureWidth / BaseTextureHeight;
             
-            // 高さを基準に幅を決める
-            let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
-            let DisplayWidth = DisplayHeight * AspectRatio;
+        //     // 高さを基準に幅を決める
+        //     let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
+        //     let DisplayWidth = DisplayHeight * AspectRatio;
 
-            sprite.width = DisplayWidth;
-            sprite.height = DisplayHeight;
+        //     sprite.width = DisplayWidth;
+        //     sprite.height = DisplayHeight;
             
 
-            // 一番左上を合わせる
-            sprite.x = (App.screen.width  - DisplayWidth)  /2;
-            sprite.y = (App.screen.height - DisplayHeight) / 2;
-        });
+        //     // 一番左上を合わせる
+        //     sprite.x = (App.screen.width  - DisplayWidth)  /2;
+        //     sprite.y = (App.screen.height - DisplayHeight) / 2;
+        // });
+    }
+
+
+    /**
+     * ロゴアニメーション用画像を読み込み、PixiJSテクスチャを準備する関数
+     * @note async関数のため、非同期で動作する
+     */
+    LoadlogoScreenAssetsForPixi() {
+        const Textures = [];
+        const FrameKeysToLoad = LogoAnimationFrames.filter(key => ImageAssetPaths[key]);
+        if (FrameKeysToLoad.length === 0) {
+            console.log("No loading animation frames to preload for Pixi.");
+            return;
+        }
+    
+        const AssetsToLoadForPixi = FrameKeysToLoad.map(key => ({ alias: key, src: ImageAssetPaths[key] }));
+        if (AssetsToLoadForPixi.length > 0) {
+            PIXI.Assets.load(AssetsToLoadForPixi);
+            FrameKeysToLoad.forEach(key => Textures.push(PIXI.Texture.from(key)));
+        }
+    
+        this.LogoScreenAnimationSprites = Textures.map(texture => new PIXI.Sprite(texture));
     }
 
     /**
@@ -124,6 +189,7 @@ export class LogoScreen extends BaseScreen{
    * @param {boolean} Visible - true:ON false:OFF
    */
   StartScreen(){
+        this.InfomationContainer.visible = true;
         super.StartScreen();
   }
     
@@ -132,99 +198,39 @@ export class LogoScreen extends BaseScreen{
    * @param {boolean} Visible - true:ON false:OFF
    */
   EndScreen(){
+      this.InfomationContainer.visible = false;
+      this.LogoContainer.visible = false;
+//       this.LogoAnimation.gotoAndStop(0);
+this.NowScreenState = 0;
+this.DebugTime = 0;
         super.EndScreen();
   }
 
     /**
    * ポーリングにて行う各画面の処理を行う
    * @param {number} DeltaTime - 前回からの変異時間
+   * 
    */
   EventPoll(DeltaTime){
         super.EventPoll(DeltaTime);
-        // 画像を紙芝居のように切り替える
-        // ふつうはAnimationでやればこんなことしなくていいのだが、Loading画面だけはこんなことしないといけない
+          this.DebugTime += DeltaTime;
 
-        if (LoadingScreenAnimationSprites.length === 0 || !this.ScreenContainer || !this.ScreenContainer.visible) return;
+        // Kye野入力で切り替える
+        if(this.NowScreenState ==0){
+          // ここが後々キー入力に代わる
+          if(this.DebugTime > 3.0){
+            this.NowScreenState = 1;
+            this.InfomationContainer.visible = false;
+            this.LogoContainer.visible = true;
+          }
+        }else{
 
-        this.LoadingAnimationTimer += DeltaTime;
-        if (this.LoadingAnimationTimer >= FRAME_DURATION) {
-            this.LoadingAnimationTimer -= FRAME_DURATION;
-            
-            LoadingScreenAnimationSprites[this.CurrentLoadingFrameIndex].visible = false; // 今のフレームを無効化
-            this.CurrentLoadingFrameIndex = (this.CurrentLoadingFrameIndex + 1) % LoadingScreenAnimationSprites.length; // Indexを1進める
-            if (LoadingScreenAnimationSprites[this.CurrentLoadingFrameIndex]) {
-                LoadingScreenAnimationSprites[this.CurrentLoadingFrameIndex].visible = true; // 次のフレームを有効化
-            }
+           if(this.DebugTime > 2.0){
+            return SCREEN_STATE.LOADING;
+          }
         }
+
+        return this.ScreenState;
   }
-}
 
-/**
- * ローディング画面の表示/非表示を切り替え
- * @param {boolean} Visible - true:ON false:OFF
- */
-export function SetPixiLoadingScreenVisible(Visible) {
-	if (LogoScreenContainer) {
-		LogoScreenContainer.visible = Visible;
-	}
-}
-
-/**
- * リサイズ時にローディング画面要素の位置を調整
- * @param {PIXI.Application} App PixiJSアプリケーションインスタンス
- * @param {number} CurrentOverallScale 現在のメイン画面倍率
- */
-export function ResizePixiLogoScreen(App, CurrentOverallScale) {
-	if (!LogoScreenContainer) return;
-
-	LogoScreenAnimationSprites.forEach(sprite => {
-		const BaseTextureWidth = sprite.texture.orig.width;
-		const BaseTextureHeight = sprite.texture.orig.height;
-		const AspectRatio = BaseTextureWidth / BaseTextureHeight;
-		
-		// 高さを基準に幅を決める
-		let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
-		let DisplayWidth = DisplayHeight * AspectRatio;
-
-		sprite.width = DisplayWidth;
-		sprite.height = DisplayHeight;
-		
-
-		// 一番左上を合わせる
-		sprite.x = (App.screen.width  - DisplayWidth)  /2;
-		sprite.y = (App.screen.height - DisplayHeight) / 2;
-	});
-}
-
-
-
-/**
- * ロゴ画面コンテナを初期化
- * @param {PIXI.Application} App - PixiJSアプリケーションインスタンス
- * @param {number} InitialScale - 初期スケール
- */
-export function InitilizeLogoScreen(App, InitialScale){
-
-}
-
-
-/**
- * ロゴ画面コンテナをセットアップ
- * @param {PIXI.Application} App - PixiJSアプリケーションインスタンス
- * @param {number} InitialScale - 初期スケール
- */
-export function SetupPixiLogoScreen(App, InitialScale) {
-	LogoScreenContainer = new PIXI.Container();
-	App.stage.addChild(LogoScreenContainer); // メインステージに追加
-
-	LogoScreenAnimationSprites.forEach((sprite, index) => {
-		sprite.anchor.set(0); // 画像も左上が座標軸
-		sprite.scale.set(InitialScale); // 初期スケールと画像サイズ調整
-		sprite.x = 0; // 画面の一番左上に合わせる
-		sprite.y = 0;
-		sprite.visible = (index === 0); // 最初のフレームのみ表示
-		LogoScreenContainer.addChild(sprite);
-	});
-
-	LogoScreenContainer.visible = false; // 初期は非表示
 }
