@@ -16,7 +16,7 @@
 
 // 各import
 //import { AssetManager } from './asset_manager.js'; // AssetManagerをインポート
-import * as LoadScreen from './Screens/CreatingLoadScreen.js';
+import * as LoadScreen from './Screens/LoadScreen.js';
 
 import * as Utils from "./utils.js";
 
