@@ -50,6 +50,10 @@ let ScreenList = []
 
 let NowScreenInstance = null;
 
+let fadeOverlay = null; // フェード用の黒い四角形
+let isFading = false;   // 現在フェード処理中かどうかのフラグ
+const FADE_DURATION = 0.2; // フェードにかける時間 (秒)
+
 /**
  * ScreenListの中から指定したインスタンスを取得する
  * @param {number} 指定した画面の種類
@@ -124,18 +128,24 @@ async function InitializeGame(){
     requestAnimationFrame(GameLoop);
 }
 
+/**
+ * 画面切り替え用のフェード処理を実装する予定
+ * @note ここで使用するクラスのシングルトンインスタンスを全て生成する
+ */
+
+
 
 /**
  * ゲームのロードを行う
  * @note ここで使用するクラスのシングルトンインスタンスを全て生成する
  */
-async function UpdateLoadingLogic() {
+function UpdateLoadingLogic() {
     // プレイヤーとエネミーの作成も行う
     switch(UpdateLoadingLigicState){
         case 0:
 
             ScreenList.push(new LogoScreen.LogoScreen(App, BaseScreen.SCREEN_STATE.LOGO_SCREEN));
-            GetScreenInstance(BaseScreen.SCREEN_STATE.LOGO_SCREEN).InitializeScreen();
+            GetScreenInstance(BaseScreen.SCREEN_STATE.LOGO_SCREEN).InitializeScreen(MainScaleFactor);
 
             break;
         case 1:
@@ -174,11 +184,10 @@ async function UpdateLoadingLogic() {
             
             break;
         case 12:
-            CurrentScreen = BaseScreen.SCREEN_STATE.LOGO_SCREEN;
+
             break;
 
     }
-    await Utils.Wait(1);
 
    ++UpdateLoadingLigicState;
 }
@@ -215,11 +224,6 @@ function HandleResize() {
     ResizeGame()
 }
 
-// 描画のクリア
-function clearCanvas() {
-    ctx.clearRect(0, 0, ShootingCanvas.width, ShootingCanvas.height);
-}
-
 /**
  * ゲームを進行するノーマルループ
  * @param {number} CurrentTime - 現在の経過時間
@@ -234,19 +238,27 @@ function GameLoop(CurrentTime){
 
     if(CurrentScreen == BaseScreen.SCREEN_STATE.LOADING){
         // ロード画面の際は特殊な操作が必要
-        NowScreenInstance.EventPoll(ClampedDeltaTime);
+        NextScreen = NowScreenInstance.EventPoll(ClampedDeltaTime);
         UpdateLoadingLogic();        
     }else{
-        NowScreenInstance.EventPoll(ClampedDeltaTime);
+        NextScreen = NowScreenInstance.EventPoll(ClampedDeltaTime);
     }
 
     if(NextScreen != CurrentScreen){
         // 遷移するので処理を行う
         PreviousScrren = CurrentScreen;
-        NextScreen = CurrentScreen;
+        CurrentScreen = NextScreen;
+        // フェード開始
+
         NowScreenInstance.EndScreen();
         NowScreenInstance = GetScreenInstance(CurrentScreen);
         NowScreenInstance.StartScreen();
+
+        // フェード停止
+
+
+
+
     }
 
     requestAnimationFrame(GameLoop); // 再起によりMainループが回る

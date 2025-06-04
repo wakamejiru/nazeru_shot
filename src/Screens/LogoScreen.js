@@ -57,6 +57,61 @@ export const LogoAnimationFrames = [
   "logoFrame51",
 ];
 
+export const LogoScreenImages = [
+    "logoFrame1",
+  "logoFrame2",
+  "logoFrame3",
+  "logoFrame4",
+  "logoFrame5",
+  "logoFrame6",
+  "logoFrame7",
+  "logoFrame8",
+  "logoFrame9",
+  "logoFrame10",
+  "logoFrame11",
+  "logoFrame12",
+  "logoFrame13",
+  "logoFrame14",
+  "logoFrame15",
+  "logoFrame16",
+  "logoFrame17",
+  "logoFrame18",
+  "logoFrame19",
+  "logoFrame20",
+  "logoFrame21",
+  "logoFrame22",
+  "logoFrame23",
+  "logoFrame24",
+  "logoFrame25",
+  "logoFrame26",
+  "logoFrame27",
+  "logoFrame28",
+  "logoFrame29",
+  "logoFrame30",
+  "logoFrame31",
+  "logoFrame32",
+  "logoFrame33",
+  "logoFrame34",
+  "logoFrame35",
+  "logoFrame36",
+  "logoFrame37",
+  "logoFrame38",
+  "logoFrame39",
+  "logoFrame40",
+  "logoFrame41",
+  "logoFrame42",
+  "logoFrame43",
+  "logoFrame44",
+  "logoFrame45",
+  "logoFrame46",
+  "logoFrame47",
+  "logoFrame48",
+  "logoFrame49",
+  "logoFrame50",
+  "logoFrame51",
+  "infomationBackground",
+  "infomationAttention"
+]
 
 let NowState = 0;
 export class LogoScreen extends BaseScreen{
@@ -87,6 +142,7 @@ export class LogoScreen extends BaseScreen{
 
       this.App.stage.addChild(this.ScreenContainer); // メインステージに追加
 
+
       // ロゴのアニメーションを作成
       // this.LoadlogoScreenAssetsForPixi();
       // // アニメーションの設定
@@ -109,10 +165,12 @@ export class LogoScreen extends BaseScreen{
 
 
       // Infomation画像を作成する
-      const InfomationBackgroundImagePath = "infomationBackground";
-      const InfomationAttentionImagePath = "infomationAttention";
-      this.InfomationBackgroundImage = new PIXI.Sprite(InfomationBackgroundImagePath);
-      this.InfomationAttentionImage = new PIXI.Sprite(InfomationAttentionImagePath);
+      const InfomationBackgroundImagePath = ImageAssetPaths.infomationBackground;
+      const InfomationAttentionImagePath = ImageAssetPaths.infomationAttention;
+      const InfomationBgTexture = PIXI.Texture.from(InfomationBackgroundImagePath);
+      const InfomationAttTexture = PIXI.Texture.from(InfomationAttentionImagePath);
+      this.InfomationBackgroundImage = new PIXI.Sprite(InfomationBgTexture);
+      this.InfomationAttentionImage = new PIXI.Sprite(InfomationAttTexture);
 
       // 画像のアンカーを設定
       this.InfomationBackgroundImage.anchor.set(0);// 左上が座標
@@ -125,9 +183,11 @@ export class LogoScreen extends BaseScreen{
       this.InfomationBackgroundImage.y = 0;
 
       // 画像からみて中央，かつYは上から少し離れた位置にする
-      this.InfomationBackgroundImage.x = (this.App.screen.width /2)  - (this.InfomationBackgroundImage.width / 2); // 画面の一番左上に合わせる
-      this.InfomationBackgroundImage.y = this.App.screen.Height * 0.1; // 少しずらしておく
+      this.InfomationAttentionImage.x = (this.App.screen.width /2)  - (this.InfomationAttentionImage.width / 2); // 画面の一番左上に合わせる
+      this.InfomationAttentionImage.y = this.App.screen.Height * 0.1; // 少しずらしておく
 
+      this.InfomationContainer.addChild(this.InfomationAttentionImage);
+      this.InfomationContainer.addChild(this.InfomationBackgroundImage);
 
       this.InfomationContainer.visible = false;
       this.LogoContainer.visible = false;
@@ -225,7 +285,7 @@ this.DebugTime = 0;
           }
         }else{
 
-           if(this.DebugTime > 2.0){
+           if(this.DebugTime > 5.0){
             return SCREEN_STATE.LOADING;
           }
         }

@@ -71,6 +71,7 @@ export class LoadScreen extends BaseScreen{
         this.CurrentLoadingFrameIndex=0;
         this.LoadingAnimationTimer = 0;
         this.AllMainAssetsLoaded = false;
+        this.FinishTime = 0;
     }
 
     /**
@@ -131,11 +132,12 @@ export class LoadScreen extends BaseScreen{
 	}
     
     /**
- 	 * 画面の開始を行う
+ 	 * 画面の終了を行う
 	 * @param {boolean} Visible - true:ON false:OFF
 	 */
 	EndScreen(){
         super.EndScreen();
+        this.FinishTime = 0;
 	}
 
     /**
@@ -158,6 +160,14 @@ export class LoadScreen extends BaseScreen{
             if (LoadingScreenAnimationSprites[this.CurrentLoadingFrameIndex]) {
                 LoadingScreenAnimationSprites[this.CurrentLoadingFrameIndex].visible = true; // 次のフレームを有効化
             }
+        }
+
+
+        this.FinishTime += DeltaTime;
+        if(this.FinishTime >= 2.0){
+            return SCREEN_STATE.LOGO_SCREEN;
+        }else{
+            return this.ScreenState;
         }
 	}
 }
