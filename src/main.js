@@ -91,8 +91,6 @@ function ResizeGame() {
     MainScaleFactor = CurrentTotalHeight / OVERALL_BASE_HEIGHT; // 全体UIのスケール基準
     // すべての画面，及び生成済みのインスタンスにUpscaleを行う
 
-    // LoadScreen.ResizePixiLoadingScreen(App, MainScaleFactor); 旧処理
-
     ScreenList.forEach(Screen => {
         Screen.ResizeScreen(App, MainScaleFactor);
     });

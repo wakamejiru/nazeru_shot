@@ -1,5 +1,6 @@
 // ロゴの表示を行う
 import { ImageAssetPaths } from '../game_status.js'; 
+import { BaseScreen, FRAME_DURATION } from './BaseScreen.js';
 // 初期ロード画面
 
 export const LogoAnimationFrames = [
@@ -57,66 +58,106 @@ export const LogoAnimationFrames = [
 ];
 
 
-export const InfomationAnimationFrames = [
-  "infomationFrame1",
-  "infomationFrame2",
-  "infomationFrame3",
-  "infomationFrame4",
-  "infomationFrame5",
-  "infomationFrame6",
-  "infomationFrame7",
-  "infomationFrame8",
-  "infomationFrame9",
-  "infomationFrame10",
-  "infomationFrame11",
-  "infomationFrame12",
-  "infomationFrame13",
-  "infomationFrame14",
-  "infomationFrame15",
-  "infomationFrame16",
-  "infomationFrame17",
-  "infomationFrame18",
-  "infomationFrame19",
-  "infomationFrame20",
-  "infomationFrame21",
-  "infomationFrame22",
-  "infomationFrame23",
-  "infomationFrame24",
-  "infomationFrame25",
-  "infomationFrame26",
-  "infomationFrame27",
-  "infomationFrame28",
-  "infomationFrame29",
-  "infomationFrame30",
-  "infomationFrame31",
-  "infomationFrame32",
-  "infomationFrame33",
-  "infomationFrame34",
-  "infomationFrame35",
-  "infomationFrame36",
-  "infomationFrame37",
-  "infomationFrame38",
-  "infomationFrame39",
-  "infomationFrame40",
-  "infomationFrame41",
-  "infomationFrame42",
-  "infomationFrame43",
-  "infomationFrame44",
-  "infomationFrame45",
-  "infomationFrame46",
-  "infomationFrame47",
-  "infomationFrame48",
-  "infomationFrame49",
-  "infomationFrame50",
-  "infomationFrame51",
-];
+let NowState = 0;
+export class LogoScreen extends BaseScreen{
+    /**
+     * コンストラクタ
+     * @param {PIXI.Application} App - メインPixiインスタンス
+     * @param {SCREEN_STATE} ScreenState - このインスタンスがどの画面を指すか
+     */
+    constructor(App, ScreenState){
+        super(App, ScreenState);
+        this.NowScreenState = 0; // 0の場合infomation // 1の場合LOGO
+    }
 
+    /**
+   * 初期化を行う
+   * @param {boolean} Visible - true:ON false:OFF
+   */
+  InitializeScreen(InitialScale){
 
-let LogoScreenContainer; // Logoを表示するPixiJSコンテナ
-let CurrentLogoFrameIndex = 0; // 現在表示しているロード画面のIndex
-let LogoAnimationTimer = 0; // Logoアニメーションの同期用のタイマ
-const LOGO_FRAME_DURATION = 0.033; // 30FPS
-let LogoScreenAnimationSprites = []; // ロゴアニメーション用Spritesオブジェクト配列
+        // 画面を作成する
+        this.ScreenContainer = new PIXI.Container();
+        this.App.stage.addChild(this.ScreenContainer); // メインステージに追加
+
+        LoadingScreenAnimationSprites.forEach((sprite, index) => {
+            sprite.anchor.set(0); // 画像も左上が座標軸
+            sprite.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+            sprite.x = 0; // 画面の一番左上に合わせる
+            sprite.y = 0;
+            sprite.visible = (index === 0); // 最初のフレームのみ表示
+            this.ScreenContainer.addChild(sprite);
+        });
+
+        super.SetScreenVisible(false); // 初期は非表示
+    }
+
+    /**
+   * リサイズ処理を行う
+   * @param {PIXI.Application} App - メインPixiインスタンス
+     * @param {number} CurrentOverallScale 現在のメイン画面倍率
+   */
+    ResizeScreen(App, CurrentOverallScale){
+        if (!this.ScreenContainer) return;
+
+        LoadingScreenAnimationSprites.forEach(sprite => {
+            const BaseTextureWidth = sprite.texture.orig.width;
+            const BaseTextureHeight = sprite.texture.orig.height;
+            const AspectRatio = BaseTextureWidth / BaseTextureHeight;
+            
+            // 高さを基準に幅を決める
+            let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
+            let DisplayWidth = DisplayHeight * AspectRatio;
+
+            sprite.width = DisplayWidth;
+            sprite.height = DisplayHeight;
+            
+
+            // 一番左上を合わせる
+            sprite.x = (App.screen.width  - DisplayWidth)  /2;
+            sprite.y = (App.screen.height - DisplayHeight) / 2;
+        });
+    }
+
+    /**
+   * 画面の開始を行う
+   * @param {boolean} Visible - true:ON false:OFF
+   */
+  StartScreen(){
+        super.StartScreen();
+  }
+    
+    /**
+   * 画面の開始を行う
+   * @param {boolean} Visible - true:ON false:OFF
+   */
+  EndScreen(){
+        super.EndScreen();
+  }
+
+    /**
+   * ポーリングにて行う各画面の処理を行う
+   * @param {number} DeltaTime - 前回からの変異時間
+   */
+  EventPoll(DeltaTime){
+        super.EventPoll(DeltaTime);
+        // 画像を紙芝居のように切り替える
+        // ふつうはAnimationでやればこんなことしなくていいのだが、Loading画面だけはこんなことしないといけない
+
+        if (LoadingScreenAnimationSprites.length === 0 || !this.ScreenContainer || !this.ScreenContainer.visible) return;
+
+        this.LoadingAnimationTimer += DeltaTime;
+        if (this.LoadingAnimationTimer >= FRAME_DURATION) {
+            this.LoadingAnimationTimer -= FRAME_DURATION;
+            
+            LoadingScreenAnimationSprites[this.CurrentLoadingFrameIndex].visible = false; // 今のフレームを無効化
+            this.CurrentLoadingFrameIndex = (this.CurrentLoadingFrameIndex + 1) % LoadingScreenAnimationSprites.length; // Indexを1進める
+            if (LoadingScreenAnimationSprites[this.CurrentLoadingFrameIndex]) {
+                LoadingScreenAnimationSprites[this.CurrentLoadingFrameIndex].visible = true; // 次のフレームを有効化
+            }
+        }
+  }
+}
 
 /**
  * ローディング画面の表示/非表示を切り替え
