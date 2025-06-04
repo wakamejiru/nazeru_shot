@@ -57,58 +57,7 @@ export const LogoAnimationFrames = [
   "logoFrame51",
 ];
 
-export const LogoScreenImages = [
-    "logoFrame1",
-  "logoFrame2",
-  "logoFrame3",
-  "logoFrame4",
-  "logoFrame5",
-  "logoFrame6",
-  "logoFrame7",
-  "logoFrame8",
-  "logoFrame9",
-  "logoFrame10",
-  "logoFrame11",
-  "logoFrame12",
-  "logoFrame13",
-  "logoFrame14",
-  "logoFrame15",
-  "logoFrame16",
-  "logoFrame17",
-  "logoFrame18",
-  "logoFrame19",
-  "logoFrame20",
-  "logoFrame21",
-  "logoFrame22",
-  "logoFrame23",
-  "logoFrame24",
-  "logoFrame25",
-  "logoFrame26",
-  "logoFrame27",
-  "logoFrame28",
-  "logoFrame29",
-  "logoFrame30",
-  "logoFrame31",
-  "logoFrame32",
-  "logoFrame33",
-  "logoFrame34",
-  "logoFrame35",
-  "logoFrame36",
-  "logoFrame37",
-  "logoFrame38",
-  "logoFrame39",
-  "logoFrame40",
-  "logoFrame41",
-  "logoFrame42",
-  "logoFrame43",
-  "logoFrame44",
-  "logoFrame45",
-  "logoFrame46",
-  "logoFrame47",
-  "logoFrame48",
-  "logoFrame49",
-  "logoFrame50",
-  "logoFrame51",
+export const InfomationScreenImages = [
   "infomationBackground",
   "infomationAttention"
 ]
@@ -124,13 +73,14 @@ export class LogoScreen extends BaseScreen{
         super(App, ScreenState);
         this.NowScreenState = 0; // 0の場合infomation // 1の場合LOGO
         this.LogoScreenAnimationSprites=[];
+        this.InfomationTextures = [];
     }
 
     /**
    * 初期化を行う
    * @param {boolean} Visible - true:ON false:OFF
    */
-  InitializeScreen(InitialScale){
+  async InitializeScreen(InitialScale){
       // 画面を作成する
       this.ScreenContainer = new PIXI.Container();
 
@@ -144,7 +94,7 @@ export class LogoScreen extends BaseScreen{
 
 
       // ロゴのアニメーションを作成
-      // this.LoadlogoScreenAssetsForPixi();
+      await this.LoadlogoScreenAssetsForPixi();
       // // アニメーションの設定
       // this.LogoAnimation = new PIXI.AnimatedSprite(this.LogoScreenAnimationSprites);
       // this.LogoAnimation.loop = false;          // ループ再生を有効にする
@@ -165,10 +115,8 @@ export class LogoScreen extends BaseScreen{
 
 
       // Infomation画像を作成する
-      const InfomationBackgroundImagePath = ImageAssetPaths.infomationBackground;
-      const InfomationAttentionImagePath = ImageAssetPaths.infomationAttention;
-      const InfomationBgTexture = PIXI.Texture.from(InfomationBackgroundImagePath);
-      const InfomationAttTexture = PIXI.Texture.from(InfomationAttentionImagePath);
+      const InfomationBgTexture = PIXI.Texture.from("infomationBackground");
+      const InfomationAttTexture = PIXI.Texture.from("infomationAttention");
       this.InfomationBackgroundImage = new PIXI.Sprite(InfomationBgTexture);
       this.InfomationAttentionImage = new PIXI.Sprite(InfomationAttTexture);
 
@@ -224,24 +172,35 @@ export class LogoScreen extends BaseScreen{
 
 
     /**
-     * ロゴアニメーション用画像を読み込み、PixiJSテクスチャを準備する関数
-     * @note async関数のため、非同期で動作する
+     * 画像を読み込み、PixiJSテクスチャを準備する関数
      */
-    LoadlogoScreenAssetsForPixi() {
-        const Textures = [];
-        const FrameKeysToLoad = LogoAnimationFrames.filter(key => ImageAssetPaths[key]);
-        if (FrameKeysToLoad.length === 0) {
-            console.log("No loading animation frames to preload for Pixi.");
-            return;
-        }
+    async LoadlogoScreenAssetsForPixi() {
+        // const Textures = [];
+        // const FrameKeysToLoad = LogoAnimationFrames.filter(key => ImageAssetPaths[key]);
+        // if (FrameKeysToLoad.length === 0) {
+        //     console.log("No loading animation frames to preload for Pixi.");
+        //     return;
+        // }
     
-        const AssetsToLoadForPixi = FrameKeysToLoad.map(key => ({ alias: key, src: ImageAssetPaths[key] }));
+        // const AssetsToLoadForPixi = FrameKeysToLoad.map(key => ({ alias: key, src: ImageAssetPaths[key] }));
+        // if (AssetsToLoadForPixi.length > 0) {
+        //     PIXI.Assets.load(AssetsToLoadForPixi);
+        //     FrameKeysToLoad.forEach(key => Textures.push(PIXI.Texture.from(key)));
+        // }
+    
+        // this.LogoScreenAnimationSprites = Textures.map(texture => new PIXI.Sprite(texture));
+
+        
+        const InfomationFrameKeysToLoad = InfomationScreenImages.filter(key => ImageAssetPaths[key]);
+        const AssetsToLoadForPixi = InfomationFrameKeysToLoad.map(key => ({ alias: key, src: ImageAssetPaths[key] }));
         if (AssetsToLoadForPixi.length > 0) {
-            PIXI.Assets.load(AssetsToLoadForPixi);
-            FrameKeysToLoad.forEach(key => Textures.push(PIXI.Texture.from(key)));
+            await PIXI.Assets.load(AssetsToLoadForPixi);
+
+            InfomationFrameKeysToLoad.forEach(key => {
+              const texture = PIXI.Texture.from(key);
+              this.InfomationTextures.push(texture);
+            });
         }
-    
-        this.LogoScreenAnimationSprites = Textures.map(texture => new PIXI.Sprite(texture));
     }
 
     /**
