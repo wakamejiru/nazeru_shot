@@ -1,15 +1,28 @@
 // 画面表示制御の既定クラス
 
-const FRAME_DURATION = 0.033; // (30FPS)
+export const FRAME_DURATION = 0.033; // (30FPS)
+// 使用する画面の一覧(State)
+export const SCREEN_STATE = Object.freeze({
+    LOADING: 'loading',
+    LOGO_SCREEN: 'logo_screen',
+    GAME_TITLE: 'game_title',
+    MODE_SELECT: 'mode_select_settings',
+    DIFFICULTY_SELECT: 'difficulty_setting', // これは他の画面上のポップアップとしても実装可能
+    STAGE_SELECT: 'stage_select',
+    CHARACTER_SELECT: 'character_select',
+    GAMEPLAY: 'gameplay'
+});
 
 export class BaseScreen{
 
 	/**
  	 * コンストラクタ
 	 * @param {PIXI.Application} App - メインPixiインスタンス
+	 * @param {SCREEN_STATE} ScreenState - このインスタンスがどの画面を指すか
 	 */
-	constructor(App){
-		this.App; // メインPixiインスタンス
+	constructor(App, ScreenState){
+		this.App = App; // メインPixiインスタンス
+		this.ScreenState = ScreenState;
 		// その画面用のコンテナを追加する(ここに描画する)
 		this.ScreenContainer = null;
 	}
@@ -72,5 +85,12 @@ export class BaseScreen{
 	 */
 	ResizeScreen(App, CurrentOverallScale){
 
+	}
+    /**
+ 	 * 現在登録されている画面のステイトを返す
+	 * @return {SCREEN_STATE} ScreenState - 現在の画面のステイト
+	 */
+	GetScreenKey(){
+		return this.ScreenState;
 	}
 }

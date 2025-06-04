@@ -16,25 +16,17 @@
 
 // 各import
 //import { AssetManager } from './asset_manager.js'; // AssetManagerをインポート
+import * as BaseScreen from './Screens/BaseScreen.js'
 import * as LoadScreen from './Screens/LoadScreen.js';
 
 import * as Utils from "./utils.js";
 
-// 使用する画面の一覧(State)
-const SCREEN_STATE = Object.freeze({
-    LOADING: 'loading',
-    LOGO_SCREEN: 'logo_screen',
-    GAME_TITLE: 'game_title',
-    MODE_SELECT: 'mode_select_settings',
-    DIFFICULTY_SELECT: 'difficulty_setting', // これは他の画面上のポップアップとしても実装可能
-    STAGE_SELECT: 'stage_select',
-    CHARACTER_SELECT: 'character_select',
-    GAMEPLAY: 'gameplay'
-});
+
 
 // const AssetManagerInstance = new AssetManager(ImageAssetPaths);
-
-let CurrentScreen = SCREEN_STATE.LOADING; // ★ 初期画面 (またはMODE_SELECT)
+let PreviousScrren = BaseScreen.SCREEN_STATE.LOADING;
+let CurrentScreen = BaseScreen.SCREEN_STATE.LOADING; // ★ 初期画面 (またはMODE_SELECT)
+let NextScreen = BaseScreen.SCREEN_STATE.LOADING;
 
 // メインアプリケーションを宣言
 // 基本ゲーム画面のCanvasの基準サイズ(16:9)
@@ -52,6 +44,23 @@ await App.init({view: MainGameCanvas, width: OVERALL_BASE_WIDTH, height: OVERALL
 
 let LastTime = 0; // メインループ時間管理用カウンタタイマ
 let UpdateLoadingLigicState = 0; // 初期化に用いるステイと処理
+
+let ScreenList = []
+
+let NowScreenInstance = null;
+
+/**
+ * ScreenListの中から指定したインスタンスを取得する
+ * @param {number} 指定した画面の種類
+ */
+function GetScreenInstance(ScreenState){
+    for (const Screen of ScreenList) {
+        if(Screen.GetScreenKey() == ScreenState){
+            return Screen;
+        }
+    }
+}
+
 /**
  * ゲーム画面のリサイジングを行う
  */
@@ -81,7 +90,12 @@ function ResizeGame() {
 
     MainScaleFactor = CurrentTotalHeight / OVERALL_BASE_HEIGHT; // 全体UIのスケール基準
     // すべての画面，及び生成済みのインスタンスにUpscaleを行う
-    LoadScreen.ResizePixiLoadingScreen(App, MainScaleFactor);
+
+    // LoadScreen.ResizePixiLoadingScreen(App, MainScaleFactor); 旧処理
+
+    ScreenList.forEach(Screen => {
+        Screen.ResizeScreen(App, MainScaleFactor);
+    });
 }
 
 /**
@@ -92,12 +106,18 @@ async function InitializeGame(){
     // しかし，Initial時に全て読み出すので，あまり重さは変わらないはず
     // 全アセット読み出し後ローディング画面になる(別スレッド処理となるため考慮しない)
     // await AssetManagerInstance.loadAllAssets();
-
+    
     
     await LoadScreen.PreloadLoadingScreenAssetsForPixi() // ローディングアニメーション用画像を読み込む
+
     Utils.Wait(0.2); // 上記のロードが終わらないと，ResizeGameでlistが完成しておらず仕様を満たさない
-    // 各画面のInitilizeを始める
-    LoadScreen.SetupPixiLoadingScreen(App, MainScaleFactor);
+    
+    // ロードスクリーンの画面だけインスタンスを作成して初期化
+    ScreenList.push(new LoadScreen.LoadScreen(App, BaseScreen.SCREEN_STATE.LOADING));
+    CurrentScreen = BaseScreen.SCREEN_STATE.LOADING;
+    NowScreenInstance = GetScreenInstance(CurrentScreen);
+    NowScreenInstance.InitializeScreen(MainScaleFactor);
+    NowScreenInstance.StartScreen();
 
     ResizeGame();
     // ゲームループを開始
@@ -203,28 +223,27 @@ function clearCanvas() {
  */
 function GameLoop(CurrentTime){
     // 現在の経過時間から差分を求める
-    const deltaTime = (CurrentTime - LastTime) / 1000; // 秒単位
+    const DeltaTime = (CurrentTime - LastTime) / 1000; // 秒単位
     LastTime = CurrentTime;
 
     // ゼロ除算や極端なdeltaTimeを防ぐ（ブラウザがバックグラウンドになった場合など）
-    const ClampedDeltaTime = Math.min(deltaTime, 0.1); // 例: 最大0.1秒に制限
+    const ClampedDeltaTime = Math.min(DeltaTime, 0.1); // 例: 最大0.1秒に制限
 
-     switch (CurrentScreen) {
-        case SCREEN_STATE.LOADING:
-            LoadScreen.setPixiLoadingScreenVisible(true); // ロード画面を起動
-            UpdateLoadingLogic();
-            LoadScreen.UpdatePixiLoadingAnimation(ClampedDeltaTime); // 画像を更新
-            break;
-        case SCREEN_STATE.GAME_TITLE:
+    if(CurrentScreen == BaseScreen.SCREEN_STATE.LOADING){
+        // ロード画面の際は特殊な操作が必要
+        NowScreenInstance.EventPoll(ClampedDeltaTime);
+        UpdateLoadingLogic();        
+    }else{
+        NowScreenInstance.EventPoll(ClampedDeltaTime);
+    }
 
-
-
-            break;
-        case SCREEN_STATE.MODE_SELECT:
-
-
-
-            break;
+    if(NextScreen != CurrentScreen){
+        // 遷移するので処理を行う
+        PreviousScrren = CurrentScreen;
+        CurrentScreen = NextScreen;
+        NowScreenInstance.EndScreen();
+        NowScreenInstance = GetScreenInstance(CurrentScreen);
+        NowScreenInstance.StartScreen();
     }
 
     requestAnimationFrame(GameLoop); // 再起によりMainループが回る

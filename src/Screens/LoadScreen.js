@@ -1,5 +1,5 @@
 import { ImageAssetPaths } from '../game_status.js'; 
-import { BaseScreen } from './BaseScreen.js';
+import { BaseScreen, FRAME_DURATION } from './BaseScreen.js';
 // 初期ロード画面
 
 // ローディングアニメーションフレームのキー配列
@@ -64,9 +64,10 @@ export class LoadScreen extends BaseScreen{
     /**
  	 * コンストラクタ
 	 * @param {PIXI.Application} App - メインPixiインスタンス
+     * @param {SCREEN_STATE} ScreenState - このインスタンスがどの画面を指すか
 	 */
-    constructor(App){
-        super(App);
+    constructor(App, ScreenState){
+        super(App, ScreenState);
         this.CurrentLoadingFrameIndex=0;
         this.LoadingAnimationTimer = 0;
         this.AllMainAssetsLoaded = false;
@@ -77,8 +78,6 @@ export class LoadScreen extends BaseScreen{
 	 * @param {boolean} Visible - true:ON false:OFF
 	 */
 	InitializeScreen(InitialScale){
-        PreloadLoadingScreenAssetsForPixi();
-
 
         // 画面を作成する
         this.ScreenContainer = new PIXI.Container();
@@ -150,9 +149,9 @@ export class LoadScreen extends BaseScreen{
 
         if (LoadingScreenAnimationSprites.length === 0 || !this.ScreenContainer || !this.ScreenContainer.visible) return;
 
-        LoadingAnimationTimer += DeltaTime;
-        if (this.LoadingAnimationTimer >= BaseScreen.FRAME_DURATION) {
-            this.LoadingAnimationTimer -= BaseScreen.FRAME_DURATION;
+        this.LoadingAnimationTimer += DeltaTime;
+        if (this.LoadingAnimationTimer >= FRAME_DURATION) {
+            this.LoadingAnimationTimer -= FRAME_DURATION;
             
             LoadingScreenAnimationSprites[this.CurrentLoadingFrameIndex].visible = false; // 今のフレームを無効化
             this.CurrentLoadingFrameIndex = (this.CurrentLoadingFrameIndex + 1) % LoadingScreenAnimationSprites.length; // Indexを1進める
@@ -168,9 +167,9 @@ export class LoadScreen extends BaseScreen{
  * @returns {Promise<void>}
  * @note async関数のため、非同期で動作する
  */
-async function PreloadLoadingScreenAssetsForPixi() {
-     const textures = [];
-     const frameKeysToLoad = LoadingAnimationFrames.filter(key => ImageAssetPaths[key]);
+export async function PreloadLoadingScreenAssetsForPixi() {
+    const textures = [];
+    const frameKeysToLoad = LoadingAnimationFrames.filter(key => ImageAssetPaths[key]);
     if (frameKeysToLoad.length === 0) {
         console.log("No loading animation frames to preload for Pixi.");
         return;
@@ -184,25 +183,3 @@ async function PreloadLoadingScreenAssetsForPixi() {
 
     LoadingScreenAnimationSprites = textures.map(texture => new PIXI.Sprite(texture));
 }
-
-
-
-
-
-
-
-
-
-
-
-
-/**
- * ローディングアニメーションのフレームを更新
- * @param {number} DeltaTime - 前フレームからの経過時間(秒)
- * @note 通常不要であるが，今回同時実行しているインスタンスを生成する処理はシングルスレッドで動作しているため
- * @note このように同期をとる処理をしなければ固まる
- */
-export function UpdatePixiLoadingAnimation(DeltaTime) {
-    
-}
-
