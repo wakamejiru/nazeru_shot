@@ -1,6 +1,5 @@
 import { ImageAssetPaths } from '../game_status.js'; 
 // 初期ロード画面
-// 画面はクラス化をしない(多胎化をできるのが，upscaleぐらいなので)
 
 // ローディングアニメーションフレームのキー配列
 export const LoadingAnimationFrames = [

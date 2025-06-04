@@ -23,6 +23,7 @@ import * as Utils from "./utils.js";
 // 使用する画面の一覧(State)
 const SCREEN_STATE = Object.freeze({
     LOADING: 'loading',
+    LOGO_SCREEN: 'logo_screen',
     GAME_TITLE: 'game_title',
     MODE_SELECT: 'mode_select_settings',
     DIFFICULTY_SELECT: 'difficulty_setting', // これは他の画面上のポップアップとしても実装可能
