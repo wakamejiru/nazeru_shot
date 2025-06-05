@@ -58,8 +58,7 @@ export const LogoAnimationFrames = [
 ];
 
 export const InfomationScreenImages = [
-  "infomationBackground",
-  "infomationAttention"
+  "infomationImage"
 ]
 
 let NowState = 0;
@@ -115,26 +114,19 @@ export class LogoScreen extends BaseScreen{
 
 
       // Infomation画像を作成する
-      const InfomationBgTexture = PIXI.Texture.from("infomationBackground");
-      const InfomationAttTexture = PIXI.Texture.from("infomationAttention");
+      const InfomationBgTexture = PIXI.Texture.from("infomationImage");
       this.InfomationBackgroundImage = new PIXI.Sprite(InfomationBgTexture);
-      this.InfomationAttentionImage = new PIXI.Sprite(InfomationAttTexture);
 
       // 画像のアンカーを設定
       this.InfomationBackgroundImage.anchor.set(0);// 左上が座標
-      this.InfomationAttentionImage.anchor.set(0);// 左上が座標
       this.InfomationBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
-      this.InfomationAttentionImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
 
       // 画像の位置を調整
       this.InfomationBackgroundImage.x = 0; // 画面の一番左上に合わせる
       this.InfomationBackgroundImage.y = 0;
 
-      // 画像からみて中央，かつYは上から少し離れた位置にする
-      this.InfomationAttentionImage.x = (this.App.screen.width /2)  - (this.InfomationAttentionImage.width / 2); // 画面の一番左上に合わせる
-      this.InfomationAttentionImage.y = 50; // 少しずらしておく
+      // 画像からみて中央
       this.InfomationContainer.addChild(this.InfomationBackgroundImage);
-      this.InfomationContainer.addChild(this.InfomationAttentionImage);
 
       // さらに文字を追加する
 
