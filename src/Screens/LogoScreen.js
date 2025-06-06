@@ -63,12 +63,7 @@ export const InfomationScreenImages = [
 
 // 再生する音声ファイルのリスト
 const InfomationMusic = [
-    'imfomation1',
-    'imfomation2',
-    'imfomation3',
-    'imfomation4',
-    'imfomation5',
-    'imfomation6'
+    'imfomation'
 ];
 
 
@@ -300,36 +295,10 @@ export class LogoScreen extends BaseScreen{
 	// 再生中であれば再生しない
 	// ここは重ねる場合などはできないので方法を考えたほうがいい
 	if(this.CurrentHowl == null){
-	
-			switch(PlayingMusicIndex){
-			case 0:
+    if(this.NowScreenState == 0){
 				this.FilePath = MusicOrVoicePaths[InfomationMusic[0]];
-				break;
-			case 1:
-				this.FilePath = MusicOrVoicePaths[InfomationMusic[1]];
-				break;
-			case 2:
-				this.FilePath = MusicOrVoicePaths[InfomationMusic[2]];
-				break;
-			case 3:
-				this.FilePath = MusicOrVoicePaths[InfomationMusic[3]];
-				break;
-			case 4:
-				this.FilePath = MusicOrVoicePaths[InfomationMusic[4]];
-				break;
-			case 5:
-				this.FilePath = MusicOrVoicePaths[InfomationMusic[5]];
-				break;
-			case 6:
-				// Infomationのアナウンス終了
-				// ロゴ画面に移動	
-				this.ChangeLogoScreen = true;
-				return;
-				break;
-			default:
-				// 何も再生しない
-				return;
-		}
+    }
+
 		// ファイルパスが存在する場合にのみ再生
 		if (!this.FilePath) {
 			return;
@@ -340,7 +309,8 @@ export class LogoScreen extends BaseScreen{
 				
 				// 再生が終了したときに呼び出される
 				onend: () => {
-						this.CurrentMusicIndex++;
+				this.ChangeLogoScreen = true;
+
 						this.CurrentHowl = null;
 					},
 			});
