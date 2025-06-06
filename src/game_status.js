@@ -751,7 +751,7 @@ export const ImageAssetPaths = Object.freeze({
   HitImageTypeA: "../image/avatar/HitImage.svg",
   BulletTypeA: "../image/canon/cirlce1.svg",
   EnemyTypeA: "../image/enemy/Enemy1.png",
-  infomationImage: "../image/wating/wating_image.png",
+  infomationImage: "../image/wating/waiting_image.png",
   waitingImage: "../image/logo/infomation_image.png",
   loadingFrame1: "../image/load/load_frame_0001.png",
   loadingFrame2: "../image/load/load_frame_0002.png",

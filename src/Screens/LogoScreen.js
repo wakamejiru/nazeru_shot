@@ -272,10 +272,11 @@ export class LogoScreen extends BaseScreen{
 			this.ChangeLogoScreen = (this.ChangeLogoScreen == true) ? this.ChangeLogoScreen : this.AnyKeyInput; 
 			
 		if(this.ChangeLogoScreen == true){
-            this.NowScreenState = 1;
-            this.InfomationContainer.visible = false;
-            this.LogoContainer.visible = true;
-            StopSound();
+        this.AnyKeyInput = false;
+        this.NowScreenState = 1;
+        this.InfomationContainer.visible = false;
+        this.LogoContainer.visible = true;
+        this.StopSound();
       }
       }else{
 

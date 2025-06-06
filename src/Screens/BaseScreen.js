@@ -75,7 +75,9 @@ export class BaseScreen{
 	 * @param {number} InputCurrentState - 入力情報
 	 */
 	EventPoll(DeltaTime, InputCurrentState){
-		this.AnyKeyInput = IsAnyInputActive(InputCurrentState);
+		if(InputCurrentState !== null){
+			this.AnyKeyInput = IsAnyInputActive(InputCurrentState);
+		}
 	}
 
 	/**

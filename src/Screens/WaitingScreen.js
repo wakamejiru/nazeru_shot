@@ -32,7 +32,7 @@ export class WaitingScreen extends BaseScreen{
 		this.App.stage.addChild(this.ScreenContainer); // メインステージに追加
 
 		// 画像の読み込みを行う
-		LoadlogoScreenAssetsForPixi();
+		await this.LoadWaitScreenAssetsForPixi();
 
 		// 画像を作成
 		const WaitingBgTexture = PIXI.Texture.from("waitingImage");
@@ -93,7 +93,7 @@ export class WaitingScreen extends BaseScreen{
     /**
      * 画像を読み込み、PixiJSテクスチャを準備する関数
      */
-	async LoadlogoScreenAssetsForPixi() {
+	async LoadWaitScreenAssetsForPixi() {
 		const WatingFrameKeysToLoad = WatingScreenImages.filter(key => ImageAssetPaths[key]);
 		const AssetsToLoadForPixi = WatingFrameKeysToLoad.map(key => ({ alias: key, src: ImageAssetPaths[key] }));
 			if (AssetsToLoadForPixi.length > 0) {
