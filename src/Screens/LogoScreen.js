@@ -59,7 +59,7 @@ export const LogoAnimationFrames = [
 
 export const InfomationScreenImages = [
   "infomationImage"
-]
+];
 
 // 再生する音声ファイルのリスト
 const InfomationMusic = [
@@ -151,8 +151,6 @@ export class LogoScreen extends BaseScreen{
       // 画像からみて中央
       this.InfomationContainer.addChild(this.InfomationBackgroundImage);
 
-      // さらに文字を追加する
-
       this.InfomationContainer.visible = false;
       this.LogoContainer.visible = false;
       super.SetScreenVisible(false); // 初期は非表示
@@ -184,6 +182,21 @@ export class LogoScreen extends BaseScreen{
         //     sprite.x = (App.screen.width  - DisplayWidth)  /2;
         //     sprite.y = (App.screen.height - DisplayHeight) / 2;
         // });
+
+      const BaseTextureWidth = this.InfomationBackgroundImage.texture.orig.width;
+			const BaseTextureHeight = this.InfomationBackgroundImage.texture.orig.height;
+			const AspectRatio = BaseTextureWidth / BaseTextureHeight;
+			// 高さを基準に幅を決める
+			let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
+			let DisplayWidth = DisplayHeight * AspectRatio;
+	
+			this.InfomationBackgroundImage.width = DisplayWidth;
+			this.InfomationBackgroundImage.height = DisplayHeight;
+				
+	
+			// 一番左上を合わせる
+			this.InfomationBackgroundImage.x = (App.screen.width  - DisplayWidth)  /2;
+			this.InfomationBackgroundImage.y = (App.screen.height - DisplayHeight) / 2;
     }
 
 
@@ -262,18 +275,21 @@ export class LogoScreen extends BaseScreen{
             this.NowScreenState = 1;
             this.InfomationContainer.visible = false;
             this.LogoContainer.visible = true;
-          }
-        }else{
+            StopSound();
+      }
+      }else{
 
-           if(this.DebugTime > 50.0){
+        if(this.DebugTime > 50.0){
             return SCREEN_STATE.LOADING;
-          }
         }
+      }
 
         return this.ScreenState;
   }
 
-
+	/**
+   * 音の再生を行う
+   */
   Sound(){
 	
 	const PlayingMusicIndex = this.CurrentMusicIndex;
@@ -335,6 +351,18 @@ export class LogoScreen extends BaseScreen{
 		}
 				
 	}
+
+	/**
+   * 音の停止を行う
+   */
+  StopSound(){
+    if(!this.CurrentHowl){
+      this.CurrentHowl.stop();
+      this.CurrentHowl.unload();
+      this.CurrentHowl = null;
+      this.CurrentMusicIndex = 0;
+    }
+  }
 
 	InitializeSound(){
 

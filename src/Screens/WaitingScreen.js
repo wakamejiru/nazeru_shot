@@ -1,5 +1,9 @@
 import { BaseScreen, FRAME_DURATION, SCREEN_STATE } from './BaseScreen.js';
+import { ImageAssetPaths, MusicOrVoicePaths } from '../game_status.js'; 
 
+export const WatingScreenImages = [
+  "waitingImage"
+];
 
 // playerにクリックさせて音が出るようにする画面
 // 同時に何か注意書きぐらいできたらいいなぐらい
@@ -12,8 +16,8 @@ export class WaitingScreen extends BaseScreen{
      */
     constructor(App, ScreenState){
         super(App, ScreenState);
-
-
+		this.WaitingTextures = [];
+		this.WaitingBackgroundImage = null;
     }
 
 	/**
@@ -27,13 +31,23 @@ export class WaitingScreen extends BaseScreen{
 
 		this.App.stage.addChild(this.ScreenContainer); // メインステージに追加
 
-		// 白色の背景を追加
-		this.WaintBackground = new PIXI.Graphics();
-		this.WaintBackground.beginFill(0xffffff); // 塗りつぶし色を白に設定
-		this.WaintBackground.drawRect(0, 0, this.App.screen.width, this.App.screen.height); // (0,0)の位置から指定した幅と高さで四角形を描画
-		this.WaintBackground.endFill();
+		// 画像の読み込みを行う
+		LoadlogoScreenAssetsForPixi();
 
-		this.ScreenContainer.addChild(this.WaintBackground);
+		// 画像を作成
+		const WaitingBgTexture = PIXI.Texture.from("waitingImage");
+		this.WaitingBackgroundImage = new PIXI.Sprite(WaitingBgTexture);
+
+		// 画像のアンカーを設定
+      	this.WaitingBackgroundImage.anchor.set(0);// 左上が座標
+      	this.WaitingBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+
+		// 画像の位置を調整
+      	this.WaitingBackgroundImage.x = 0; // 画面の一番左上に合わせる
+      	this.WaitingBackgroundImage.y = 0;
+
+		// 画像を追加
+		this.ScreenContainer.addChild(this.WaitingBackgroundImage);
 		super.SetScreenVisible(false); // 初期は非表示
 	}
 	
@@ -44,24 +58,20 @@ export class WaitingScreen extends BaseScreen{
 	   */
 		ResizeScreen(App, CurrentOverallScale){
 			if (!this.ScreenContainer) return;
+			const BaseTextureWidth = this.WaitingBackgroundImage.texture.orig.width;
+			const BaseTextureHeight = this.WaitingBackgroundImage.texture.orig.height;
+			const AspectRatio = BaseTextureWidth / BaseTextureHeight;
+			// 高さを基準に幅を決める
+			let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
+			let DisplayWidth = DisplayHeight * AspectRatio;
 	
-			// LoadingScreenAnimationSprites.forEach(sprite => {
-			//     const BaseTextureWidth = sprite.texture.orig.width;
-			//     const BaseTextureHeight = sprite.texture.orig.height;
-			//     const AspectRatio = BaseTextureWidth / BaseTextureHeight;
-				
-			//     // 高さを基準に幅を決める
-			//     let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
-			//     let DisplayWidth = DisplayHeight * AspectRatio;
-	
-			//     sprite.width = DisplayWidth;
-			//     sprite.height = DisplayHeight;
+			this.WaitingBackgroundImage.width = DisplayWidth;
+			this.WaitingBackgroundImage.height = DisplayHeight;
 				
 	
-			//     // 一番左上を合わせる
-			//     sprite.x = (App.screen.width  - DisplayWidth)  /2;
-			//     sprite.y = (App.screen.height - DisplayHeight) / 2;
-			// });
+			// 一番左上を合わせる
+			this.WaitingBackgroundImage.x = (App.screen.width  - DisplayWidth)  /2;
+			this.WaitingBackgroundImage.y = (App.screen.height - DisplayHeight) / 2;
 		}
 	
 		/**
@@ -79,6 +89,22 @@ export class WaitingScreen extends BaseScreen{
 	  EndScreen(){
 		super.EndScreen();
 	  }
+
+    /**
+     * 画像を読み込み、PixiJSテクスチャを準備する関数
+     */
+	async LoadlogoScreenAssetsForPixi() {
+		const WatingFrameKeysToLoad = WatingScreenImages.filter(key => ImageAssetPaths[key]);
+		const AssetsToLoadForPixi = WatingFrameKeysToLoad.map(key => ({ alias: key, src: ImageAssetPaths[key] }));
+			if (AssetsToLoadForPixi.length > 0) {
+				await PIXI.Assets.load(AssetsToLoadForPixi);
+
+				WatingFrameKeysToLoad.forEach(key => {
+				const texture = PIXI.Texture.from(key);
+				this.WaitingTextures.push(texture);
+				});
+			}
+	}
 	
 		/**
 	   * ポーリングにて行う各画面の処理を行う

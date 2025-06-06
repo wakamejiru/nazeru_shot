@@ -2,7 +2,13 @@ import { ImageAssetPaths } from '../game_status.js';
 // タイトル画面
 
 // 項目は二つ
-// SettingとStart
+const ButtonID = Object.freeze({
+    Button1: "Game Start",
+    Button2: "Extra Mode",
+    Button3: "Gallery",
+    Button4: "Audio Room",
+    Button5: "OPTION",
+});
 
 let CurrentFrameIndex = 0;
 let LoadingAnimationTimer = 0;
@@ -15,77 +21,6 @@ export const NowPictureButtons = Object.freeze({
     Button1:"Play",
     Button2: "Setting"
 });
-
-// Playボタンの総画像数(選ばれていないときは0毎目を表示)
-// 分解能は30枚(30fps)
-export const PlayButtonLoadingAnimationFrames = [
-  "PlayButtonFrame1",
-  "PlayButtonFrame2",
-  "PlayButtonFrame3",
-  "PlayButtonFrame4",
-  "PlayButtonFrame5",
-  "PlayButtonFrame6",
-  "PlayButtonFrame7",
-  "PlayButtonFrame8",
-  "PlayButtonFrame9",
-  "PlayButtonFrame10",
-  "PlayButtonFrame11",
-  "PlayButtonFrame12",
-  "PlayButtonFrame13",
-  "PlayButtonFrame14",
-  "PlayButtonFrame15",
-  "PlayButtonFrame16",
-  "PlayButtonFrame17",
-  "PlayButtonFrame18",
-  "PlayButtonFrame19",
-  "PlayButtonFrame20",
-  "PlayButtonFrame21",
-  "PlayButtonFrame22",
-  "PlayButtonFrame23",
-  "PlayButtonFrame24",
-  "PlayButtonFrame25",
-  "PlayButtonFrame26",
-  "PlayButtonFrame27",
-  "PlayButtonFrame28",
-  "PlayButtonFrame29",
-  "PlayButtonFrame30",
-];
-
-// Settigボタンの画像(選ばれていないときは0毎目を表示)
-// 分解能は30枚(30fps)
-export const SettingButtonLoadingAnimationFrames = [
-  "SettingButtonFrame1",
-  "SettingButtonFrame2",
-  "SettingButtonFrame3",
-  "SettingButtonFrame4",
-  "SettingButtonFrame5",
-  "SettingButtonFrame6",
-  "SettingButtonFrame7",
-  "SettingButtonFrame8",
-  "SettingButtonFrame9",
-  "SettingButtonFrame10",
-  "SettingButtonFrame11",
-  "SettingButtonFrame12",
-  "SettingButtonFrame13",
-  "SettingButtonFrame14",
-  "SettingButtonFrame15",
-  "SettingButtonFrame16",
-  "SettingButtonFrame17",
-  "SettingButtonFrame18",
-  "SettingButtonFrame19",
-  "SettingButtonFrame20",
-  "SettingButtonFrame21",
-  "SettingButtonFrame22",
-  "SettingButtonFrame23",
-  "SettingButtonFrame24",
-  "SettingButtonFrame25",
-  "SettingButtonFrame26",
-  "SettingButtonFrame27",
-  "SettingButtonFrame28",
-  "SettingButtonFrame29",
-  "SettingButtonFrame30",
-];
-
 
 // 現在選択されているボタンを記憶する
 let NowSelectButton = NowPictureButtons.Button1; // 初期はボタン1

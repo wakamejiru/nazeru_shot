@@ -55,8 +55,9 @@ let NowScreenInstance = null;
 let fadeOverlay = null; // フェード用の黒い四角形
 let isFading = false;   // 現在フェード処理中かどうかのフラグ
 const FADE_DURATION = 0.2; // フェードにかける時間 (秒)
-
-const InputManger = new InputManager(); // 入力監視クラスのインスタンス
+const WaitInputLag = 0.2;
+let NowWaitInputLag = 0;
+const InputManagerInstance = new InputManager(); // 入力監視クラスのインスタンス
 
 /**
  * ScreenListの中から指定したインスタンスを取得する
@@ -227,7 +228,8 @@ function GameLoop(CurrentTime){
     // ゼロ除算や極端なdeltaTimeを防ぐ（ブラウザがバックグラウンドになった場合など）
     const ClampedDeltaTime = Math.min(DeltaTime, 0.1); // 例: 最大0.1秒に制限
 
-    const InputCurrentState = InputManger.getState();
+    const InputCurrentState = (NowWaitInputLag > WaitInputLag) ? InputManagerInstance.getState() : null;
+    NowWaitInputLag += DeltaTime;
 
     if(CurrentScreen == BaseScreen.SCREEN_STATE.LOADING){
         // ロード画面の際は特殊な操作が必要
@@ -242,13 +244,17 @@ function GameLoop(CurrentTime){
         PreviousScrren = CurrentScreen;
         CurrentScreen = NextScreen;
         // フェード開始
-
+        InputManagerInstance.clearInputState(); // 入力を削除
         NowScreenInstance.EndScreen();
         NowScreenInstance = GetScreenInstance(CurrentScreen);
         NowScreenInstance.StartScreen();
 
         // フェード停止
 
+
+
+        // 画面遷移後数ミリ秒間は入力を無効化する
+        NowWaitInputLag = 0;        
 
 
 

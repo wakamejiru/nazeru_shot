@@ -102,6 +102,18 @@ export default class InputManager {
     }
 
     /**
+     * 画面遷移遷移時に押されっぱなしの場合にクリアを行う関数
+     */
+    clearInputState(){
+        this.keys.clear();
+        this.mouse.left = false;
+        this.mouse.middle = false;
+        this.mouse.right = false;
+        this.mousePosition = { x: 0, y: 0 };
+    }
+
+
+    /**
      * 不要になった際にイベントリスナーをクリーンアップするメソッド
      */
     dispose() {
