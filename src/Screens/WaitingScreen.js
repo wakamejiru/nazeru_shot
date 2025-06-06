@@ -48,6 +48,46 @@ export class WaitingScreen extends BaseScreen{
 
 		// 画像を追加
 		this.ScreenContainer.addChild(this.WaitingBackgroundImage);
+
+
+// 赤色テキスト用のスタイル
+        const redTextStyle = new PIXI.TextStyle({
+            fontFamily: '"Helvetica Neue", "Arial", "Noto Serif JP"', // フォント
+            fontSize: 48, // フォントサイズ
+            fill: '#ff4500', // 色 (トマトレッド)
+            stroke: { color: '#000000', width: 2 }, // 縁取り（白）
+            align: 'center', // 中央揃え
+        });
+
+        // 通常テキスト用のスタイル
+        const normalTextStyle = new PIXI.TextStyle({
+            fontFamily: '"Helvetica Neue", "Arial", "Noto Serif JP"',
+            fontSize: 48,
+            fill: '#000000', // 黒
+            align: 'center',
+        });
+
+        // テキストオブジェクト
+        this.redText = new PIXI.Text('※Chromeでプレイして♡', redTextStyle);
+
+        this.normalText = new PIXI.Text('何か入力して開始\n(コントローラ(USB)接続でもOK)', normalTextStyle);
+
+        // テキストのアンカー中央
+        this.redText.anchor.set(0.5);
+        this.normalText.anchor.set(0.5);
+
+        // 画面中央あたりに配置
+        this.redText.x = this.App.screen.width / 2;
+        this.redText.y = this.App.screen.height / 2 - 50;
+
+        this.normalText.x = this.App.screen.width / 2;
+        this.normalText.y = this.App.screen.height / 2 + 50;
+        
+        // 5. テキストをコンテナに追加して表示します
+        this.ScreenContainer.addChild(this.redText);
+        this.ScreenContainer.addChild(this.normalText);
+
+
 		super.SetScreenVisible(false); // 初期は非表示
 	}
 	
@@ -72,6 +112,18 @@ export class WaitingScreen extends BaseScreen{
 			// 一番左上を合わせる
 			this.WaitingBackgroundImage.x = (App.screen.width  - DisplayWidth)  /2;
 			this.WaitingBackgroundImage.y = (App.screen.height - DisplayHeight) / 2;
+
+
+			// 画面サイズに合わせてフォントサイズを調整
+            this.redText.style.fontSize = 48 * CurrentOverallScale;
+            this.normalText.style.fontSize = 48 * CurrentOverallScale;
+
+            // 画面の中央に再配置
+            this.redText.x = App.screen.width / 2;
+            this.redText.y = App.screen.height / 2 - (50 * CurrentOverallScale); // 間隔もスケールさせる
+
+            this.normalText.x = App.screen.width / 2;
+            this.normalText.y = App.screen.height / 2 + (50 * CurrentOverallScale);
 		}
 	
 		/**

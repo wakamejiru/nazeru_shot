@@ -221,7 +221,6 @@ function HandleResize() {
  * @param {number} CurrentTime - 現在の経過時間
  */
 function GameLoop(CurrentTime){
-    console.log(`現在の画面: ${CurrentScreen}, 次の画面候補: ${NextScreen}, ロード進捗: ${UpdateLoadingLigicState}`);
     // 現在の経過時間から差分を求める
     const DeltaTime = (CurrentTime - LastTime) / 1000; // 秒単位
     LastTime = CurrentTime;

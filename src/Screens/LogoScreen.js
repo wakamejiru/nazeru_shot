@@ -357,7 +357,7 @@ export class LogoScreen extends BaseScreen{
    * 音の停止を行う
    */
   StopSound(){
-    if(!this.CurrentHowl){
+    if(this.CurrentHowl){
       this.CurrentHowl.stop();
       this.CurrentHowl.unload();
       this.CurrentHowl = null;
