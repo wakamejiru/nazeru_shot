@@ -863,6 +863,16 @@ export const imageAssetPaths = Object.freeze({
   loadingFrame51: "../image/load/load_frame_0051.png",
 });
 
+// 再生する音声ファイルのリスト
+export const  MusicOrVoice = Object.freeze({
+    imfomation1: '../music/logo/infomation/infomation1.mp3',
+    imfomation2: '../music/logo/infomation/infomation2.mp3',
+    imfomation3: '../music/logo/infomation/infomation3.mp3',
+    imfomation4: '../music/logo/infomation/infomation4.mp3',
+    imfomation5: '../music/logo/infomation/infomation5.mp3',
+    imfomation6: '../music/logo/infomation/infomation6.mp3'
+});
+
 // キャラクター情報から作成する
 // 一番上から名前
 // キャラクター画像

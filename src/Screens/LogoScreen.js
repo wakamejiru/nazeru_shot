@@ -61,7 +61,20 @@ export const InfomationScreenImages = [
   "infomationImage"
 ]
 
+// 再生する音声ファイルのリスト
+const InfomationMusic = [
+    'imfomation1',
+    'imfomation2',
+    'imfomation3',
+    'imfomation4',
+    'imfomation5',
+    'imfomation6'
+];
+
+
 let NowState = 0;
+let CurrentHowl = null; // 現在再生中のHowlオブジェクトを保持する変数
+
 export class LogoScreen extends BaseScreen{
     /**
      * コンストラクタ
@@ -73,6 +86,11 @@ export class LogoScreen extends BaseScreen{
         this.NowScreenState = 0; // 0の場合infomation // 1の場合LOGO
         this.LogoScreenAnimationSprites=[];
         this.InfomationTextures = [];
+
+		// 何か入力があったフラグ(これでロゴのアニメーションなどがスキップされる)
+		this.AnyKeyInput = false;
+		this.CurrnetAudioIndex = 0;
+
     }
 
     /**
@@ -229,20 +247,42 @@ this.DebugTime = 0;
 
         // Kye野入力で切り替える
         if(this.NowScreenState ==0){
+			// ボイスを再生する
+			this.PlayInfomationVoice();
+
+
           // ここが後々キー入力に代わる
-          if(this.DebugTime > 3.0){
+          if(this.DebugTime > 15.0){
             this.NowScreenState = 1;
             this.InfomationContainer.visible = false;
             this.LogoContainer.visible = true;
           }
         }else{
 
-           if(this.DebugTime > 5.0){
+           if(this.DebugTime > 18.0){
             return SCREEN_STATE.LOADING;
           }
         }
 
         return this.ScreenState;
+  }
+
+
+  PlayInfomationVoice(){
+	switch(this.CurrnetAudioIndex){
+		case 0:
+			break;
+		case 1:
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		case 4:
+			break;
+		case 5:
+			break;
+	}
   }
 
 }
