@@ -73,7 +73,7 @@ const InfomationMusic = [
 
 
 let NowState = 0;
-let CurrentHowl = null; // 現在再生中のHowlオブジェクトを保持する変数
+let CurrentHowl = null; // 現在再生中のHowlインスタンス
 
 export class LogoScreen extends BaseScreen{
     /**
