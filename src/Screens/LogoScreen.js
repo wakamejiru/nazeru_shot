@@ -55,6 +55,36 @@ export const LogoAnimationFrames = [
   "logoFrame49",
   "logoFrame50",
   "logoFrame51",
+  "logoFrame52",
+  "logoFrame53",
+  "logoFrame54",
+  "logoFrame55",
+  "logoFrame56",
+  "logoFrame57",
+  "logoFrame58",
+  "logoFrame59",
+  "logoFrame60",
+  "logoFrame61",
+  "logoFrame62",
+  "logoFrame63",
+  "logoFrame64",
+  "logoFrame65",
+  "logoFrame66",
+  "logoFrame67",
+  "logoFrame68",
+  "logoFrame69",
+  "logoFrame70",
+  "logoFrame71",
+  "logoFrame72",
+  "logoFrame73",
+  "logoFrame74",
+  "logoFrame75",
+  "logoFrame76",
+  "logoFrame77",
+  "logoFrame78",
+  "logoFrame79",
+  "logoFrame80",
+  "logoFrame81"
 ];
 
 export const InfomationScreenImages = [
@@ -113,10 +143,15 @@ export class LogoScreen extends BaseScreen{
       // ロゴのアニメーションを作成
       await this.LoadlogoScreenAssetsForPixi();
       // // アニメーションの設定
-      // this.LogoAnimation = new PIXI.AnimatedSprite(this.LogoScreenAnimationSprites);
-      // this.LogoAnimation.loop = false;          // ループ再生を有効にする
-      // this.LogoAnimation.anchor.set(0.5);      // アンカーを中央に設定 (任意)
-      // this.LogoContainer.addChild(this.LogoAnimation);
+      this.LogoAnimation = new PIXI.AnimatedSprite(this.LogoScreenAnimationSprites);
+      this.LogoAnimation.loop = false;          // ループ再生を有効にする
+      this.LogoAnimation.anchor.set(0.5);      // アンカーを中央に設定 (任意)
+      this.LogoAnimation.onComplete = () => {
+          // 画面遷移の準備ができたことを示すフラグを立てるなど
+          // ここでは直接 次の画面の状態を返すようにしてみます
+          this.NextState = SCREEN_STATE.LOADING; 
+      };
+      this.LogoContainer.addChild(this.LogoAnimation);
 
       // 白色の背景を追加
       this.LogoBackground = new PIXI.Graphics();
@@ -128,7 +163,7 @@ export class LogoScreen extends BaseScreen{
 
       // アニメーションを停止する
       // 初期Frameで停止
-      // this.LogoAnimation.gotoAndStop(0);
+      this.LogoAnimation.gotoAndStop(0);
 
 
       // Infomation画像を作成する
@@ -160,23 +195,23 @@ export class LogoScreen extends BaseScreen{
     ResizeScreen(App, CurrentOverallScale){
         if (!this.ScreenContainer) return;
 
-        // LoadingScreenAnimationSprites.forEach(sprite => {
-        //     const BaseTextureWidth = sprite.texture.orig.width;
-        //     const BaseTextureHeight = sprite.texture.orig.height;
-        //     const AspectRatio = BaseTextureWidth / BaseTextureHeight;
+        this.LogoScreenAnimationSprites.forEach(sprite => {
+            const BaseTextureWidth = sprite.texture.orig.width;
+            const BaseTextureHeight = sprite.texture.orig.height;
+            const AspectRatio = BaseTextureWidth / BaseTextureHeight;
             
-        //     // 高さを基準に幅を決める
-        //     let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
-        //     let DisplayWidth = DisplayHeight * AspectRatio;
+            // 高さを基準に幅を決める
+            let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
+            let DisplayWidth = DisplayHeight * AspectRatio;
 
-        //     sprite.width = DisplayWidth;
-        //     sprite.height = DisplayHeight;
+            sprite.width = DisplayWidth;
+            sprite.height = DisplayHeight;
             
 
-        //     // 一番左上を合わせる
-        //     sprite.x = (App.screen.width  - DisplayWidth)  /2;
-        //     sprite.y = (App.screen.height - DisplayHeight) / 2;
-        // });
+            // 一番左上を合わせる
+            sprite.x = (App.screen.width  - DisplayWidth)  /2;
+            sprite.y = (App.screen.height - DisplayHeight) / 2;
+        });
 
       const BaseTextureWidth = this.InfomationBackgroundImage.texture.orig.width;
 			const BaseTextureHeight = this.InfomationBackgroundImage.texture.orig.height;
@@ -199,20 +234,20 @@ export class LogoScreen extends BaseScreen{
      * 画像を読み込み、PixiJSテクスチャを準備する関数
      */
     async LoadlogoScreenAssetsForPixi() {
-        // const Textures = [];
-        // const FrameKeysToLoad = LogoAnimationFrames.filter(key => ImageAssetPaths[key]);
-        // if (FrameKeysToLoad.length === 0) {
-        //     console.log("No loading animation frames to preload for Pixi.");
-        //     return;
-        // }
+        const Textures = [];
+        const FrameKeysToLoad = LogoAnimationFrames.filter(key => ImageAssetPaths[key]);
+        if (FrameKeysToLoad.length === 0) {
+            console.log("No loading animation frames to preload for Pixi.");
+            return;
+        }
     
-        // const AssetsToLoadForPixi = FrameKeysToLoad.map(key => ({ alias: key, src: ImageAssetPaths[key] }));
-        // if (AssetsToLoadForPixi.length > 0) {
-        //     PIXI.Assets.load(AssetsToLoadForPixi);
-        //     FrameKeysToLoad.forEach(key => Textures.push(PIXI.Texture.from(key)));
-        // }
+        const LogoAnimeAssetsToLoadForPixi = FrameKeysToLoad.map(key => ({ alias: key, src: ImageAssetPaths[key] }));
+        if (LogoAnimeAssetsToLoadForPixi.length > 0) {
+            await PIXI.Assets.load(LogoAnimeAssetsToLoadForPixi);
+            FrameKeysToLoad.forEach(key => Textures.push(PIXI.Texture.from(key)));
+        }
     
-        // this.LogoScreenAnimationSprites = Textures.map(texture => new PIXI.Sprite(texture));
+        this.LogoScreenAnimationSprites = Textures.map(texture => new PIXI.Sprite(texture));
 
         
         const InfomationFrameKeysToLoad = InfomationScreenImages.filter(key => ImageAssetPaths[key]);
@@ -238,13 +273,13 @@ export class LogoScreen extends BaseScreen{
   }
     
     /**
-   * 画面の開始を行う
+   * 画面の終了を行う
    * @param {boolean} Visible - true:ON false:OFF
    */
   EndScreen(){
 	this.InfomationContainer.visible = false;
 	this.LogoContainer.visible = false;
-//       this.LogoAnimation.gotoAndStop(0);
+  this.LogoAnimation.gotoAndStop(0);
 	this.NowScreenState = 0;
 	this.DebugTime = 0;
         super.EndScreen();
@@ -272,9 +307,13 @@ export class LogoScreen extends BaseScreen{
         this.InfomationContainer.visible = false;
         this.LogoContainer.visible = true;
         this.StopSound();
+        // ロゴアニメに切り替え
+        this.LogoContainer.visible = true; 
+        this.LogoAnimation.play(); // アニメーションを再生！
+
       }
       }else{
-
+         
         if(this.DebugTime > 50.0){
             return SCREEN_STATE.LOADING;
         }

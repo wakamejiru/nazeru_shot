@@ -70,7 +70,7 @@ export class WaitingScreen extends BaseScreen{
         // テキストオブジェクト
         this.redText = new PIXI.Text('※Chromeでプレイして♡', redTextStyle);
 
-        this.normalText = new PIXI.Text('何か入力して開始\n(コントローラ(USB)接続でもOK)', normalTextStyle);
+        this.normalText = new PIXI.Text('何か入力して開始\n(コントローラ(USB)接続でもOK)\n音出ます', normalTextStyle);
 
         // テキストのアンカー中央
         this.redText.anchor.set(0.5);
