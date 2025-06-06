@@ -1,5 +1,5 @@
 // ロゴの表示を行う
-import { ImageAssetPaths } from '../game_status.js'; 
+import { ImageAssetPaths, MusicOrVoicePaths } from '../game_status.js'; 
 import { BaseScreen, FRAME_DURATION, SCREEN_STATE } from './BaseScreen.js';
 // 初期ロード画面
 
@@ -89,7 +89,10 @@ export class LogoScreen extends BaseScreen{
 
 		// 何か入力があったフラグ(これでロゴのアニメーションなどがスキップされる)
 		this.AnyKeyInput = false;
-		this.CurrnetAudioIndex = 0;
+
+		// 音声用
+		this.CurrentMusicIndex = 0;
+		this.CurrentHowl = null;
 
     }
 
@@ -228,11 +231,11 @@ export class LogoScreen extends BaseScreen{
    * @param {boolean} Visible - true:ON false:OFF
    */
   EndScreen(){
-      this.InfomationContainer.visible = false;
-      this.LogoContainer.visible = false;
+	this.InfomationContainer.visible = false;
+	this.LogoContainer.visible = false;
 //       this.LogoAnimation.gotoAndStop(0);
-this.NowScreenState = 0;
-this.DebugTime = 0;
+	this.NowScreenState = 0;
+	this.DebugTime = 0;
         super.EndScreen();
   }
 
@@ -248,18 +251,20 @@ this.DebugTime = 0;
         // Kye野入力で切り替える
         if(this.NowScreenState ==0){
 			// ボイスを再生する
-			this.PlayInfomationVoice();
+			this.Sound();
+
+			// this.ChangeLogoScreen = (this.DebugTime > 15.0);
 
 
           // ここが後々キー入力に代わる
-          if(this.DebugTime > 15.0){
+		if(this.ChangeLogoScreen == true){
             this.NowScreenState = 1;
             this.InfomationContainer.visible = false;
             this.LogoContainer.visible = true;
           }
         }else{
 
-           if(this.DebugTime > 18.0){
+           if(this.DebugTime > 50.0){
             return SCREEN_STATE.LOADING;
           }
         }
@@ -268,21 +273,70 @@ this.DebugTime = 0;
   }
 
 
-  PlayInfomationVoice(){
-	switch(this.CurrnetAudioIndex){
-		case 0:
-			break;
-		case 1:
-			break;
-		case 2:
-			break;
-		case 3:
-			break;
-		case 4:
-			break;
-		case 5:
-			break;
+  Sound(){
+	
+	const PlayingMusicIndex = this.CurrentMusicIndex;
+	this.FilePath = null;
+    // 音楽キーを使ってファイルパスを取得
+
+	// 再生中であれば再生しない
+	// ここは重ねる場合などはできないので方法を考えたほうがいい
+	if(this.CurrentHowl == null){
+	
+			switch(PlayingMusicIndex){
+			case 0:
+				this.FilePath = MusicOrVoicePaths[InfomationMusic[0]];
+				break;
+			case 1:
+				this.FilePath = MusicOrVoicePaths[InfomationMusic[1]];
+				break;
+			case 2:
+				this.FilePath = MusicOrVoicePaths[InfomationMusic[2]];
+				break;
+			case 3:
+				this.FilePath = MusicOrVoicePaths[InfomationMusic[3]];
+				break;
+			case 4:
+				this.FilePath = MusicOrVoicePaths[InfomationMusic[4]];
+				break;
+			case 5:
+				this.FilePath = MusicOrVoicePaths[InfomationMusic[5]];
+				break;
+			case 6:
+				// Infomationのアナウンス終了
+				// ロゴ画面に移動	
+				this.ChangeLogoScreen = true;
+				return;
+				break;
+			default:
+				// 何も再生しない
+				return;
+		}
+		// ファイルパスが存在する場合にのみ再生
+		if (!this.FilePath) {
+			return;
+		}else{
+			this.CurrentHowl = new Howl({
+				src: [this.FilePath],
+				html5: true, // 長い音楽ファイルはストリーミング再生が推奨されます
+				
+				// 再生が終了したときに呼び出される
+				onend: () => {
+						this.CurrentMusicIndex++;
+						this.CurrentHowl = null;
+					},
+			});
+
+			this.CurrentHowl.play();
+
+		}
+
+		}
+				
 	}
+
+	InitializeSound(){
+
   }
 
 }

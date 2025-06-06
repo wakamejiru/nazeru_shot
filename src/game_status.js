@@ -864,7 +864,7 @@ export const imageAssetPaths = Object.freeze({
 });
 
 // 再生する音声ファイルのリスト
-export const  MusicOrVoice = Object.freeze({
+export const  MusicOrVoicePaths = Object.freeze({
     imfomation1: '../music/logo/infomation/infomation1.mp3',
     imfomation2: '../music/logo/infomation/infomation2.mp3',
     imfomation3: '../music/logo/infomation/infomation3.mp3',
