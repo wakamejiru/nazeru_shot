@@ -94,6 +94,8 @@ export class LogoScreen extends BaseScreen{
 		this.CurrentMusicIndex = 0;
 		this.CurrentHowl = null;
 
+		this.ChangeLogoScreen = false;
+
     }
 
     /**
@@ -222,6 +224,7 @@ export class LogoScreen extends BaseScreen{
    * @param {boolean} Visible - true:ON false:OFF
    */
   StartScreen(){
+		this.AnyKeyInput = false;
         this.InfomationContainer.visible = true;
         super.StartScreen();
   }
@@ -239,13 +242,13 @@ export class LogoScreen extends BaseScreen{
         super.EndScreen();
   }
 
-    /**
+	/**
    * ポーリングにて行う各画面の処理を行う
    * @param {number} DeltaTime - 前回からの変異時間
-   * 
+   * @param {instance} InputCurrentState - 入力情報 
    */
-  EventPoll(DeltaTime){
-        super.EventPoll(DeltaTime);
+  EventPoll(DeltaTime, InputCurrentState){
+        super.EventPoll(DeltaTime, InputCurrentState);
           this.DebugTime += DeltaTime;
 
         // Kye野入力で切り替える
@@ -253,10 +256,8 @@ export class LogoScreen extends BaseScreen{
 			// ボイスを再生する
 			this.Sound();
 
-			// this.ChangeLogoScreen = (this.DebugTime > 15.0);
-
-
-          // ここが後々キー入力に代わる
+			this.ChangeLogoScreen = (this.ChangeLogoScreen == true) ? this.ChangeLogoScreen : this.AnyKeyInput; 
+			
 		if(this.ChangeLogoScreen == true){
             this.NowScreenState = 1;
             this.InfomationContainer.visible = false;

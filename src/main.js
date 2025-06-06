@@ -19,9 +19,11 @@
 import * as BaseScreen from './Screens/BaseScreen.js'
 import * as LoadScreen from './Screens/LoadScreen.js';
 import * as LogoScreen from './Screens/LogoScreen.js';
+import * as WatingScreen from './Screens/WaitingScreen.js';
+
 
 import * as Utils from "./utils.js";
-
+import InputManager from './inputs/InputKeyboard.js';
 
 
 // const AssetManagerInstance = new AssetManager(ImageAssetPaths);
@@ -53,6 +55,8 @@ let NowScreenInstance = null;
 let fadeOverlay = null; // フェード用の黒い四角形
 let isFading = false;   // 現在フェード処理中かどうかのフラグ
 const FADE_DURATION = 0.2; // フェードにかける時間 (秒)
+
+const InputManger = new InputManager(); // 入力監視クラスのインスタンス
 
 /**
  * ScreenListの中から指定したインスタンスを取得する
@@ -149,7 +153,8 @@ function UpdateLoadingLogic() {
 
             break;
         case 1:
-
+            ScreenList.push(new WatingScreen.WaitingScreen(App, BaseScreen.SCREEN_STATE.WATING_SCREEN));
+            GetScreenInstance(BaseScreen.SCREEN_STATE.WATING_SCREEN).InitializeScreen(MainScaleFactor);
             break;
         case 2:
 
@@ -202,20 +207,6 @@ const keys = {
     'z': false, // 'z'キーの状態を追加 (小文字で統一)
 };
 
-// キーダウンイベント
-document.addEventListener('keydown', (e) => {
-    if (keys.hasOwnProperty(e.key)) {
-        keys[e.key] = true;
-    }
-});
-
-// キーアップイベント
-document.addEventListener('keyup', (e) => {
-    if (keys.hasOwnProperty(e.key)) {
-        keys[e.key] = false;
-    }
-});
-
 
 /**
  * 画面リサイズ処理関数
@@ -236,12 +227,14 @@ function GameLoop(CurrentTime){
     // ゼロ除算や極端なdeltaTimeを防ぐ（ブラウザがバックグラウンドになった場合など）
     const ClampedDeltaTime = Math.min(DeltaTime, 0.1); // 例: 最大0.1秒に制限
 
+    const InputCurrentState = InputManger.getState();
+
     if(CurrentScreen == BaseScreen.SCREEN_STATE.LOADING){
         // ロード画面の際は特殊な操作が必要
-        NextScreen = NowScreenInstance.EventPoll(ClampedDeltaTime);
+        NextScreen = NowScreenInstance.EventPoll(ClampedDeltaTime, InputCurrentState);
         UpdateLoadingLogic();        
     }else{
-        NextScreen = NowScreenInstance.EventPoll(ClampedDeltaTime);
+        NextScreen = NowScreenInstance.EventPoll(ClampedDeltaTime, InputCurrentState);
     }
 
     if(NextScreen != CurrentScreen){

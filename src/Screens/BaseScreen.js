@@ -1,9 +1,12 @@
+import {IsAnyInputActive} from '../inputs/InputKeyboard.js'
+
 // 画面表示制御の既定クラス
 
 export const FRAME_DURATION = 0.033; // (30FPS)
 // 使用する画面の一覧(State)
 export const SCREEN_STATE = Object.freeze({
     LOADING: 'loading',
+	WATING_SCREEN: 'Wating',
     LOGO_SCREEN: 'logo_screen',
     GAME_TITLE: 'game_title',
     MODE_SELECT: 'mode_select_settings',
@@ -25,6 +28,9 @@ export class BaseScreen{
 		this.ScreenState = ScreenState;
 		// その画面用のコンテナを追加する(ここに描画する)
 		this.ScreenContainer = null;
+		
+		// 何か入力があったフラグ(これでロゴのアニメーションなどがスキップされる)
+		this.AnyKeyInput = false;
 	}
 
 	/**
@@ -66,9 +72,10 @@ export class BaseScreen{
 	/**
  	 * ポーリングにて行う各画面の処理を行う
 	 * @param {number} DeltaTime - 前回からの変異時間
+	 * @param {number} InputCurrentState - 入力情報
 	 */
-	EventPoll(DeltaTime){
-
+	EventPoll(DeltaTime, InputCurrentState){
+		this.AnyKeyInput = IsAnyInputActive(InputCurrentState);
 	}
 
 	/**

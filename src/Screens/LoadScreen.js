@@ -143,9 +143,11 @@ export class LoadScreen extends BaseScreen{
     /**
  	 * ポーリングにて行う各画面の処理を行う
 	 * @param {number} DeltaTime - 前回からの変異時間
+     * @param {instance} InputCurrentState - 入力情報 
+     * 
 	 */
-	EventPoll(DeltaTime){
-        super.EventPoll(DeltaTime);
+	EventPoll(DeltaTime, InputCurrentState){
+        super.EventPoll(DeltaTime, InputCurrentState);
         // 画像を紙芝居のように切り替える
         // ふつうはAnimationでやればこんなことしなくていいのだが、Loading画面だけはこんなことしないといけない
 
@@ -165,7 +167,7 @@ export class LoadScreen extends BaseScreen{
 
         this.FinishTime += DeltaTime;
         if(this.FinishTime >= 2.0){
-            return SCREEN_STATE.LOGO_SCREEN;
+            return SCREEN_STATE.WATING_SCREEN;
         }else{
             return this.ScreenState;
         }
