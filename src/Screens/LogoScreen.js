@@ -143,23 +143,18 @@ export class LogoScreen extends BaseScreen{
       // ロゴのアニメーションを作成
       await this.LoadlogoScreenAssetsForPixi();
       // // アニメーションの設定
-      this.LogoAnimation = new PIXI.AnimatedSprite(this.LogoScreenAnimationSprites);
+      this.LogoAnimation = new PIXI.AnimatedSprite(this.LogoScreenAnimationSprites.map(s => s.texture))
       this.LogoAnimation.loop = false;          // ループ再生を有効にする
-      this.LogoAnimation.anchor.set(0.5);      // アンカーを中央に設定 (任意)
+      this.LogoAnimation.anchor.set(0);      // アンカーを中央に設定 (任意)
+      this.LogoAnimation.x = 0;
+      this.LogoAnimation.y = 0;
       this.LogoAnimation.onComplete = () => {
           // 画面遷移の準備ができたことを示すフラグを立てるなど
           // ここでは直接 次の画面の状態を返すようにしてみます
           this.NextState = SCREEN_STATE.LOADING; 
       };
+
       this.LogoContainer.addChild(this.LogoAnimation);
-
-      // 白色の背景を追加
-      this.LogoBackground = new PIXI.Graphics();
-      this.LogoBackground.beginFill(0xffffff); // 塗りつぶし色を白に設定
-      this.LogoBackground.drawRect(0, 0, this.App.screen.width, this.App.screen.height); // (0,0)の位置から指定した幅と高さで四角形を描画
-      this.LogoBackground.endFill();
-
-      this.LogoContainer.addChild(this.LogoBackground);
 
       // アニメーションを停止する
       // 初期Frameで停止
@@ -248,8 +243,7 @@ export class LogoScreen extends BaseScreen{
         }
     
         this.LogoScreenAnimationSprites = Textures.map(texture => new PIXI.Sprite(texture));
-
-        
+                
         const InfomationFrameKeysToLoad = InfomationScreenImages.filter(key => ImageAssetPaths[key]);
         const AssetsToLoadForPixi = InfomationFrameKeysToLoad.map(key => ({ alias: key, src: ImageAssetPaths[key] }));
         if (AssetsToLoadForPixi.length > 0) {
@@ -309,10 +303,12 @@ export class LogoScreen extends BaseScreen{
         this.StopSound();
         // ロゴアニメに切り替え
         this.LogoContainer.visible = true; 
-        this.LogoAnimation.play(); // アニメーションを再生！
+        this.LogoAnimation.play(); // アニメーションを再生
+
 
       }
       }else{
+        console.log(`ロゴ状態 - x: ${this.LogoAnimation.x}, y: ${this.LogoAnimation.y}, 幅: ${this.LogoAnimation.width}, 高さ: ${this.LogoAnimation.height}, 表示: ${this.LogoAnimation.visible}, フレーム: ${this.LogoAnimation.currentFrame}`);
          
         if(this.DebugTime > 50.0){
             return SCREEN_STATE.LOADING;

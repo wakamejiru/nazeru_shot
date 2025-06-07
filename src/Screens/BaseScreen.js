@@ -2,7 +2,7 @@ import {IsAnyInputActive} from '../inputs/InputKeyboard.js'
 
 // 画面表示制御の既定クラス
 
-export const FRAME_DURATION = 0.0165; // (60FPS)
+export const FRAME_DURATION = 0.033; // (60FPS)
 // 使用する画面の一覧(State)
 export const SCREEN_STATE = Object.freeze({
     LOADING: 'loading',
