@@ -884,7 +884,6 @@ export const ImageAssetPaths = Object.freeze({
   logoFrame78: "../image/logo/logo_anime_0078.png",
   logoFrame79: "../image/logo/logo_anime_0079.png",
   logoFrame80: "../image/logo/logo_anime_0080.png",
-  logoFrame81: "../image/logo/logo_anime_0081.png",
 });
 // AssetManagerで使う画像パスのリスト
 export const imageAssetPaths = Object.freeze({

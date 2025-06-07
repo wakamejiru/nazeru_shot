@@ -84,7 +84,6 @@ export const LogoAnimationFrames = [
   "logoFrame78",
   "logoFrame79",
   "logoFrame80",
-  "logoFrame81"
 ];
 
 export const InfomationScreenImages = [
@@ -146,6 +145,7 @@ export class LogoScreen extends BaseScreen{
       this.LogoAnimation = new PIXI.AnimatedSprite(this.LogoScreenAnimationSprites.map(s => s.texture))
       this.LogoAnimation.loop = false;          // ループ再生を有効にする
       this.LogoAnimation.anchor.set(0);      // アンカーを中央に設定 (任意)
+      this.LogoAnimation.scale.set(InitialScale); // 初期スケールと画像サイズ調整
       this.LogoAnimation.x = 0;
       this.LogoAnimation.y = 0;
       this.LogoAnimation.onComplete = () => {
@@ -164,7 +164,7 @@ export class LogoScreen extends BaseScreen{
       // Infomation画像を作成する
       const InfomationBgTexture = PIXI.Texture.from("infomationImage");
       this.InfomationBackgroundImage = new PIXI.Sprite(InfomationBgTexture);
-
+      
       // 画像のアンカーを設定
       this.InfomationBackgroundImage.anchor.set(0);// 左上が座標
       this.InfomationBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
@@ -190,30 +190,32 @@ export class LogoScreen extends BaseScreen{
     ResizeScreen(App, CurrentOverallScale){
         if (!this.ScreenContainer) return;
 
-        this.LogoScreenAnimationSprites.forEach(sprite => {
-            const BaseTextureWidth = sprite.texture.orig.width;
-            const BaseTextureHeight = sprite.texture.orig.height;
-            const AspectRatio = BaseTextureWidth / BaseTextureHeight;
-            
-            // 高さを基準に幅を決める
-            let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
-            let DisplayWidth = DisplayHeight * AspectRatio;
+        // Anime画像をリサイズ
 
-            sprite.width = DisplayWidth;
-            sprite.height = DisplayHeight;
-            
+        let BaseTextureWidth = this.LogoAnimation.texture.orig.width;
+        let BaseTextureHeight = this.LogoAnimation.texture.orig.height;
+        let AspectRatio = BaseTextureWidth / BaseTextureHeight;
 
-            // 一番左上を合わせる
-            sprite.x = (App.screen.width  - DisplayWidth)  /2;
-            sprite.y = (App.screen.height - DisplayHeight) / 2;
-        });
+        let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
+        let DisplayWidth = DisplayHeight * AspectRatio;
 
-      const BaseTextureWidth = this.InfomationBackgroundImage.texture.orig.width;
-			const BaseTextureHeight = this.InfomationBackgroundImage.texture.orig.height;
-			const AspectRatio = BaseTextureWidth / BaseTextureHeight;
+        this.LogoAnimation.width = DisplayWidth;
+        this.LogoAnimation.height = DisplayHeight;
+				
+	
+			// 一番左上を合わせる
+			this.LogoAnimation.x = (App.screen.width  - DisplayWidth)  /2;
+			this.LogoAnimation.y = (App.screen.height - DisplayHeight) / 2;
+
+      // infomationもリサイズ
+
+      BaseTextureWidth = this.InfomationBackgroundImage.texture.orig.width;
+      BaseTextureHeight = this.InfomationBackgroundImage.texture.orig.height;
+      AspectRatio = BaseTextureWidth / BaseTextureHeight;
+
 			// 高さを基準に幅を決める
-			let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
-			let DisplayWidth = DisplayHeight * AspectRatio;
+			DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
+			DisplayWidth = DisplayHeight * AspectRatio;
 	
 			this.InfomationBackgroundImage.width = DisplayWidth;
 			this.InfomationBackgroundImage.height = DisplayHeight;
@@ -308,8 +310,7 @@ export class LogoScreen extends BaseScreen{
 
       }
       }else{
-        console.log(`ロゴ状態 - x: ${this.LogoAnimation.x}, y: ${this.LogoAnimation.y}, 幅: ${this.LogoAnimation.width}, 高さ: ${this.LogoAnimation.height}, 表示: ${this.LogoAnimation.visible}, フレーム: ${this.LogoAnimation.currentFrame}`);
-         
+
         if(this.DebugTime > 50.0){
             return SCREEN_STATE.LOADING;
         }

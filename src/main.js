@@ -146,56 +146,62 @@ async function InitializeGame(){
  */
 function UpdateLoadingLogic() {
     // プレイヤーとエネミーの作成も行う
-    switch(UpdateLoadingLigicState){
-        case 0:
+    if(UpdateLoadingLigicState !== null){
 
-            ScreenList.push(new LogoScreen.LogoScreen(App, BaseScreen.SCREEN_STATE.LOGO_SCREEN));
-            GetScreenInstance(BaseScreen.SCREEN_STATE.LOGO_SCREEN).InitializeScreen(MainScaleFactor);
+    
+        switch(UpdateLoadingLigicState){
+            case 0:
 
-            break;
-        case 1:
-            ScreenList.push(new WatingScreen.WaitingScreen(App, BaseScreen.SCREEN_STATE.WATING_SCREEN));
-            GetScreenInstance(BaseScreen.SCREEN_STATE.WATING_SCREEN).InitializeScreen(MainScaleFactor);
-            break;
-        case 2:
+                ScreenList.push(new LogoScreen.LogoScreen(App, BaseScreen.SCREEN_STATE.LOGO_SCREEN));
+                GetScreenInstance(BaseScreen.SCREEN_STATE.LOGO_SCREEN).InitializeScreen(MainScaleFactor);
+                break;
+            case 1:
+                ScreenList.push(new WatingScreen.WaitingScreen(App, BaseScreen.SCREEN_STATE.WATING_SCREEN));
+                GetScreenInstance(BaseScreen.SCREEN_STATE.WATING_SCREEN).InitializeScreen(MainScaleFactor);
+                break;
+            case 2:
 
-            break;  
-        case 3:
+                break;  
+            case 3:
 
-            break;
+                break;
 
-        case 4:
+            case 4:
 
-            break;
+                break;
 
-        case 5:
+            case 5:
 
-            break;
-        case 6:
+                break;
+            case 6:
 
-            break;
-        case 7:
+                break;
+            case 7:
 
-            break;
-        case 8:
+                break;
+            case 8:
 
-            break;
-        case 9:
+                break;
+            case 9:
 
-            break;
-        case 10:
+                break;
+            case 10:
 
-            break;
-        case 11:
-            
-            break;
-        case 12:
+                break;
+            case 11:
+                
+                break;
+            case 12:
 
-            break;
+                break;
+            default:
+                UpdateLoadingLigicState = null;
+                break;
 
+        }
+
+        ++UpdateLoadingLigicState;
     }
-
-   ++UpdateLoadingLigicState;
 }
 
 // キー入力状態
