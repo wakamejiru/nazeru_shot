@@ -1,7 +1,8 @@
 import { ImageAssetPaths } from '../game_status.js'; 
+import { BaseScreen, FRAME_DURATION, SCREEN_STATE } from './BaseScreen.js';
 // タイトル画面
 
-// 項目は二つ
+// 項目は5つ
 const ButtonID = Object.freeze({
     Button1: "Game Start",
     Button2: "Extra Mode",
@@ -10,62 +11,160 @@ const ButtonID = Object.freeze({
     Button5: "OPTION",
 });
 
+// --- ボタンの設定 ---
+const ButtonConfigs = [
+    {
+        id: "game_start",
+        width: 300,
+        height: 70,
+        label: ButtonID.Button1,
+        iconPath: '', // chevron_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24,
+        soundPath: 'path/to/your/sound_click.mp3',
+    },
+    {
+        id: 'option',
+        width: 300,
+        height: 70,
+        label: 'Option',
+        colors: { normal: 0x333333, selected: 0x5555FF },
+        shape: { cornerRadius: 35 }
+    },
+    {
+        id: 'gallery',
+        label: 'Gallery'
+        // 他はデフォルト値が使われる
+    }
+];
+
 let CurrentFrameIndex = 0;
 let LoadingAnimationTimer = 0;
 const LOADING_FRAME_DURATION = 0.033; // (30FPS)
-// let AllMainAssetsLoaded = false; // メインアセット読み込み完了フラグ
 let LoadingScreenAnimationImages = []; // ローディングアニメーション用Imageオブジェクト配列
 
-// この画面に存在するボタン
-export const NowPictureButtons = Object.freeze({
-    Button1:"Play",
-    Button2: "Setting"
-});
-
 // 現在選択されているボタンを記憶する
-let NowSelectButton = NowPictureButtons.Button1; // 初期はボタン1
+let NowSelectButton = ButtonID.Button1; // 初期はボタン1
 
+export const TitleScreenImages = [
+  "titleImageBg"
+];
 
-/**
- * ローディング画面のアニメーションフレーム更新
- * @param {number} DeltaTime - 1ループにかかった時間
-*/
-export function UpdateLoadingAnimation(DeltaTime) {
-    if (LoadingScreenAnimationImages.length === 0) return;
-    LoadingAnimationTimer += DeltaTime;
-    if (LoadingAnimationTimer >= LOADING_FRAME_DURATION) {
-        LoadingAnimationTimer -= LOADING_FRAME_DURATION;
-        CurrentLoadingFrameIndex = (CurrentLoadingFrameIndex + 1) % LoadingScreenAnimationImages.length;
-    }
-}
-
-/**
- * ローディングになるようにframの順番ごとに画像を表示していく
- * @param {ctx} NowCtx - 　描画するCTX
- * @param {ctx} NowScale - 　画面の描画倍率
- * @param {ctx} AssetManager - 画像の管理クラスインスタンス
-*/
-export function DrawLoadingScreen(NowCtx, NowScale) {
-    NowCtx.fillStyle = 'black';
-    NowCtx.fillRect(0, 0, NowCtx.canvas.width, NowCtx.canvas.height);
-
-    if (LoadingScreenAnimationImages.length > 0 && LoadingScreenAnimationImages[CurrentLoadingFrameIndex]) {
-        const Image = LoadingScreenAnimationImages[CurrentLoadingFrameIndex];
-        // 画像を中心に、元のサイズで描画する例 (スケールは別途考慮も可)
-        const DrawWidth = Image.naturalWidth * NowScale * 0.5; // 例: 少し小さめに表示
-        const DrawHeight = Image.naturalHeight * NowScale * 0.5;
-        const DrawX = (NowCtx.canvas.width - DrawWidth) / 2;
-        const DrawY = (NowCtx.canvas.height - DrawHeight) / 2 - (50 * NowScale); // 少し上に
-        NowCtx.drawImage(Image, DrawX, DrawY, DrawWidth, DrawHeight);
-    } else {
-        // アニメーション画像がまだない場合のフォールバック
-        NowCtx.fillStyle = 'white';
-        NowCtx.font = `${20 * NowScale}px Arial`;
-        NowCtx.textAlign = 'center';
-        NowCtx.fillText("Preparing loading animation...", NowCtx.canvas.width / 2, NowCtx.canvas.height / 2);
+export class TitileScreen extends BaseScreen{
+	/**
+     * コンストラクタ
+     * @param {PIXI.Application} App - メインPixiインスタンス
+     * @param {SCREEN_STATE} ScreenState - このインスタンスがどの画面を指すか
+     */
+    constructor(App, ScreenState){
+        super(App, ScreenState);
+		this.TitleTextures = [];
+		this.TitleBackgroundImage = null;
     }
 
-    NowCtx.fillStyle = 'white';
-    NowCtx.font = `${24 * NowScale}px Arial`;
-    NowCtx.textAlign = 'center';
+	/**
+	 * 初期化を行う
+	 * @param {boolean} Visible - true:ON false:OFF
+	 */
+	async InitializeScreen(InitialScale){
+		// 画面を作成する
+		this.ScreenContainer = new PIXI.Container();
+
+
+		this.App.stage.addChild(this.ScreenContainer); // メインステージに追加
+
+		// 画像の読み込みを行う
+		await this.LoadTitleScreenAssetsForPixi();
+
+		// 画像を作成
+		const TitleBgTexture = PIXI.Texture.from("titleImageBg");
+		this.TitleBackgroundImage = new PIXI.Sprite(TitleBgTexture);
+
+		// 画像のアンカーを設定
+      	this.TitleBackgroundImage.anchor.set(0);// 左上が座標
+      	this.TitleBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+
+		// 画像の位置を調整
+      	this.TitleBackgroundImage.x = 0; // 画面の一番左上に合わせる
+      	this.TitleBackgroundImage.y = 0;
+
+		// 画像を追加
+		this.ScreenContainer.addChild(this.TitleBackgroundImage);
+        NowSelectButton = ButtonID.Button1; // 初期はボタン1
+
+
+
+		super.SetScreenVisible(false); // 初期は非表示
+	}
+	
+		/**
+	   * リサイズ処理を行う
+	   * @param {PIXI.Application} App - メインPixiインスタンス
+		 * @param {number} CurrentOverallScale 現在のメイン画面倍率
+	   */
+		ResizeScreen(App, CurrentOverallScale){
+			if (!this.ScreenContainer) return;
+			const BaseTextureWidth = this.TitleBackgroundImage.texture.orig.width;
+			const BaseTextureHeight = this.TitleBackgroundImage.texture.orig.height;
+			const AspectRatio = BaseTextureWidth / BaseTextureHeight;
+			// 高さを基準に幅を決める
+			let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
+			let DisplayWidth = DisplayHeight * AspectRatio;
+	
+			this.TitleBackgroundImage.width = DisplayWidth;
+			this.TitleBackgroundImage.height = DisplayHeight;
+				
+	
+			// 一番左上を合わせる
+			this.TitleBackgroundImage.x = (App.screen.width  - DisplayWidth)  /2;
+			this.TitleBackgroundImage.y = (App.screen.height - DisplayHeight) / 2;
+		}
+	
+		/**
+	   * 画面の開始を行う
+	   * @param {boolean} Visible - true:ON false:OFF
+	   */
+	  StartScreen(){
+			super.StartScreen();
+	  }
+		
+		/**
+	   * 画面の開始を行う
+	   * @param {boolean} Visible - true:ON false:OFF
+	   */
+	  EndScreen(){
+		super.EndScreen();
+	  }
+
+    /**
+     * 画像を読み込み、PixiJSテクスチャを準備する関数
+     */
+	async LoadTitleScreenAssetsForPixi() {
+        const TitleFrameKeysToLoad = TitleScreenImages.filter(key => ImageAssetPaths[key]);
+        const AssetsToLoadForPixi = TitleFrameKeysToLoad.map(key => ({ alias: key, src: ImageAssetPaths[key] }));
+        if (AssetsToLoadForPixi.length > 0) {
+            await PIXI.Assets.load(AssetsToLoadForPixi);
+
+            TitleFrameKeysToLoad.forEach(key => {
+            const texture = PIXI.Texture.from(key);
+            this.TitleTextures.push(texture);
+            });
+        }
+	}
+	
+		/**
+	   * ポーリングにて行う各画面の処理を行う
+	   * @param {number} DeltaTime - 前回からの変異時間
+	   * @param {instance} InputCurrentState - 入力情報
+	   * 
+	   */
+	  EventPoll(DeltaTime, InputCurrentState){
+		super.EventPoll(DeltaTime, InputCurrentState);
+		
+		// Keyの入力が何かあったかを判断する
+        return this.ScreenState;
+	  }
+	
+	
+	  Sound(){
+	
+	  }
 }

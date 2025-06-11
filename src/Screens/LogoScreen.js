@@ -92,7 +92,8 @@ export const InfomationScreenImages = [
 
 // 再生する音声ファイルのリスト
 const InfomationMusic = [
-    'imfomation'
+    'imfomation',
+    'logo'
 ];
 
 
@@ -119,6 +120,7 @@ export class LogoScreen extends BaseScreen{
 		this.CurrentHowl = null;
 
 		this.ChangeLogoScreen = false;
+    this.EndLogoScreen = false;
 
     }
 
@@ -149,9 +151,7 @@ export class LogoScreen extends BaseScreen{
       this.LogoAnimation.x = 0;
       this.LogoAnimation.y = 0;
       this.LogoAnimation.onComplete = () => {
-          // 画面遷移の準備ができたことを示すフラグを立てるなど
-          // ここでは直接 次の画面の状態を返すようにしてみます
-          this.NextState = SCREEN_STATE.LOADING; 
+          this.EndLogoScreen = true;
       };
 
       this.LogoContainer.addChild(this.LogoAnimation);
@@ -263,6 +263,7 @@ export class LogoScreen extends BaseScreen{
    * @param {boolean} Visible - true:ON false:OFF
    */
   StartScreen(){
+    this.EndLogoScreen = false;
 		this.AnyKeyInput = false;
         this.InfomationContainer.visible = true;
         super.StartScreen();
@@ -287,34 +288,39 @@ export class LogoScreen extends BaseScreen{
    * @param {instance} InputCurrentState - 入力情報 
    */
   EventPoll(DeltaTime, InputCurrentState){
-        super.EventPoll(DeltaTime, InputCurrentState);
-          this.DebugTime += DeltaTime;
-
-        // Kye野入力で切り替える
-        if(this.NowScreenState ==0){
+      super.EventPoll(DeltaTime, InputCurrentState);
 			// ボイスを再生する
 			this.Sound();
 
-			this.ChangeLogoScreen = (this.ChangeLogoScreen == true) ? this.ChangeLogoScreen : this.AnyKeyInput; 
-			
-		if(this.ChangeLogoScreen == true){
-        this.AnyKeyInput = false;
-        this.NowScreenState = 1;
-        this.InfomationContainer.visible = false;
-        this.LogoContainer.visible = true;
-        this.StopSound();
-        // ロゴアニメに切り替え
-        this.LogoContainer.visible = true; 
-        this.LogoAnimation.play(); // アニメーションを再生
+        // Keyの入力で切り替える
+      if(this.NowScreenState ==0){
 
 
-      }
-      }else{
+        this.ChangeLogoScreen = (this.ChangeLogoScreen == true) ? this.ChangeLogoScreen : this.AnyKeyInput; 
+        
+        if(this.ChangeLogoScreen == true){
+            this.AnyKeyInput = false;
+            this.NowScreenState = 1;
+            this.InfomationContainer.visible = false;
+            this.LogoContainer.visible = true;
+            this.StopSound();
+            // ロゴアニメに切り替え
+            this.LogoContainer.visible = true; 
+            this.LogoAnimation.play(); // アニメーションを再生
 
-        if(this.DebugTime > 50.0){
-            return SCREEN_STATE.LOADING;
+
+          }
+        }else{
+            
+          if(this.EndLogoScreen == true){
+            // 1秒経過で入れ替わる
+            
+            this.StopSound();
+            
+            
+            return SCREEN_STATE.GAME_TITLE;
+          }
         }
-      }
 
         return this.ScreenState;
   }
@@ -333,28 +339,41 @@ export class LogoScreen extends BaseScreen{
 	if(this.CurrentHowl == null){
     if(this.NowScreenState == 0){
 				this.FilePath = MusicOrVoicePaths[InfomationMusic[0]];
-    }
+        // ファイルパスが存在する場合にのみ再生
+        if (!this.FilePath) {
+          return;
+        }else{
+          this.CurrentHowl = new Howl({
+            src: [this.FilePath],
+            html5: true, // 長い音楽ファイルはストリーミング再生が推奨されます
+            
+            // 再生が終了したときに呼び出される
+            onend: () => {
+            this.ChangeLogoScreen = true;
 
-		// ファイルパスが存在する場合にのみ再生
-		if (!this.FilePath) {
-			return;
-		}else{
-			this.CurrentHowl = new Howl({
-				src: [this.FilePath],
-				html5: true, // 長い音楽ファイルはストリーミング再生が推奨されます
-				
-				// 再生が終了したときに呼び出される
-				onend: () => {
-				this.ChangeLogoScreen = true;
-
-						this.CurrentHowl = null;
-					},
-			});
-
-			this.CurrentHowl.play();
-
+                this.CurrentHowl = null;
+              },
+          });
+      }
 		}
-
+    else{
+        this.FilePath = MusicOrVoicePaths[InfomationMusic[1]];
+        // ファイルパスが存在する場合にのみ再生
+        if (!this.FilePath) {
+          return;
+        }else{
+          this.CurrentHowl = new Howl({
+            src: [this.FilePath],
+            html5: true, // 長い音楽ファイルはストリーミング再生が推奨されます
+            
+            // 再生が終了したときに呼び出される
+            onend: () => {
+                this.CurrentHowl = null;
+              },
+          });
+        }
+      }
+			this.CurrentHowl.play();
 		}
 				
 	}

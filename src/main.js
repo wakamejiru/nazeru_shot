@@ -20,6 +20,7 @@ import * as BaseScreen from './Screens/BaseScreen.js'
 import * as LoadScreen from './Screens/LoadScreen.js';
 import * as LogoScreen from './Screens/LogoScreen.js';
 import * as WatingScreen from './Screens/WaitingScreen.js';
+import * as TitileScreen from './Screens/TitleScreen.js';
 
 
 import * as Utils from "./utils.js";
@@ -160,7 +161,8 @@ function UpdateLoadingLogic() {
                 GetScreenInstance(BaseScreen.SCREEN_STATE.WATING_SCREEN).InitializeScreen(MainScaleFactor);
                 break;
             case 2:
-
+                ScreenList.push(new TitileScreen.TitileScreen(App, BaseScreen.SCREEN_STATE.GAME_TITLE));
+                GetScreenInstance(BaseScreen.SCREEN_STATE.GAME_TITLE).InitializeScreen(MainScaleFactor);
                 break;  
             case 3:
 

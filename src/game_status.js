@@ -884,6 +884,7 @@ export const ImageAssetPaths = Object.freeze({
   logoFrame78: "../image/logo/logo_anime_0078.png",
   logoFrame79: "../image/logo/logo_anime_0079.png",
   logoFrame80: "../image/logo/logo_anime_0080.png",
+  titleImageBg: "../image/title/title_image_bg.png",
 });
 // AssetManagerで使う画像パスのリスト
 export const imageAssetPaths = Object.freeze({
@@ -1022,12 +1023,14 @@ export const imageAssetPaths = Object.freeze({
   logoFrame78: "../image/logo/logo_anime_0078.png",
   logoFrame79: "../image/logo/logo_anime_0079.png",
   logoFrame80: "../image/logo/logo_anime_0080.png",
-  logoFrame81: "../image/logo/logo_anime_0081.png"
+  logoFrame81: "../image/logo/logo_anime_0081.png",
+  titleImageBg: "../image/title/title_image_bg.png",
 });
 
 // 再生する音声ファイルのリスト
 export const  MusicOrVoicePaths = Object.freeze({
     imfomation: '../music/logo/infomation/infomation.mp3',
+    logo: "../music/logo/infomation/logo.mp3",
 });
 
 // キャラクター情報から作成する
