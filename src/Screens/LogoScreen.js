@@ -84,6 +84,11 @@ export const LogoAnimationFrames = [
   "logoFrame78",
   "logoFrame79",
   "logoFrame80",
+  "logoFrame81",
+  "logoFrame82",
+  "logoFrame83",
+  "logoFrame84",
+  "logoFrame85",
 ];
 
 export const InfomationScreenImages = [

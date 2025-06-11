@@ -38,27 +38,28 @@ export class CustomButton extends PIXI.Container {
     constructor(renderer, config) {
         super();
 
-                // 1. まず、完全な形のデフォルト設定を定義します
+        // 1. まず、完全な形のデフォルト設定を定義します
         const defaultConfig = {
             id: 'default-button',
             width: 200,
             height: 60,
             label: '',
-            labelStyle: new PIXI.TextStyle({ fill: '#FFFFFF', fontSize: 24, fontWeight: 'bold' }),
+            labelStyle: new PIXI.TextStyle({ fill: '#000000', fontSize: 24, fontWeight: 'bold' }),
+            fill_colors: {
+                normal: 0xFFFFFF,
+                selected: 0x7fffd4,
+                pressed: 0x888888,
+            },
+            stroke: {
+                width: 0,
+                color: {
+                    normal: 0x000000,
+                    selected: 0xFFFFFF,
+                    pressed: 0x888888,
+                },
+            },
             shape: {
                 cornerRadius: 15,
-                fill: {
-                    color: 0xFFFFFF,
-                },
-                stroke: {
-                    width: 10,
-                    color: 0x000000,
-                }
-            },
-            colors: {
-                normal: 0xAAAAAA,
-                selected: 0xFFFFFF,
-                pressed: 0x888888,
             },
             soundPath: null,
             iconPath: null,
@@ -142,20 +143,19 @@ export class CustomButton extends PIXI.Container {
      */
     _createBackgroundTexture() {
         const g = new PIXI.Graphics();
-        const { shape } = this.#config; // 設定を短縮して取得
 
         // 1. 枠線のスタイルを設定 (線の太さが0より大きい場合のみ)
-        if (shape.stroke && shape.stroke.width > 0) {
-            g.lineStyle(shape.stroke.width, shape.stroke.color, 1); // 第3引数は透明度(alpha)
+        if (this.#config.stroke.width > 0) {
+            g.lineStyle(this.#config.stroke.width, this.#config.stroke.color.normal, 1); // 第3引数は透明度(alpha)
         }
 
         // 2. 塗りの色を設定
-        g.beginFill(shape.fill.color);
+        g.beginFill(this.#config.fill_colors.normal);
 
         // 3. 角丸四角形を描画 (サイズは仮でOK。9-sliceで伸縮させるため)
         // 枠線の太さを考慮して、少し内側に描画すると綺麗に見えます
-        const offset = shape.stroke ? shape.stroke.width / 2 : 0;
-        g.drawRoundedRect(offset, offset, 100 - offset * 2, 100 - offset * 2, shape.cornerRadius);
+        const offset = this.#config.stroke.width ? this.#config.stroke.width / 2 : 0;
+        g.drawRoundedRect(offset, offset, 100 - offset * 2, 100 - offset * 2, this.#config.shape.cornerRadius);
 
         // 4. 塗りの設定を終了
         g.endFill();
@@ -209,7 +209,7 @@ export class CustomButton extends PIXI.Container {
 
         // 非選択時の色更新
         if(!this.#isSelected) {
-            this.#background.tint = this.#config.colors.normal;
+            this.#background.tint = this.#config.fill_colors.normal;
         }
     }
 
@@ -236,7 +236,7 @@ export class CustomButton extends PIXI.Container {
         if (this.#animation) {
             this.#animation.kill();
         }
-        this.#background.tint = this.#config.colors.selected;
+        this.#background.tint = this.#config.fill_colors.selected;
         
         // GSAPを使ったアニメーション例（スケール）
         this.#animation = gsap.to(this.scale, {
@@ -262,14 +262,14 @@ export class CustomButton extends PIXI.Container {
             duration: this.#config.animation.duration,
             ease: 'power2.out',
         });
-        this.#background.tint = this.#config.colors.normal;
+        this.#background.tint = this.#config.fill_colors.normal;
     }
 
 
     // --- イベントハンドラ ---
     
     #onPress = () => {
-        this.#background.tint = this.#config.colors.pressed;
+        this.#background.tint = this.#config.fill_colors.pressed;
         if (this.#sound) {
             this.#sound.play();
         }
@@ -279,23 +279,23 @@ export class CustomButton extends PIXI.Container {
     
     #onRelease = () => {
         if (this.#isSelected) {
-            this.#background.tint = this.#config.colors.selected;
+            this.#background.tint = this.#config.fill_colors.selected;
         } else {
-            this.#background.tint = this.#config.colors.normal;
+            this.#background.tint = this.#config.fill_colors.normal;
         }
     }
 
     #onHover = () => {
         // ポーリングで選択されていない場合でも、マウスホバーで色を変える
         if (!this.#isSelected) {
-            this.#background.tint = this.#config.colors.selected;
+            this.#background.tint = this.#config.fill_colors.selected;
         }
     }
 
     #onLeave = () => {
         // ポーリングで選択されていない場合は、元の色に戻す
         if (!this.#isSelected) {
-            this.#background.tint = this.#config.colors.normal;
+            this.#background.tint = this.#config.fill_colors.normal;
         }
     }
 }

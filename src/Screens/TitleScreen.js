@@ -23,15 +23,22 @@ const ButtonConfigs = [
         soundPath: 'system45',
 		colors: { normal: 0x333333, selected: 0x5555FF },
         shape: {
-			cornerRadius: 20,
-			stroke: { // 枠線の設定
-				width: 10,         // 線の太さ 4px
-				color: 0x000000   // 色は黒
+			cornerRadius: 20
+		},
+		fill_colors: {
+			normal: 0xFFFFFF,
+			selected: 0x7fffd4,
+			pressed: 0x888888,
+		},
+		stroke:{
+			width: 5,
+			color: {
+				normal: 0x000000,
+				selected: 0xFFFFFF,
+				pressed: 0x888888,
 			},
-			fill: {   // 塗りの設定
-				color: 0xFFFFFF   // 色は白
-			},
-    	},
+		},
+			
     },
 	{
         id: "extra_mode",
@@ -40,7 +47,6 @@ const ButtonConfigs = [
         label: ButtonID.Button2,
         iconPath: 'iconImage1',
         soundPath: 'system45',
-		colors: { normal: 0x333333, selected: 0x5555FF },
         shape: { cornerRadius: 35 }
     },
 	{
@@ -50,7 +56,6 @@ const ButtonConfigs = [
         label: ButtonID.Button3,
         iconPath: 'iconImage1',
         soundPath: 'system45',
-		colors: { normal: 0x333333, selected: 0x5555FF },
         shape: { cornerRadius: 35 }
     },
 	{
@@ -60,7 +65,6 @@ const ButtonConfigs = [
         label: ButtonID.Button4,
         iconPath: 'iconImage1',
         soundPath: 'system45',
-		colors: { normal: 0x333333, selected: 0x5555FF },
         shape: { cornerRadius: 35 }
     },
 	{
@@ -70,7 +74,6 @@ const ButtonConfigs = [
         label: ButtonID.Button5,
         iconPath: 'iconImage1',
         soundPath: 'system45',
-		colors: { normal: 0x333333, selected: 0x5555FF },
         shape: { cornerRadius: 35 }
     }
 ];
@@ -134,7 +137,7 @@ export class TitileScreen extends BaseScreen{
 			const config = ButtonConfigs[i];
 			// app.rendererを渡してボタンを非同期で生成
 			const button = await CustomButton.create(this.App.renderer, config);
-			button.x = this.App.screen.width / 2;
+			button.x = this.App.screen.width - ((this.App.screen.width / 10) + config.width/2);
 			button.y = 150 + i * 100;
 			button.pivot.set(button.width / 2, button.height / 2); // 中央を基点にする
 			

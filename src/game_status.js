@@ -884,6 +884,12 @@ export const ImageAssetPaths = Object.freeze({
   logoFrame78: "../image/logo/logo_anime_0078.png",
   logoFrame79: "../image/logo/logo_anime_0079.png",
   logoFrame80: "../image/logo/logo_anime_0080.png",
+  logoFrame81: "../image/logo/logo_anime_0081.png",
+  logoFrame82: "../image/logo/logo_anime_0082.png",
+  logoFrame83: "../image/logo/logo_anime_0083.png",
+  logoFrame84: "../image/logo/logo_anime_0084.png",
+  logoFrame85: "../image/logo/logo_anime_0085.png",
+
   titleImageBg: "../image/title/title_image_bg.png",
   iconImage1: "../image/icon/chevron_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"
 });
