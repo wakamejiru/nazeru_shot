@@ -12,69 +12,131 @@ const ButtonID = Object.freeze({
     Button5: "OPTION",
 });
 
+const TitleButtonSizeWidth = 300;
+const TitleButtonSizeHeight = 70;
+
 // --- ボタンの設定 ---
 const ButtonConfigs = [
     {
         id: "game_start",
-        width: 300,
-        height: 70,
+        width: TitleButtonSizeWidth,
+        height: TitleButtonSizeHeight,
         label: ButtonID.Button1,
-        iconPath: 'iconImage1',
+        iconPath: '',
         soundPath: 'system45',
-		colors: { normal: 0x333333, selected: 0x5555FF },
         shape: {
 			cornerRadius: 20
 		},
 		fill_colors: {
 			normal: 0xFFFFFF,
 			selected: 0x7fffd4,
-			pressed: 0x888888,
+			pressed: 0x48d1cc,
 		},
 		stroke:{
-			width: 5,
+			width: 3,
 			color: {
-				normal: 0x000000,
+				normal:   0x000000,
 				selected: 0xFFFFFF,
-				pressed: 0x888888,
+				pressed:  0x48d1cc,
 			},
 		},
 			
     },
 	{
         id: "extra_mode",
-        width: 300,
-        height: 70,
+        width: TitleButtonSizeWidth,
+        height: TitleButtonSizeHeight,
         label: ButtonID.Button2,
-        iconPath: 'iconImage1',
+        iconPath: '',
         soundPath: 'system45',
-        shape: { cornerRadius: 35 }
+        shape: {
+			cornerRadius: 20
+		},
+		fill_colors: {
+			normal: 0xFFFFFF,
+			selected: 0x7fffd4,
+			pressed: 0x48d1cc,
+		},
+		stroke:{
+			width: 3,
+			color: {
+				normal:   0x000000,
+				selected: 0xFFFFFF,
+				pressed:  0x48d1cc,
+			},
+		},
     },
 	{
         id: "gallery",
-        width: 300,
-        height: 70,
+        width: TitleButtonSizeWidth,
+        height: TitleButtonSizeHeight,
         label: ButtonID.Button3,
-        iconPath: 'iconImage1',
+        iconPath: '',
         soundPath: 'system45',
-        shape: { cornerRadius: 35 }
+        shape: {
+			cornerRadius: 20
+		},
+		fill_colors: {
+			normal: 0xFFFFFF,
+			selected: 0x7fffd4,
+			pressed: 0x48d1cc,
+		},
+		stroke:{
+			width: 3,
+			color: {
+				normal:   0x000000,
+				selected: 0xFFFFFF,
+				pressed:  0x48d1cc,
+			},
+		},
     },
 	{
         id: "audio_room",
-        width: 300,
-        height: 70,
+        width: TitleButtonSizeWidth,
+        height: TitleButtonSizeHeight,
         label: ButtonID.Button4,
-        iconPath: 'iconImage1',
+        iconPath: '',
         soundPath: 'system45',
-        shape: { cornerRadius: 35 }
+        shape: {
+			cornerRadius: 20
+		},
+		fill_colors: {
+			normal: 0xFFFFFF,
+			selected: 0x7fffd4,
+			pressed: 0x48d1cc,
+		},
+		stroke:{
+			width: 3,
+			color: {
+				normal:   0x000000,
+				selected: 0xFFFFFF,
+				pressed:  0x48d1cc,
+			},
+		},
     },
 	{
         id: "option",
-        width: 300,
-        height: 70,
+        width: TitleButtonSizeWidth,
+        height: TitleButtonSizeHeight,
         label: ButtonID.Button5,
-        iconPath: 'iconImage1',
+        iconPath: '',
         soundPath: 'system45',
-        shape: { cornerRadius: 35 }
+        shape: {
+			cornerRadius: 20
+		},
+		fill_colors: {
+			normal: 0xFFFFFF,
+			selected: 0x7fffd4,
+			pressed: 0x48d1cc,
+		},
+		stroke:{
+			width: 3,
+			color: {
+				normal:   0x000000,
+				selected: 0xFFFFFF,
+				pressed:  0x48d1cc,
+			},
+		},
     }
 ];
 
