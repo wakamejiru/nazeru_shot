@@ -885,6 +885,7 @@ export const ImageAssetPaths = Object.freeze({
   logoFrame79: "../image/logo/logo_anime_0079.png",
   logoFrame80: "../image/logo/logo_anime_0080.png",
   titleImageBg: "../image/title/title_image_bg.png",
+  iconImage1: "../image/icon/chevron_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"
 });
 // AssetManagerで使う画像パスのリスト
 export const imageAssetPaths = Object.freeze({
@@ -1031,6 +1032,7 @@ export const imageAssetPaths = Object.freeze({
 export const  MusicOrVoicePaths = Object.freeze({
     imfomation: '../music/logo/infomation/infomation.mp3',
     logo: "../music/logo/infomation/logo.mp3",
+    system45: "../music/system/system45.mp3"
 });
 
 // キャラクター情報から作成する

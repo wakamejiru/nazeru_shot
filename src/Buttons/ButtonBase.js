@@ -1,6 +1,5 @@
-import * as PIXI from 'pixi.js';
-import { Sound } from '@pixi/sound';
-import { gsap } from 'gsap';
+import { ImageAssetPaths, MusicOrVoicePaths } from '../game_status.js'; 
+const Sound = PIXI.sound.Sound;
 
 /**
  * @class CustomButton
@@ -39,8 +38,8 @@ export class CustomButton extends PIXI.Container {
     constructor(renderer, config) {
         super();
 
-        // --- 設定のデフォルト値と統合 ---
-        this.#config = {
+                // 1. まず、完全な形のデフォルト設定を定義します
+        const defaultConfig = {
             id: 'default-button',
             width: 200,
             height: 60,
@@ -48,7 +47,13 @@ export class CustomButton extends PIXI.Container {
             labelStyle: new PIXI.TextStyle({ fill: '#FFFFFF', fontSize: 24, fontWeight: 'bold' }),
             shape: {
                 cornerRadius: 15,
-                // 注: 複雑な形状定義は、下の_createBackgroundTextureで拡張します
+                fill: {
+                    color: 0xFFFFFF,
+                },
+                stroke: {
+                    width: 10,
+                    color: 0x000000,
+                }
             },
             colors: {
                 normal: 0xAAAAAA,
@@ -58,7 +63,7 @@ export class CustomButton extends PIXI.Container {
             soundPath: null,
             iconPath: null,
             animation: {
-                type: 'scale', // 'scale', 'glow', etc.
+                type: 'scale',
                 duration: 0.2,
             },
             nineSlice: {
@@ -66,9 +71,11 @@ export class CustomButton extends PIXI.Container {
                 top: 30,
                 right: 30,
                 bottom: 30,
-            },
-            ...config
+            }
         };
+
+        // 2. deepMergeを使って、デフォルト設定に、渡されたconfigを上書きマージします
+        this.#config = deepMerge(defaultConfig, config);
         
         this.id = this.#config.id;
         this.renderer = renderer; // テクスチャ生成のために保持
@@ -90,8 +97,9 @@ export class CustomButton extends PIXI.Container {
     async _initialize() {
         // --- アセットのロード ---
         const assetsToLoad = [];
+        const imageUrl = ImageAssetPaths[this.#config.iconPath];
         if (this.#config.iconPath) {
-            assetsToLoad.push({ alias: `${this.id}_icon`, src: this.#config.iconPath });
+            assetsToLoad.push({ alias: `${this.id}_icon`, src: imageUrl });
         }
         if (this.#config.soundPath) {
             this.#sound = Sound.from(this.#config.soundPath);
@@ -134,11 +142,23 @@ export class CustomButton extends PIXI.Container {
      */
     _createBackgroundTexture() {
         const g = new PIXI.Graphics();
-        // ここでは角丸四角形を描画
-        g.beginFill(0xFFFFFF); // tintで色付けするため、元は白で描画
-        g.drawRoundedRect(0, 0, 100, 100, this.#config.shape.cornerRadius); // サイズは仮。9-sliceで伸縮させる
+        const { shape } = this.#config; // 設定を短縮して取得
+
+        // 1. 枠線のスタイルを設定 (線の太さが0より大きい場合のみ)
+        if (shape.stroke && shape.stroke.width > 0) {
+            g.lineStyle(shape.stroke.width, shape.stroke.color, 1); // 第3引数は透明度(alpha)
+        }
+
+        // 2. 塗りの色を設定
+        g.beginFill(shape.fill.color);
+
+        // 3. 角丸四角形を描画 (サイズは仮でOK。9-sliceで伸縮させるため)
+        // 枠線の太さを考慮して、少し内側に描画すると綺麗に見えます
+        const offset = shape.stroke ? shape.stroke.width / 2 : 0;
+        g.drawRoundedRect(offset, offset, 100 - offset * 2, 100 - offset * 2, shape.cornerRadius);
+
+        // 4. 塗りの設定を終了
         g.endFill();
-        
         // Graphicsオブジェクトからテクスチャを生成
         return this.renderer.generateTexture(g);
     }
@@ -278,4 +298,25 @@ export class CustomButton extends PIXI.Container {
             this.#background.tint = this.#config.colors.normal;
         }
     }
+}
+
+// deepMerge関数の例（クラスの外などに定義）
+function deepMerge(target, source) {
+    const output = { ...target };
+    if (isObject(target) && isObject(source)) {
+        Object.keys(source).forEach(key => {
+            if (isObject(source[key])) {
+                if (!(key in target))
+                    Object.assign(output, { [key]: source[key] });
+                else
+                    output[key] = deepMerge(target[key], source[key]);
+            } else {
+                Object.assign(output, { [key]: source[key] });
+            }
+        });
+    }
+    return output;
+}
+function isObject(item) {
+    return (item && typeof item === 'object' && !Array.isArray(item));
 }

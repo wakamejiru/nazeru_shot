@@ -266,6 +266,7 @@ export class LogoScreen extends BaseScreen{
     this.EndLogoScreen = false;
 		this.AnyKeyInput = false;
         this.InfomationContainer.visible = true;
+        this.LogoAudioEnd=false;
         super.StartScreen();
   }
     
@@ -290,7 +291,7 @@ export class LogoScreen extends BaseScreen{
   EventPoll(DeltaTime, InputCurrentState){
       super.EventPoll(DeltaTime, InputCurrentState);
 			// ボイスを再生する
-			this.Sound();
+      this.LogoAudioEnd == false
 
         // Keyの入力で切り替える
       if(this.NowScreenState ==0){
@@ -308,7 +309,9 @@ export class LogoScreen extends BaseScreen{
             this.LogoContainer.visible = true; 
             this.LogoAnimation.play(); // アニメーションを再生
 
-
+      			this.Sound();
+          }else{
+      			this.Sound();
           }
         }else{
             
@@ -349,9 +352,9 @@ export class LogoScreen extends BaseScreen{
             
             // 再生が終了したときに呼び出される
             onend: () => {
-            this.ChangeLogoScreen = true;
+                this.ChangeLogoScreen = true;
 
-                this.CurrentHowl = null;
+                StopSound();
               },
           });
       }
@@ -368,7 +371,7 @@ export class LogoScreen extends BaseScreen{
             
             // 再生が終了したときに呼び出される
             onend: () => {
-                this.CurrentHowl = null;
+                this.StopSound();
               },
           });
         }

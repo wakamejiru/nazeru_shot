@@ -1,3 +1,4 @@
+import { CustomButton } from "../Buttons/ButtonBase.js";
 import { ImageAssetPaths } from '../game_status.js'; 
 import { BaseScreen, FRAME_DURATION, SCREEN_STATE } from './BaseScreen.js';
 // タイトル画面
@@ -18,21 +19,59 @@ const ButtonConfigs = [
         width: 300,
         height: 70,
         label: ButtonID.Button1,
-        iconPath: '', // chevron_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24,
-        soundPath: 'path/to/your/sound_click.mp3',
+        iconPath: 'iconImage1',
+        soundPath: 'system45',
+		colors: { normal: 0x333333, selected: 0x5555FF },
+        shape: {
+			cornerRadius: 20,
+			stroke: { // 枠線の設定
+				width: 10,         // 線の太さ 4px
+				color: 0x000000   // 色は黒
+			},
+			fill: {   // 塗りの設定
+				color: 0xFFFFFF   // 色は白
+			},
+    	},
     },
-    {
-        id: 'option',
+	{
+        id: "extra_mode",
         width: 300,
         height: 70,
-        label: 'Option',
-        colors: { normal: 0x333333, selected: 0x5555FF },
+        label: ButtonID.Button2,
+        iconPath: 'iconImage1',
+        soundPath: 'system45',
+		colors: { normal: 0x333333, selected: 0x5555FF },
         shape: { cornerRadius: 35 }
     },
-    {
-        id: 'gallery',
-        label: 'Gallery'
-        // 他はデフォルト値が使われる
+	{
+        id: "gallery",
+        width: 300,
+        height: 70,
+        label: ButtonID.Button3,
+        iconPath: 'iconImage1',
+        soundPath: 'system45',
+		colors: { normal: 0x333333, selected: 0x5555FF },
+        shape: { cornerRadius: 35 }
+    },
+	{
+        id: "audio_room",
+        width: 300,
+        height: 70,
+        label: ButtonID.Button4,
+        iconPath: 'iconImage1',
+        soundPath: 'system45',
+		colors: { normal: 0x333333, selected: 0x5555FF },
+        shape: { cornerRadius: 35 }
+    },
+	{
+        id: "option",
+        width: 300,
+        height: 70,
+        label: ButtonID.Button5,
+        iconPath: 'iconImage1',
+        soundPath: 'system45',
+		colors: { normal: 0x333333, selected: 0x5555FF },
+        shape: { cornerRadius: 35 }
     }
 ];
 
@@ -89,6 +128,24 @@ export class TitileScreen extends BaseScreen{
 		// 画像を追加
 		this.ScreenContainer.addChild(this.TitleBackgroundImage);
         NowSelectButton = ButtonID.Button1; // 初期はボタン1
+
+		const buttons = [];
+		for (let i = 0; i < ButtonConfigs.length; i++) {
+			const config = ButtonConfigs[i];
+			// app.rendererを渡してボタンを非同期で生成
+			const button = await CustomButton.create(this.App.renderer, config);
+			button.x = this.App.screen.width / 2;
+			button.y = 150 + i * 100;
+			button.pivot.set(button.width / 2, button.height / 2); // 中央を基点にする
+			
+			// クリック時のイベントリスナー
+			button.on('button_click', (id) => {
+				console.log(`${id} がクリックされました！`);
+			});
+
+			this.ScreenContainer.addChild(button);
+			buttons.push(button);
+		}
 
 
 
