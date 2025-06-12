@@ -12,8 +12,8 @@ const ButtonID = Object.freeze({
     Button5: "OPTION",
 });
 
-const TitleButtonSizeWidth = 300;
-const TitleButtonSizeHeight = 70;
+const TitleButtonSizeWidth = 400;
+const TitleButtonSizeHeight = 130;
 
 // --- ボタンの設定 ---
 const ButtonConfigs = [
@@ -144,7 +144,8 @@ const ButtonConfigs = [
 let NowSelectButton = ButtonID.Button1; // 初期はボタン1
 
 export const TitleScreenImages = [
-  "titleImageBg"
+  "titleImageBg",
+  "titleCharaImage"
 ];
 
 export class TitileScreen extends BaseScreen{
@@ -191,6 +192,20 @@ export class TitileScreen extends BaseScreen{
 		this.ScreenContainer.addChild(this.TitleBackgroundImage);
         NowSelectButton = ButtonID.Button1; // 初期はボタン1
 
+		// キャラ画像を選択
+		const TitlecharaTexture = PIXI.Texture.from("titleCharaImage");
+		this.TitleCharaImage = new PIXI.Sprite(TitlecharaTexture);
+		// 画像のアンカーを設定
+      	this.TitleCharaImage.anchor.set(0.5);// 左上が座標
+      	this.TitleCharaImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+		// 画像の位置を調整
+      	this.TitleCharaImage.x = this.App.screen.width / 10 + this.TitleCharaImage.width / 2; // 画面の一番左上に合わせる
+      	this.TitleCharaImage.y = this.App.screen.height/2;
+		// 画像を追加
+		this.ScreenContainer.addChild(this.TitleCharaImage);
+
+
+
 		for (let i = 0; i < ButtonConfigs.length; i++) {
 			const baseConfig  = ButtonConfigs[i];
 			// 幅を更新する(現在の大きさに合わせてサイズを変更して入れる) // デフォは1920*1080想定で設計
@@ -225,23 +240,27 @@ export class TitileScreen extends BaseScreen{
 	   */
 		ResizeScreen(App, CurrentOverallScale){
 			if (!this.ScreenContainer) return;
-			const BaseTextureWidth = this.TitleBackgroundImage.texture.orig.width;
-			const BaseTextureHeight = this.TitleBackgroundImage.texture.orig.height;
+			let BaseTextureWidth = this.TitleBackgroundImage.texture.orig.width;
+			let BaseTextureHeight = this.TitleBackgroundImage.texture.orig.height;
 			const DisplaySizeWidth = this.App.screen.width;
 			const DisplaySizeheight = this.App.screen.height;
-
 			const newTitleSize = this.CalculateAspectRatioFit(BaseTextureWidth, BaseTextureHeight, DisplaySizeWidth, DisplaySizeheight);
-	
 			this.TitleBackgroundImage.width = newTitleSize.width;
-			this.TitleBackgroundImage.height = newTitleSize.height;
-				
-	
+			this.TitleBackgroundImage.height = newTitleSize.height;	
 			// 一番左上を合わせる
 			const ScreenStartPointWidth = (App.screen.width  - this.TitleBackgroundImage.width)  /2;
 			const ScreenStartPointheight = (App.screen.height - this.TitleBackgroundImage.height) / 2;
-
 			this.TitleBackgroundImage.x = ScreenStartPointWidth;
 			this.TitleBackgroundImage.y = ScreenStartPointheight;
+
+			// キャラ画像を合わせる
+			BaseTextureWidth = this.TitleCharaImage.texture.orig.width;
+			BaseTextureHeight = this.TitleCharaImage.texture.orig.height;
+			const newCharaSize = this.CalculateAspectRatioFit(BaseTextureWidth, BaseTextureHeight, DisplaySizeWidth, DisplaySizeheight);
+			this.TitleCharaImage.width = newCharaSize.width;
+			this.TitleCharaImage.height = newCharaSize.height;
+			this.TitleCharaImage.x = DisplaySizeWidth / 10 + this.TitleCharaImage.width / 2;;
+			this.TitleCharaImage.y = DisplaySizeheight / 2;
 
 			// 登録されているボタンのリサイズを行う
 			this.buttons.forEach((button, i) => {

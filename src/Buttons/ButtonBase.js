@@ -50,7 +50,7 @@ export class CustomButton extends PIXI.Container {
             width: 200,
             height: 60,
             label: '',
-            labelStyle: new PIXI.TextStyle({ fill: '#000000', fontSize: 24, fontWeight: 'bold' }),
+            labelStyle: new PIXI.TextStyle({ fill: '#000000', fontSize: 32, fontWeight: 'bold' }),
             fill_colors: {
                 normal: 0xFFFFFF,
                 selected: 0x7fffd4,
