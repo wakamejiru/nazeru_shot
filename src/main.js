@@ -79,6 +79,7 @@ function ResizeGame() {
     // 現在の画面の大きさを取得
     const NowWindowWidth = window.innerWidth;
     const NowWindowHeight = window.innerHeight;
+    const NowWindowRatio = NowWindowWidth / NowWindowHeight;
 
     // メイン画面は画面いっぱいに表現する
     const ScreenOccupationRatio = 1.0;
@@ -86,19 +87,35 @@ function ResizeGame() {
     // ウインドウのサイズから，可能な画面サイズを出す
     let TargetAvailableWidth = NowWindowWidth * ScreenOccupationRatio;
     let TargetAvailableHeight = NowWindowHeight * ScreenOccupationRatio;
-    const WindowAspectRatio = TargetAvailableWidth / TargetAvailableHeight; // アスペクト比を取得
-
-    // ブラウザの表示面全体を表示域にする
-    CurrentTotalHeight = TargetAvailableHeight;
-    CurrentTotalWidth = CurrentTotalHeight * OverallAspectRatio;
 
     App.renderer.resize(TargetAvailableWidth, TargetAvailableHeight);
 
-    // 拡大倍率は1920*1080の大きさがどうなるかで計算する
-    const MainScaleFactorY = CurrentTotalHeight / OVERALL_BASE_HEIGHT;
-    const MainScaleFactorX = CurrentTotalWidth / OVERALL_BASE_WIDTH;
-    const MainScaleFactor = Math.min(MainScaleFactorX, MainScaleFactorY); // 小さいほうに合わせる
+    // 1080pをサイズにリサイズ倍率を求める
+    // X方向を使用して、1pixの縮小倍率を求める
+
+    let newWidth, newHeight;
+
+    // 画面(コンテナ)がコンテンツより横長か、縦長かを判断
+    if (NowWindowRatio > OverallAspectRatio) {
+        // コンテナが横長の場合：高さをコンテナに合わせる
+        newHeight = TargetAvailableHeight;
+        newWidth = newHeight * NowWindowRatio;
+    } else {
+        // コンテナが縦長または同じ比率の場合：幅をコンテナに合わせる
+        newWidth = TargetAvailableWidth;
+        newHeight = newWidth / NowWindowRatio;
+    }
+    
+
+    
+    console.log(`画面サイズ変更1:`, { newHeight: newHeight, CurrentTotalHeight: CurrentTotalHeight });
+
+    MainScaleFactor = newHeight / CurrentTotalHeight;
+    
+    CurrentTotalHeight = newWidth;
+    CurrentTotalWidth = newWidth;
     // すべての画面，及び生成済みのインスタンスにUpscaleを行う
+    console.log(`倍率:`, { MainScaleFactor: MainScaleFactor });
 
     ScreenList.forEach(Screen => {
         Screen.ResizeScreen(App, MainScaleFactor);

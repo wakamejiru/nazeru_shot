@@ -231,43 +231,35 @@ export class CustomButton extends PIXI.Container {
      * @param {PIXI.Application} App - メインPixiインスタンス
      * @param {number} CurrentOverallScale 現在のメイン画面倍率
     */
-        resizeButton(App, CurrentOverallScale){
-        // TitleScreenのResizeScreen関数を参考に、各要素のサイズと位置を直接変更します。
+    resizeButton(App, CurrentOverallScale) {
+
         const newWidth = this.#config.width * CurrentOverallScale;
         const newHeight = this.#config.height * CurrentOverallScale;
 
-        // 背景のサイズを更新
+        // --- 背景のリサイズ ---
+        const oldBgWidth = this.#background.width;
         this.#background.width = newWidth;
         this.#background.height = newHeight;
 
-        // アイコンとラベル自体のスケールも更新
-        if (this.#icon) {
-            this.#icon.scale.set(CurrentOverallScale);
-        }
+        // --- ラベルのリサイズ ---
         if (this.#label) {
-            this.#label.scale.set(CurrentOverallScale);
-        }
-        
-        // 新しいサイズに基づいてレイアウトを再計算
-        const centerX = newWidth / 2;
-        const centerY = newHeight / 2;
-        
-        if (this.#icon && this.#label.text) {
-            const gap = 5 * CurrentOverallScale; // アイコンとラベルの間の余白もスケール
-            // スケール後のラベルとアイコンの幅を使って中央揃え
-            this.#icon.x = centerX - (this.#label.width / 2) - gap;
-            this.#icon.y = centerY;
-            this.#label.x = centerX + (this.#icon.width / 2) + gap;
-            this.#label.y = centerY;
-        } else if (this.#icon) {
-            this.#icon.x = centerX;
-            this.#icon.y = centerY;
-        } else if (this.#label) {
-            this.#label.style.fontSize = this.#config.labelStyle.fontSize * CurrentOverallScale;
+            const oldFontSize = this.#label.style.fontSize;
+            // [!] ここでも必ず初期設定を基準に計算します
+            const newFontSize = this.#config.labelStyle.fontSize * CurrentOverallScale; 
+            this.#label.style.fontSize = newFontSize;
         }
 
-        // 新しいサイズに合わせてpivotも更新する
+        // --- レイアウトとPivotの更新 ---
+        const centerX = newWidth / 2;
+        const centerY = newHeight / 2;
+        if (this.#label) {
+            this.#label.x = centerX;
+            this.#label.y = centerY;
+        }
         this.pivot.set(newWidth / 2, newHeight / 2);
+
+        // TitleScreenでの位置計算のために新しいサイズを返す
+        return { width: newWidth, height: newHeight };
     }
 
     // --- アニメーション関連 ---
