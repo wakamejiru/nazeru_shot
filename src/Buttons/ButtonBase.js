@@ -133,7 +133,7 @@ export class CustomButton extends PIXI.Container {
             this.addChild(this.#icon);
         }
 
-        this.#label = new PIXI.Text(this.#config.label, this.#config.labelStyle);
+        this.#label = new PIXI.Text(this.#config.label, this.#config.labelStyle.clone());
         this.#label.anchor.set(0.5);
         this.addChild(this.#label);
 
@@ -231,7 +231,7 @@ export class CustomButton extends PIXI.Container {
      * @param {PIXI.Application} App - メインPixiインスタンス
      * @param {number} CurrentOverallScale 現在のメイン画面倍率
     */
-    resizeButton(App, CurrentOverallScale){
+        resizeButton(App, CurrentOverallScale){
         // TitleScreenのResizeScreen関数を参考に、各要素のサイズと位置を直接変更します。
         const newWidth = this.#config.width * CurrentOverallScale;
         const newHeight = this.#config.height * CurrentOverallScale;
@@ -263,9 +263,11 @@ export class CustomButton extends PIXI.Container {
             this.#icon.x = centerX;
             this.#icon.y = centerY;
         } else if (this.#label) {
-            this.#label.x = centerX;
-            this.#label.y = centerY;
+            this.#label.style.fontSize = this.#config.labelStyle.fontSize * CurrentOverallScale;
         }
+
+        // 新しいサイズに合わせてpivotも更新する
+        this.pivot.set(newWidth / 2, newHeight / 2);
     }
 
     // --- アニメーション関連 ---

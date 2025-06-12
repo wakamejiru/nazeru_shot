@@ -88,12 +88,16 @@ function ResizeGame() {
     let TargetAvailableHeight = NowWindowHeight * ScreenOccupationRatio;
     const WindowAspectRatio = TargetAvailableWidth / TargetAvailableHeight; // アスペクト比を取得
 
+    // ブラウザの表示面全体を表示域にする
     CurrentTotalHeight = TargetAvailableHeight;
     CurrentTotalWidth = CurrentTotalHeight * OverallAspectRatio;
 
     App.renderer.resize(TargetAvailableWidth, TargetAvailableHeight);
 
-    MainScaleFactor = CurrentTotalHeight / OVERALL_BASE_HEIGHT; // 全体UIのスケール基準
+    // 拡大倍率は1920*1080の大きさがどうなるかで計算する
+    const MainScaleFactorY = CurrentTotalHeight / OVERALL_BASE_HEIGHT;
+    const MainScaleFactorX = CurrentTotalWidth / OVERALL_BASE_WIDTH;
+    const MainScaleFactor = Math.min(MainScaleFactorX, MainScaleFactorY); // 小さいほうに合わせる
     // すべての画面，及び生成済みのインスタンスにUpscaleを行う
 
     ScreenList.forEach(Screen => {

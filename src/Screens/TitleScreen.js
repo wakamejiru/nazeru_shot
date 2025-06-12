@@ -256,13 +256,6 @@ export class TitileScreen extends BaseScreen{
 				// 2. ボタンの位置を再計算する
 				button.x = ScreenStartPointWidth + this.TitleBackgroundImage.width - ((this.TitleBackgroundImage.width / 10 ) + button.width/2);
 				button.y = ScreenStartPointheight + (this.TitleBackgroundImage.height *  (150 / 1080)) + i * (button.height + this.TitleBackgroundImage.height* (50 / 1080));
-				console.log(`[After] Button ${i}:`, { 
-					x: button.x, 
-					y: button.y, 
-					width: button.width, 
-					height: button.height,
-					visible: button.visible 
-				});
 			});
 		}
 	
