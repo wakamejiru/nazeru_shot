@@ -144,20 +144,7 @@ async function UpdateLoadingLogic() {
     if(UpdateLoadingLigicState !== null){
 
     
-        switch(UpdateLoadingLigicState){
-            // case 0:
-            //     ScreenList.push(new LogoScreen.LogoScreen(App, BaseScreen.SCREEN_STATE.LOGO_SCREEN));
-            //     await GetScreenInstance(BaseScreen.SCREEN_STATE.LOGO_SCREEN).InitializeScreen(MainScaleFactor);
-            //     break;
-            // case 1:
-            //     ScreenList.push(new WatingScreen.WaitingScreen(App, BaseScreen.SCREEN_STATE.WATING_SCREEN));
-            //     await GetScreenInstance(BaseScreen.SCREEN_STATE.WATING_SCREEN).InitializeScreen(MainScaleFactor);
-            //     break;
-            // case 2:
-            //     ScreenList.push(new TitileScreen.TitileScreen(App, BaseScreen.SCREEN_STATE.GAME_TITLE));
-            //     await GetScreenInstance(BaseScreen.SCREEN_STATE.GAME_TITLE).InitializeScreen(MainScaleFactor);
-            //     console.log('%cExecuting case 2: Initializing TitleScreen...', 'color: red; font-weight: bold;');
-            //     break;  
+        switch(UpdateLoadingLigicState){  
             case 0:
                 const logoScreen = new LogoScreen.LogoScreen(App, BaseScreen.SCREEN_STATE.LOGO_SCREEN);
                 ScreenList.push(logoScreen);

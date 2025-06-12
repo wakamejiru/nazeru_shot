@@ -197,42 +197,40 @@ export class LogoScreen extends BaseScreen{
      * @param {number} CurrentOverallScale 現在のメイン画面倍率
    */
     ResizeScreen(App, CurrentOverallScale){
-        if (!this.ScreenContainer) return;
+      if (!this.ScreenContainer) return;
 
-        // Anime画像をリサイズ
+      // Anime画像をリサイズ
 
-        let BaseTextureWidth = this.LogoAnimation.texture.orig.width;
-        let BaseTextureHeight = this.LogoAnimation.texture.orig.height;
-        let AspectRatio = BaseTextureWidth / BaseTextureHeight;
+      // 現在の画面と幅を鑑みてどちらを基準にするかを考える
+      const DisplaySizeWidth = this.App.screen.width;
+      const DisplaySizeheight = this.App.screen.height;
 
-        let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
-        let DisplayWidth = DisplayHeight * AspectRatio;
+      const BaseLogoTextureWidth = this.LogoAnimation.texture.orig.width;
+      const BaseLogoTextureHeight = this.LogoAnimation.texture.orig.height;
 
-        this.LogoAnimation.width = DisplayWidth;
-        this.LogoAnimation.height = DisplayHeight;
-				
+      const newLogoSize = this.CalculateAspectRatioFit(BaseLogoTextureWidth, BaseLogoTextureHeight, DisplaySizeWidth, DisplaySizeheight);
+
+      this.LogoAnimation.width = newLogoSize.width;
+      this.LogoAnimation.height = newLogoSize.height;
 	
 			// 一番左上を合わせる
-			this.LogoAnimation.x = (App.screen.width  - DisplayWidth)  /2;
-			this.LogoAnimation.y = (App.screen.height - DisplayHeight) / 2;
+			this.LogoAnimation.x = (App.screen.width  - this.LogoAnimation.width)  /2;
+			this.LogoAnimation.y = (App.screen.height - this.LogoAnimation.height) / 2;
 
       // infomationもリサイズ
 
-      BaseTextureWidth = this.InfomationBackgroundImage.texture.orig.width;
-      BaseTextureHeight = this.InfomationBackgroundImage.texture.orig.height;
-      AspectRatio = BaseTextureWidth / BaseTextureHeight;
+      const InfomationBaseTextureWidth = this.InfomationBackgroundImage.texture.orig.width;
+      const InfomationBaseTextureHeight = this.InfomationBackgroundImage.texture.orig.height;
 
-			// 高さを基準に幅を決める
-			DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
-			DisplayWidth = DisplayHeight * AspectRatio;
+      const newInfomationSize = this.CalculateAspectRatioFit(InfomationBaseTextureWidth, InfomationBaseTextureHeight, DisplaySizeWidth, DisplaySizeheight);
 	
-			this.InfomationBackgroundImage.width = DisplayWidth;
-			this.InfomationBackgroundImage.height = DisplayHeight;
+			this.InfomationBackgroundImage.width = newInfomationSize.width;
+			this.InfomationBackgroundImage.height = newInfomationSize.height;
 				
 	
 			// 一番左上を合わせる
-			this.InfomationBackgroundImage.x = (App.screen.width  - DisplayWidth)  /2;
-			this.InfomationBackgroundImage.y = (App.screen.height - DisplayHeight) / 2;
+			this.InfomationBackgroundImage.x = (App.screen.width  - this.InfomationBackgroundImage.width)  /2;
+			this.InfomationBackgroundImage.y = (App.screen.height - this.InfomationBackgroundImage.height) / 2;
     }
 
 

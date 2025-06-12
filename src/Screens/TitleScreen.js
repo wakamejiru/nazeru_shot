@@ -232,18 +232,18 @@ export class TitileScreen extends BaseScreen{
 			if (!this.ScreenContainer) return;
 			const BaseTextureWidth = this.TitleBackgroundImage.texture.orig.width;
 			const BaseTextureHeight = this.TitleBackgroundImage.texture.orig.height;
-			const AspectRatio = BaseTextureWidth / BaseTextureHeight;
-			// 高さを基準に幅を決める
-			let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
-			let DisplayWidth = DisplayHeight * AspectRatio;
+			const DisplaySizeWidth = this.App.screen.width;
+			const DisplaySizeheight = this.App.screen.height;
+
+			const newTitleSize = this.CalculateAspectRatioFit(BaseTextureWidth, BaseTextureHeight, DisplaySizeWidth, DisplaySizeheight);
 	
-			this.TitleBackgroundImage.width = DisplayWidth;
-			this.TitleBackgroundImage.height = DisplayHeight;
+			this.TitleBackgroundImage.width = newTitleSize.width;
+			this.TitleBackgroundImage.height = newTitleSize.height;
 				
 	
 			// 一番左上を合わせる
-			const ScreenStartPointWidth = (App.screen.width  - DisplayWidth)  /2;
-			const ScreenStartPointheight = (App.screen.height - DisplayHeight) / 2;
+			const ScreenStartPointWidth = (App.screen.width  - this.TitleBackgroundImage.width)  /2;
+			const ScreenStartPointheight = (App.screen.height - this.TitleBackgroundImage.height) / 2;
 
 			this.TitleBackgroundImage.x = ScreenStartPointWidth;
 			this.TitleBackgroundImage.y = ScreenStartPointheight;

@@ -100,18 +100,18 @@ export class WaitingScreen extends BaseScreen{
 			if (!this.ScreenContainer) return;
 			const BaseTextureWidth = this.WaitingBackgroundImage.texture.orig.width;
 			const BaseTextureHeight = this.WaitingBackgroundImage.texture.orig.height;
-			const AspectRatio = BaseTextureWidth / BaseTextureHeight;
-			// 高さを基準に幅を決める
-			let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
-			let DisplayWidth = DisplayHeight * AspectRatio;
+			const DisplaySizeWidth = this.App.screen.width;
+			const DisplaySizeheight = this.App.screen.height;
+
+			const newSize = this.CalculateAspectRatioFit(BaseTextureWidth, BaseTextureHeight, DisplaySizeWidth, DisplaySizeheight);
 	
-			this.WaitingBackgroundImage.width = DisplayWidth;
-			this.WaitingBackgroundImage.height = DisplayHeight;
+			this.WaitingBackgroundImage.width = newSize.width;
+			this.WaitingBackgroundImage.height = newSize.height;
 				
 	
 			// 一番左上を合わせる
-			this.WaitingBackgroundImage.x = (App.screen.width  - DisplayWidth)  /2;
-			this.WaitingBackgroundImage.y = (App.screen.height - DisplayHeight) / 2;
+			this.WaitingBackgroundImage.x = (App.screen.width  - this.WaitingBackgroundImage.width)  /2;
+			this.WaitingBackgroundImage.y = (App.screen.height - this.WaitingBackgroundImage.height) / 2;
 
 
 			// 画面サイズに合わせてフォントサイズを調整

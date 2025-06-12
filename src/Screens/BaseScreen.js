@@ -105,4 +105,33 @@ export class BaseScreen{
 	GetScreenKey(){
 		return this.ScreenState;
 	}
+
+	/**
+	 * アスペクト比を維持したまま、指定したコンテナに収まる最適なサイズを計算します。
+	 * @param {number} originalWidth - 元のコンテンツの幅 (例: sprite.texture.orig.width)
+	 * @param {number} originalHeight - 元のコンテンツの高さ (例: sprite.texture.orig.height)
+	 * @param {number} containerWidth - サイズを合わせたいコンテナの幅 (例: App.screen.width)
+	 * @param {number} containerHeight - サイズを合わせたいコンテナの高さ (例: App.screen.height)
+	 * @returns {{width: number, height: number}} 計算された新しい幅と高さを含むオブジェクト
+	 */
+	CalculateAspectRatioFit(originalWidth, originalHeight, containerWidth, containerHeight) {
+		const originalAspectRatio = originalWidth / originalHeight;
+		const containerAspectRatio = containerWidth / containerHeight;
+
+		let newWidth, newHeight;
+
+		// 画面(コンテナ)がコンテンツより横長か、縦長かを判断
+		if (containerAspectRatio > originalAspectRatio) {
+			// コンテナが横長の場合：高さをコンテナに合わせる
+			newHeight = containerHeight;
+			newWidth = newHeight * originalAspectRatio;
+		} else {
+			// コンテナが縦長または同じ比率の場合：幅をコンテナに合わせる
+			newWidth = containerWidth;
+			newHeight = newWidth / originalAspectRatio;
+		}
+
+		return { width: newWidth, height: newHeight };
+	}
+	
 }

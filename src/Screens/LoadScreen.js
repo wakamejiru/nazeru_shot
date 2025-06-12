@@ -107,19 +107,19 @@ export class LoadScreen extends BaseScreen{
         LoadingScreenAnimationSprites.forEach(sprite => {
             const BaseTextureWidth = sprite.texture.orig.width;
             const BaseTextureHeight = sprite.texture.orig.height;
-            const AspectRatio = BaseTextureWidth / BaseTextureHeight;
             
-            // 高さを基準に幅を決める
-            let DisplayHeight = BaseTextureHeight * CurrentOverallScale; // 仮の縮小率
-            let DisplayWidth = DisplayHeight * AspectRatio;
-
-            sprite.width = DisplayWidth;
-            sprite.height = DisplayHeight;
+            // 現在の画面と幅を鑑みてどちらを基準にするかを考える
+            const DisplaySizeWidth = this.App.screen.width;
+            const DisplaySizeheight = this.App.screen.height;
+            const newSize = this.CalculateAspectRatioFit(BaseTextureWidth, BaseTextureHeight, DisplaySizeWidth, DisplaySizeheight);
+            
+            sprite.width = newSize.width;
+            sprite.height = newSize.height;
             
 
             // 一番左上を合わせる
-            sprite.x = (App.screen.width  - DisplayWidth)  /2;
-            sprite.y = (App.screen.height - DisplayHeight) / 2;
+            sprite.x = (App.screen.width  - sprite.width)  /2;
+            sprite.y = (App.screen.height - sprite.height) / 2;
         });
     }
 
