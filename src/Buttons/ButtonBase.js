@@ -82,7 +82,6 @@ export class CustomButton extends PIXI.Container {
         };
 
         this.#config = deepMerge(defaultConfig, config);
-        
         this.id = this.#config.id;
         this.renderer = renderer;
 
@@ -225,6 +224,48 @@ export class CustomButton extends PIXI.Container {
     show() {
         this.visible = true;
         this.interactive = true;
+    }
+
+    /**
+     * リサイズ処理を行う
+     * @param {PIXI.Application} App - メインPixiインスタンス
+     * @param {number} CurrentOverallScale 現在のメイン画面倍率
+    */
+    resizeButton(App, CurrentOverallScale){
+        // TitleScreenのResizeScreen関数を参考に、各要素のサイズと位置を直接変更します。
+        const newWidth = this.#config.width * CurrentOverallScale;
+        const newHeight = this.#config.height * CurrentOverallScale;
+
+        // 背景のサイズを更新
+        this.#background.width = newWidth;
+        this.#background.height = newHeight;
+
+        // アイコンとラベル自体のスケールも更新
+        if (this.#icon) {
+            this.#icon.scale.set(CurrentOverallScale);
+        }
+        if (this.#label) {
+            this.#label.scale.set(CurrentOverallScale);
+        }
+        
+        // 新しいサイズに基づいてレイアウトを再計算
+        const centerX = newWidth / 2;
+        const centerY = newHeight / 2;
+        
+        if (this.#icon && this.#label.text) {
+            const gap = 5 * CurrentOverallScale; // アイコンとラベルの間の余白もスケール
+            // スケール後のラベルとアイコンの幅を使って中央揃え
+            this.#icon.x = centerX - (this.#label.width / 2) - gap;
+            this.#icon.y = centerY;
+            this.#label.x = centerX + (this.#icon.width / 2) + gap;
+            this.#label.y = centerY;
+        } else if (this.#icon) {
+            this.#icon.x = centerX;
+            this.#icon.y = centerY;
+        } else if (this.#label) {
+            this.#label.x = centerX;
+            this.#label.y = centerY;
+        }
     }
 
     // --- アニメーション関連 ---

@@ -88,16 +88,10 @@ function ResizeGame() {
     let TargetAvailableHeight = NowWindowHeight * ScreenOccupationRatio;
     const WindowAspectRatio = TargetAvailableWidth / TargetAvailableHeight; // アスペクト比を取得
 
-    // どちらの画面サイズが大きいかで優先を付ける
-    if (WindowAspectRatio > OverallAspectRatio) {
-        CurrentTotalHeight = TargetAvailableHeight;
-        CurrentTotalWidth = CurrentTotalHeight * OverallAspectRatio;
-    } else {
-        CurrentTotalWidth = TargetAvailableWidth;
-        CurrentTotalHeight = CurrentTotalWidth / OverallAspectRatio;
-    }
+    CurrentTotalHeight = TargetAvailableHeight;
+    CurrentTotalWidth = CurrentTotalHeight * OverallAspectRatio;
 
-    App.renderer.resize(CurrentTotalWidth, CurrentTotalHeight);
+    App.renderer.resize(TargetAvailableWidth, TargetAvailableHeight);
 
     MainScaleFactor = CurrentTotalHeight / OVERALL_BASE_HEIGHT; // 全体UIのスケール基準
     // すべての画面，及び生成済みのインスタンスにUpscaleを行う
@@ -248,6 +242,13 @@ function GameLoop(CurrentTime){
     }
 
     if(NextScreen != CurrentScreen){
+        // ロード画面が終わった場合はすべての画面をリサイズする(ここは後でうまく作る)
+        if(CurrentScreen == BaseScreen.SCREEN_STATE.LOADING){
+            ScreenList.forEach(Screen => {
+                Screen.ResizeScreen(App, MainScaleFactor);
+            });
+        }
+
         // 遷移するので処理を行う
         PreviousScrren = CurrentScreen;
         CurrentScreen = NextScreen;
