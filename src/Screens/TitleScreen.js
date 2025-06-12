@@ -145,13 +145,13 @@ let NowSelectButton = ButtonID.Button1; // 初期はボタン1
 
 export const TitleScreenImages = [
   "titleImageBg",
-  "titleCharaImage"
+  "gameLogo"
 ];
 
 const ButtonDescriptions = {
     "game_start": "メインゲームです．",
     "extra_mode": "メインゲームクリア後に行える、特別なモードです。",
-    "gallery": "イラストや動画を鑑賞できます。",
+    "gallery": "イラストや動画，開発者の愚痴を鑑賞できます。",
     "audio_room": "ゲーム内で使用されているBGMを聴くことができます。",
     "option": "操作方法など，ゲームの各種設定を変更します。"
 };
@@ -204,16 +204,16 @@ export class TitileScreen extends BaseScreen{
         NowSelectButton = ButtonID.Button1; // 初期はボタン1
 
 		// キャラ画像を選択
-		const TitlecharaTexture = PIXI.Texture.from("titleCharaImage");
-		this.TitleCharaImage = new PIXI.Sprite(TitlecharaTexture);
+		const TitleLogoTexture = PIXI.Texture.from("gameLogo");
+		this.TitleLogoImage = new PIXI.Sprite(TitleLogoTexture);
 		// 画像のアンカーを設定
-      	this.TitleCharaImage.anchor.set(0.5);
-      	this.TitleCharaImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+      	this.TitleLogoImage.anchor.set(0.5);
+      	this.TitleLogoImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
 		// 画像の位置を調整
-      	this.TitleCharaImage.x = this.App.screen.width / 10 + this.TitleCharaImage.width / 2; // 画面の一番左上に合わせる
-      	this.TitleCharaImage.y = this.App.screen.height/2;
+      	this.TitleLogoImage.x = this.TitleBackgroundImage.width / 10 + this.TitleLogoImage.width / 2; // 画面の一番左上に合わせる
+      	this.TitleLogoImage.y = this.TitleBackgroundImage.height/2;
 		// 画像を追加
-		this.ScreenContainer.addChild(this.TitleCharaImage);
+		this.ScreenContainer.addChild(this.TitleLogoImage);
 		
 		this.descriptionContainer = new PIXI.Container();
 
@@ -255,7 +255,7 @@ export class TitileScreen extends BaseScreen{
 			button.x = this.TitleBackgroundImage.texture.orig.width - ((this.TitleBackgroundImage.texture.orig.width / 10) + baseConfig.width / 2);
 
 			// Y座標：初期位置を基準に、画面全体のスケールに合わせて調整
-			button.y = 150 + (i * 50 + ((i-1) * button.height));
+			button.y = this.TitleBackgroundImage.texture.orig.height + 150 + (i * 50 + ((i-1) * button.height));
 
 			button.pivot.set(button.width / 2, button.height / 2); // 中央を基点にする
 			
@@ -311,14 +311,26 @@ export class TitileScreen extends BaseScreen{
 			const NowStartPointY = this.TitleBackgroundImage.y;
 
 			// キャラ画像を合わせる
-			BaseTextureWidth = this.TitleCharaImage.texture.orig.width;
-			BaseTextureHeight = this.TitleCharaImage.texture.orig.height;
+			BaseTextureWidth = this.TitleLogoImage.texture.orig.width;
+			BaseTextureHeight = this.TitleLogoImage.texture.orig.height;
 
-			this.TitleCharaImage.width = BaseTextureWidth * CurrentOverallScale;
-			this.TitleCharaImage.height = BaseTextureHeight * CurrentOverallScale;
+			this.TitleLogoImage.width = BaseTextureWidth * CurrentOverallScale;
+			this.TitleLogoImage.height = BaseTextureHeight * CurrentOverallScale;
 
-			this.TitleCharaImage.x = NowImageSizeWidth / 10 + this.TitleCharaImage.width / 2;;
-			this.TitleCharaImage.y = NowImageSizeHeight / 2;
+			this.TitleLogoImage.x = NowStartPointX + (NowImageSizeWidth / 10 + this.TitleLogoImage.width / 2);
+			this.TitleLogoImage.y = NowStartPointY + (NowImageSizeHeight * 0.1);
+
+			
+
+			// 登録されているボタンのリサイズを行う
+			this.buttons.forEach((button, i) => {
+				// 1. 各ボタンのリサイズ関数を呼び出す
+				button.resizeButton(App, CurrentOverallScale);
+
+				// 2. ボタンの位置を再計算する
+				button.x = ScreenStartPointWidth + NowImageSizeWidth - ((NowImageSizeWidth / 10 ) + button.width/2);
+				button.y = ScreenStartPointheight + CurrentOverallScale * 150 + i * (button.height + CurrentOverallScale * 50);
+			});
 
 			if (this.descriptionContainer) {
 				// --- 基準サイズを定義 ---
@@ -328,8 +340,10 @@ export class TitileScreen extends BaseScreen{
 				const basePadding = 20; // テキストの左右の余白
 
 				// --- スケールを適用した新しいサイズを計算 ---
-				const newWidth = baseDescWidth * CurrentOverallScale;
-				const newHeight = baseDescHeight * CurrentOverallScale;
+				// 幅は半分から，ボタンのお尻まで
+				// 高さはボタンの二倍
+				const newWidth = ((this.buttons[1].x) - NowImageSizeWidth / 2);
+				const newHeight = this.buttons[1].height * 1;
 				const newFontSize = baseFontSize * CurrentOverallScale;
 				const newPadding = basePadding * CurrentOverallScale;
 
@@ -351,19 +365,9 @@ export class TitileScreen extends BaseScreen{
 				// 4. コンテナ全体の位置を調整（例：画面下部中央）
 				const screenCenterX = NowImageSizeWidth / 2;
 				const bottomMargin = NowImageSizeHeight * 0.05; // 画面下から5%の位置
-				this.descriptionContainer.x = NowStartPointX + screenCenterX + newWidth / 2;
+				this.descriptionContainer.x = NowStartPointX + screenCenterX;
 				this.descriptionContainer.y = NowStartPointY + NowImageSizeHeight - newHeight - bottomMargin;
 			}
-
-			// 登録されているボタンのリサイズを行う
-			this.buttons.forEach((button, i) => {
-				// 1. 各ボタンのリサイズ関数を呼び出す
-				button.resizeButton(App, CurrentOverallScale);
-
-				// 2. ボタンの位置を再計算する
-				button.x = ScreenStartPointWidth + NowImageSizeWidth - ((NowImageSizeWidth / 10 ) + button.width/2);
-				button.y = ScreenStartPointheight + CurrentOverallScale * 150 + i * (button.height + CurrentOverallScale * 50);
-			});
 		}
 	
 		/**

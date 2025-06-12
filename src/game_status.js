@@ -891,7 +891,7 @@ export const ImageAssetPaths = Object.freeze({
   logoFrame85: "../image/logo/logo_anime_0085.png",
 
   titleImageBg: "../image/title/title_image_bg.png",
-  titleCharaImage: "../image/title/charaTemp1.png",
+  gameLogo: "../image/title/gamelogo.png",
   iconImage1: "../image/icon/chevron_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"
 });
 // AssetManagerで使う画像パスのリスト
