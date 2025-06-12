@@ -79,45 +79,31 @@ function ResizeGame() {
     // 現在の画面の大きさを取得
     const NowWindowWidth = window.innerWidth;
     const NowWindowHeight = window.innerHeight;
-    const NowWindowRatio = NowWindowWidth / NowWindowHeight;
 
-    // メイン画面は画面いっぱいに表現する
+    // // メイン画面は画面いっぱいに表現する
     const ScreenOccupationRatio = 1.0;
 
-    // ウインドウのサイズから，可能な画面サイズを出す
+    // // ウインドウのサイズから，可能な画面サイズを出す
     let TargetAvailableWidth = NowWindowWidth * ScreenOccupationRatio;
     let TargetAvailableHeight = NowWindowHeight * ScreenOccupationRatio;
 
     App.renderer.resize(TargetAvailableWidth, TargetAvailableHeight);
 
-    // 1080pをサイズにリサイズ倍率を求める
-    // X方向を使用して、1pixの縮小倍率を求める
-
-    let newWidth, newHeight;
-
-    // 画面(コンテナ)がコンテンツより横長か、縦長かを判断
-    if (NowWindowRatio > OverallAspectRatio) {
-        // コンテナが横長の場合：高さをコンテナに合わせる
-        newHeight = TargetAvailableHeight;
-        newWidth = newHeight * NowWindowRatio;
-    } else {
-        // コンテナが縦長または同じ比率の場合：幅をコンテナに合わせる
-        newWidth = TargetAvailableWidth;
-        newHeight = newWidth / NowWindowRatio;
-    }
+   
     
+     // 1. 現在のウィンドウの幅と高さを取得
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
 
-    
-    console.log(`画面サイズ変更1:`, { newHeight: newHeight, CurrentTotalHeight: CurrentTotalHeight });
+    // 2. 「基準解像度」から見た「絶対スケール」を、幅と高さそれぞれで計算
+    const scaleX = windowWidth / OVERALL_BASE_WIDTH;   // 幅が何倍になったか
+    const scaleY = windowHeight / OVERALL_BASE_HEIGHT; // 高さが何倍になったか
 
-    // 前回からの変更量を参考に変更する
-    MainScaleFactor = ((newHeight / CurrentTotalHeight) / (newHeight / OVERALL_BASE_HEIGHT));
-    
-    CurrentTotalHeight = newWidth;
-    CurrentTotalWidth = newWidth;
-    // すべての画面，及び生成済みのインスタンスにUpscaleを行う
-    console.log(`倍率:`, { MainScaleFactor: MainScaleFactor });
+    // 3. ２つのスケールのうち「小さい方」を、ゲーム全体の統一スケールとして採用する
+    //    これにより、アスペクト比を保ったまま、必ずウィンドウ内にゲーム画面が収まる
+    const MainScaleFactor = Math.min(scaleX, scaleY);
 
+    // // すべての画面，及び生成済みのインスタンスにUpscaleを行う
     ScreenList.forEach(Screen => {
         Screen.ResizeScreen(App, MainScaleFactor);
     });

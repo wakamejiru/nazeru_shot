@@ -140,11 +140,6 @@ const ButtonConfigs = [
     }
 ];
 
-let CurrentFrameIndex = 0;
-let LoadingAnimationTimer = 0;
-const LOADING_FRAME_DURATION = 0.033; // (30FPS)
-let LoadingScreenAnimationImages = []; // ローディングアニメーション用Imageオブジェクト配列
-
 // 現在選択されているボタンを記憶する
 let NowSelectButton = ButtonID.Button1; // 初期はボタン1
 
