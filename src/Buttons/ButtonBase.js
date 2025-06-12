@@ -237,13 +237,11 @@ export class CustomButton extends PIXI.Container {
         const newHeight = this.#config.height * CurrentOverallScale;
 
         // --- 背景のリサイズ ---
-        const oldBgWidth = this.#background.width;
         this.#background.width = newWidth;
         this.#background.height = newHeight;
 
         // --- ラベルのリサイズ ---
         if (this.#label) {
-            const oldFontSize = this.#label.style.fontSize;
             // [!] ここでも必ず初期設定を基準に計算します
             const newFontSize = this.#config.labelStyle.fontSize * CurrentOverallScale; 
             this.#label.style.fontSize = newFontSize;

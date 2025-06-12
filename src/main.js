@@ -110,7 +110,8 @@ function ResizeGame() {
     
     console.log(`画面サイズ変更1:`, { newHeight: newHeight, CurrentTotalHeight: CurrentTotalHeight });
 
-    MainScaleFactor = newHeight / CurrentTotalHeight;
+    // 前回からの変更量を参考に変更する
+    MainScaleFactor = ((newHeight / CurrentTotalHeight) / (newHeight / OVERALL_BASE_HEIGHT));
     
     CurrentTotalHeight = newWidth;
     CurrentTotalWidth = newWidth;
