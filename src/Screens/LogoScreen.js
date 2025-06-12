@@ -134,6 +134,8 @@ export class LogoScreen extends BaseScreen{
    * @param {boolean} Visible - true:ON false:OFF
    */
   async InitializeScreen(InitialScale){
+    if(this.InitializeAlreadyRun == false){
+
       // 画面を作成する
       this.ScreenContainer = new PIXI.Container();
 
@@ -185,6 +187,8 @@ export class LogoScreen extends BaseScreen{
       this.LogoContainer.visible = false;
       super.SetScreenVisible(false); // 初期は非表示
       this.DebugTime = 0;
+      this.InitializeAlreadyRun = true;
+    }
   }
 
     /**

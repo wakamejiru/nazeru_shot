@@ -170,6 +170,7 @@ export class TitileScreen extends BaseScreen{
 	 * @param {boolean} Visible - true:ON false:OFF
 	 */
 	async InitializeScreen(InitialScale){
+
 		// 画面を作成する
 		this.ScreenContainer = new PIXI.Container();
 
@@ -201,7 +202,7 @@ export class TitileScreen extends BaseScreen{
 
 			// app.rendererを渡してボタンを非同期で生成
 			const button = await CustomButton.create(this.App.renderer, baseConfig);
-			button.x = this.App.screen.width - ((this.App.screen.width / 10) + baseConfig.width / 2);
+			button.x = this.TitleBackgroundImage.texture.orig.width - ((this.TitleBackgroundImage.texture.orig.width / 10) + baseConfig.width / 2);
 
 			// Y座標：初期位置を基準に、画面全体のスケールに合わせて調整
 			button.y = 150 + (i * 50 + ((i-1) * button.height));
@@ -241,8 +242,11 @@ export class TitileScreen extends BaseScreen{
 				
 	
 			// 一番左上を合わせる
-			this.TitleBackgroundImage.x = (App.screen.width  - DisplayWidth)  /2;
-			this.TitleBackgroundImage.y = (App.screen.height - DisplayHeight) / 2;
+			const ScreenStartPointWidth = (App.screen.width  - DisplayWidth)  /2;
+			const ScreenStartPointheight = (App.screen.height - DisplayHeight) / 2;
+
+			this.TitleBackgroundImage.x = ScreenStartPointWidth;
+			this.TitleBackgroundImage.y = ScreenStartPointheight;
 
 			// 登録されているボタンのリサイズを行う
 			this.buttons.forEach((button, i) => {
@@ -250,10 +254,15 @@ export class TitileScreen extends BaseScreen{
 				button.resizeButton(App, CurrentOverallScale);
 
 				// 2. ボタンの位置を再計算する
-				// X座標：画面右からのマージンを保つように再計算
-				const config = ButtonConfigs[i];
-				button.x = this.App.screen.width - ((this.App.screen.width / 10 ) + button.width/2);
-				button.y = (this.App.screen.height *  (150 / 1080)) + i * (button.height + (this).App.screen.height* (50 / 1080));
+				button.x = ScreenStartPointWidth + this.TitleBackgroundImage.width - ((this.TitleBackgroundImage.width / 10 ) + button.width/2);
+				button.y = ScreenStartPointheight + (this.TitleBackgroundImage.height *  (150 / 1080)) + i * (button.height + this.TitleBackgroundImage.height* (50 / 1080));
+				console.log(`[After] Button ${i}:`, { 
+					x: button.x, 
+					y: button.y, 
+					width: button.width, 
+					height: button.height,
+					visible: button.visible 
+				});
 			});
 		}
 	

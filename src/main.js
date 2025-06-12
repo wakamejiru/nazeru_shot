@@ -139,24 +139,39 @@ async function InitializeGame(){
  * ゲームのロードを行う
  * @note ここで使用するクラスのシングルトンインスタンスを全て生成する
  */
-function UpdateLoadingLogic() {
+async function UpdateLoadingLogic() {
     // プレイヤーとエネミーの作成も行う
     if(UpdateLoadingLigicState !== null){
 
     
         switch(UpdateLoadingLigicState){
+            // case 0:
+            //     ScreenList.push(new LogoScreen.LogoScreen(App, BaseScreen.SCREEN_STATE.LOGO_SCREEN));
+            //     await GetScreenInstance(BaseScreen.SCREEN_STATE.LOGO_SCREEN).InitializeScreen(MainScaleFactor);
+            //     break;
+            // case 1:
+            //     ScreenList.push(new WatingScreen.WaitingScreen(App, BaseScreen.SCREEN_STATE.WATING_SCREEN));
+            //     await GetScreenInstance(BaseScreen.SCREEN_STATE.WATING_SCREEN).InitializeScreen(MainScaleFactor);
+            //     break;
+            // case 2:
+            //     ScreenList.push(new TitileScreen.TitileScreen(App, BaseScreen.SCREEN_STATE.GAME_TITLE));
+            //     await GetScreenInstance(BaseScreen.SCREEN_STATE.GAME_TITLE).InitializeScreen(MainScaleFactor);
+            //     console.log('%cExecuting case 2: Initializing TitleScreen...', 'color: red; font-weight: bold;');
+            //     break;  
             case 0:
-
-                ScreenList.push(new LogoScreen.LogoScreen(App, BaseScreen.SCREEN_STATE.LOGO_SCREEN));
-                GetScreenInstance(BaseScreen.SCREEN_STATE.LOGO_SCREEN).InitializeScreen(MainScaleFactor);
+                const logoScreen = new LogoScreen.LogoScreen(App, BaseScreen.SCREEN_STATE.LOGO_SCREEN);
+                ScreenList.push(logoScreen);
+                await logoScreen.InitializeScreen(MainScaleFactor); // ★ awaitを追加
                 break;
             case 1:
-                ScreenList.push(new WatingScreen.WaitingScreen(App, BaseScreen.SCREEN_STATE.WATING_SCREEN));
-                GetScreenInstance(BaseScreen.SCREEN_STATE.WATING_SCREEN).InitializeScreen(MainScaleFactor);
+                const waitingScreen = new WatingScreen.WaitingScreen(App, BaseScreen.SCREEN_STATE.WATING_SCREEN);
+                ScreenList.push(waitingScreen);
+                await waitingScreen.InitializeScreen(MainScaleFactor); // ★ awaitを追加
                 break;
             case 2:
-                ScreenList.push(new TitileScreen.TitileScreen(App, BaseScreen.SCREEN_STATE.GAME_TITLE));
-                GetScreenInstance(BaseScreen.SCREEN_STATE.GAME_TITLE).InitializeScreen(MainScaleFactor);
+                const titleScreen = new TitileScreen.TitileScreen(App, BaseScreen.SCREEN_STATE.GAME_TITLE);
+                ScreenList.push(titleScreen);
+                await titleScreen.InitializeScreen(MainScaleFactor); // ★ awaitを追加
                 break;  
             case 3:
 
@@ -195,8 +210,9 @@ function UpdateLoadingLogic() {
                 break;
 
         }
-
-        ++UpdateLoadingLigicState;
+        if(UpdateLoadingLigicState !== null){
+            ++UpdateLoadingLigicState;
+        }
     }
 }
 
@@ -222,7 +238,7 @@ function HandleResize() {
  * ゲームを進行するノーマルループ
  * @param {number} CurrentTime - 現在の経過時間
  */
-function GameLoop(CurrentTime){
+async function GameLoop(CurrentTime){
     // 現在の経過時間から差分を求める
     const DeltaTime = (CurrentTime - LastTime) / 1000; // 秒単位
     LastTime = CurrentTime;
@@ -236,7 +252,7 @@ function GameLoop(CurrentTime){
     if(CurrentScreen == BaseScreen.SCREEN_STATE.LOADING){
         // ロード画面の際は特殊な操作が必要
         NextScreen = NowScreenInstance.EventPoll(ClampedDeltaTime, InputCurrentState);
-        UpdateLoadingLogic();        
+        await UpdateLoadingLogic();        
     }else{
         NextScreen = NowScreenInstance.EventPoll(ClampedDeltaTime, InputCurrentState);
     }

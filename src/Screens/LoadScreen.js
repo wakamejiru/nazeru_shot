@@ -78,7 +78,7 @@ export class LoadScreen extends BaseScreen{
  	 * 初期化を行う
 	 * @param {boolean} Visible - true:ON false:OFF
 	 */
-	InitializeScreen(InitialScale){
+    async InitializeScreen(InitialScale){
 
         // 画面を作成する
         this.ScreenContainer = new PIXI.Container();

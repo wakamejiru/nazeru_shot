@@ -31,6 +31,9 @@ export class BaseScreen{
 		
 		// 何か入力があったフラグ(これでロゴのアニメーションなどがスキップされる)
 		this.AnyKeyInput = false;
+
+		// 初期化済みフラグ
+		this.InitializeAlreadyRun = false;
 	}
 
 	/**
