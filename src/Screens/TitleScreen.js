@@ -319,7 +319,7 @@ export class TitileScreen extends BaseScreen{
 			this.TitleLogoImage.height = BaseTextureHeight * CurrentOverallScale;
 
 			this.TitleLogoImage.x = NowStartPointX + (NowImageSizeWidth / 10 + this.TitleLogoImage.width / 2);
-			this.TitleLogoImage.y = NowStartPointY + (NowImageSizeHeight * 0.1);
+			this.TitleLogoImage.y = NowStartPointY + (NowImageSizeHeight * 0.1 + this.TitleLogoImage.height / 2);
 
 			
 			const StartButtonY = NowImageSizeHeight * 0.1;
