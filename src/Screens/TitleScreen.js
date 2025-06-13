@@ -247,15 +247,16 @@ export class TitileScreen extends BaseScreen{
 		this.ScreenContainer.addChild(this.descriptionContainer);
 
 		for (let i = 0; i < ButtonConfigs.length; i++) {
-			const baseConfig  = ButtonConfigs[i];
+			let baseConfig  = ButtonConfigs[i];
 			// 幅を更新する(現在の大きさに合わせてサイズを変更して入れる) // デフォは1920*1080想定で設計
-
+			// 幅を新しく設定
+			baseConfig.width = this.TitleBackgroundImage.texture.orig.width * 0.27;
+			baseConfig.height = ((this.TitleBackgroundImage.texture.orig.height * 0.7) / ButtonConfigs.length) - (this.TitleBackgroundImage.texture.orig.height * 0.05);
 			// app.rendererを渡してボタンを非同期で生成
 			const button = await CustomButton.create(this.App.renderer, baseConfig);
-			button.x = this.TitleBackgroundImage.texture.orig.width - ((this.TitleBackgroundImage.texture.orig.width / 10) + baseConfig.width / 2);
-
+			button.x = 0;
 			// Y座標：初期位置を基準に、画面全体のスケールに合わせて調整
-			button.y = this.TitleBackgroundImage.texture.orig.height + 150 + (i * 50 + ((i-1) * button.height));
+			button.y = 0;
 
 			button.pivot.set(button.width / 2, button.height / 2); // 中央を基点にする
 			
@@ -321,6 +322,8 @@ export class TitileScreen extends BaseScreen{
 			this.TitleLogoImage.y = NowStartPointY + (NowImageSizeHeight * 0.1);
 
 			
+			const StartButtonY = NowImageSizeHeight * 0.1;
+			const ButtonDuringPoint = NowImageSizeHeight * 0.05;
 
 			// 登録されているボタンのリサイズを行う
 			this.buttons.forEach((button, i) => {
@@ -329,7 +332,7 @@ export class TitileScreen extends BaseScreen{
 
 				// 2. ボタンの位置を再計算する
 				button.x = ScreenStartPointWidth + NowImageSizeWidth - ((NowImageSizeWidth / 10 ) + button.width/2);
-				button.y = ScreenStartPointheight + CurrentOverallScale * 150 + i * (button.height + CurrentOverallScale * 50);
+				button.y = ScreenStartPointheight + StartButtonY + (i* (button.height + ButtonDuringPoint));
 			});
 
 			if (this.descriptionContainer) {

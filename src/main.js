@@ -39,14 +39,34 @@ const OVERALL_BASE_HEIGHT = 1080;
 const OverallAspectRatio = OVERALL_BASE_WIDTH / OVERALL_BASE_HEIGHT; // 画面比率
 
 
+    
+
+
 // HTMLファイルで定義されたCanvas要素を取得
 const MainGameCanvas = document.getElementById('MainGameCanvas');
 
 const App = new PIXI.Application();
 await App.init({view: MainGameCanvas, width: OVERALL_BASE_WIDTH, height: OVERALL_BASE_HEIGHT, background: 'gray', resizeTo: window });
+
 let CurrentTotalWidth = App.screen.width;   // メインCanvasの現在の実際の幅
 let CurrentTotalHeight = App.screen.height; // メインCanvasの現在の実際の高さ
-let MainScaleFactor = CurrentTotalWidth/OVERALL_BASE_WIDTH;
+const NowWindowRatio = window.innerWidth / window.innerHeight;
+
+// 画面(コンテナ)がコンテンツより横長か、縦長かを判断
+if (NowWindowRatio > OverallAspectRatio) {
+    // コンテナが横長の場合：高さをコンテナに合わせる
+    CurrentTotalHeight = window.innerHeight;
+    CurrentTotalWidth = CurrentTotalHeight * NowWindowRatio;
+} else {
+    // コンテナが縦長または同じ比率の場合：幅をコンテナに合わせる
+    CurrentTotalWidth = window.innerWidth;
+    CurrentTotalHeight = CurrentTotalWidth / NowWindowRatio;
+}
+
+let MainScaleFactor = CurrentTotalWidth / OVERALL_BASE_WIDTH;
+
+const InitialScalerFactor = CurrentTotalWidth / OVERALL_BASE_WIDTH;
+
 let LastTime = 0; // メインループ時間管理用カウンタタイマ
 let UpdateLoadingLigicState = 0; // 初期化に用いるステイと処理
 
@@ -112,7 +132,7 @@ function ResizeGame() {
     console.log(`画面サイズ変更1:`, { newHeight: newHeight, CurrentTotalHeight: CurrentTotalHeight });
 
     // 前回からの変更量を参考に変更する
-    MainScaleFactor = ((newHeight / CurrentTotalHeight)) / (newHeight / OVERALL_BASE_HEIGHT);
+    MainScaleFactor = ((newHeight / CurrentTotalHeight)) * InitialScalerFactor;
     
     CurrentTotalHeight = newHeight;
     CurrentTotalWidth = newWidth;
