@@ -337,15 +337,13 @@ export class TitileScreen extends BaseScreen{
 
 			if (this.descriptionContainer) {
 				// --- 基準サイズを定義 ---
-				const baseDescWidth = 800;
-				const baseDescHeight = 120;
 				const baseFontSize = 32;
 				const basePadding = 20; // テキストの左右の余白
 
 				// --- スケールを適用した新しいサイズを計算 ---
-				// 幅は半分から，ボタンのお尻まで
+				// 幅は1/3から，ボタンのお尻まで
 				// 高さはボタンの二倍
-				const newWidth = ((this.buttons[1].x) - NowImageSizeWidth / 2);
+				const newWidth = (((this.buttons[1].x) + this.buttons[1].width/2)- NowImageSizeWidth / 3) - NowStartPointX;
 				const newHeight = this.buttons[1].height * 1;
 				const newFontSize = baseFontSize * CurrentOverallScale;
 				const newPadding = basePadding * CurrentOverallScale;
@@ -366,7 +364,7 @@ export class TitileScreen extends BaseScreen{
 				this.descriptionText.y = newHeight / 2;
 
 				// 4. コンテナ全体の位置を調整（例：画面下部中央）
-				const screenCenterX = NowImageSizeWidth / 2;
+				const screenCenterX = NowImageSizeWidth / 3;
 				const bottomMargin = NowImageSizeHeight * 0.05; // 画面下から5%の位置
 				this.descriptionContainer.x = NowStartPointX + screenCenterX;
 				this.descriptionContainer.y = NowStartPointY + NowImageSizeHeight - newHeight - bottomMargin;
