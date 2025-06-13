@@ -1,4 +1,4 @@
-import {IsAnyInputActive} from '../inputs/InputKeyboard.js'
+import {IsAnyInputActive} from '../inputs/InputManager.js'
 
 // 画面表示制御の既定クラス
 

@@ -405,14 +405,45 @@ export class TitileScreen extends BaseScreen{
         }
 
 		// Keyの入力が何かあったかを判断する
-        if (InputCurrentState && this.InputCooldown <= 0) {
-            let selectionChanged = false;
+        if (!InputCurrentState || this.InputCooldown > 0) {
+            return this.ScreenState;
+        }
 
+        let selectionChanged = false;
+        let confirmed = false;
+
+        // ▼▼▼【ここから変更】ゲームパッド優先ロジック ▼▼▼
+
+        // 1. ゲームパッドの入力を優先してチェック
+        if (InputCurrentState.gamepad) {
+            const pad = InputCurrentState.gamepad;
+
+            // --- 十字キーまたは左スティックの上下 ---
+            if (pad.dpad.up) {
+                this.selectedButtonIndex--;
+                if (this.selectedButtonIndex < 0) {
+                    this.selectedButtonIndex = this.buttons.length - 1;
+                }
+                selectionChanged = true;
+            } else if (pad.dpad.down) {
+                this.selectedButtonIndex++;
+                if (this.selectedButtonIndex >= this.buttons.length) {
+                    this.selectedButtonIndex = 0;
+                }
+                selectionChanged = true;
+            }
+
+            // --- 決定ボタン (Aボタンなど) ---
+            if (pad.confirm) {
+                confirmed = true;
+            }
+        }
+        // 2. ゲームパッドの入力がなければ、キーボードをチェック
+        else {
             // --- 上矢印キー ---
             if (InputCurrentState.keys.has('ArrowUp')) {
                 this.selectedButtonIndex--;
                 if (this.selectedButtonIndex < 0) {
-                    // 配列の末尾にループ
                     this.selectedButtonIndex = this.buttons.length - 1;
                 }
                 selectionChanged = true;
@@ -421,24 +452,29 @@ export class TitileScreen extends BaseScreen{
             else if (InputCurrentState.keys.has('ArrowDown')) {
                 this.selectedButtonIndex++;
                 if (this.selectedButtonIndex >= this.buttons.length) {
-                    // 配列の先頭にループ
                     this.selectedButtonIndex = 0;
                 }
                 selectionChanged = true;
             }
             // --- エンターキー ---
             else if (InputCurrentState.keys.has('Enter')) {
-                const selectedButton = this.buttons[this.selectedButtonIndex];
-                if (selectedButton) {
-                    selectedButton.triggerClick(); // クリックを発火
-                    this.InputCooldown = this.COOLDOWN_TIME; // 決定後、少し待つ
-                }
+                confirmed = true;
             }
+        }
 
-            // 選択が変わった場合
-            if (selectionChanged) {
-                this.updateButtonSelection(); // 見た目を更新
-                this.InputCooldown = this.COOLDOWN_TIME; // キーリピートによる高速移動を防ぐ
+        // --- 入力後の処理を共通化 ---
+
+        // 選択が変更された場合
+        if (selectionChanged) {
+            this.updateButtonSelection(); // 見た目を更新
+            this.InputCooldown = this.COOLDOWN_TIME; // キーリピートによる高速移動を防ぐ
+        }
+        // 決定が押された場合
+        else if (confirmed) {
+            const selectedButton = this.buttons[this.selectedButtonIndex];
+            if (selectedButton) {
+                selectedButton.triggerClick(); // クリックを発火
+                this.InputCooldown = this.COOLDOWN_TIME; // 決定後、少し待つ
             }
         }
 		

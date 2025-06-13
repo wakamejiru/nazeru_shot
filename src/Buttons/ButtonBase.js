@@ -71,7 +71,7 @@ export class CustomButton extends PIXI.Container {
             iconPath: null,
             animation: {
                 type: 'scale',
-                duration: 1.0,
+                duration: 0.5,
             },
             nineSlice: {
                 left: 30,

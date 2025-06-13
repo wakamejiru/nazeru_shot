@@ -24,7 +24,7 @@ import * as TitileScreen from './Screens/TitleScreen.js';
 
 
 import * as Utils from "./utils.js";
-import InputManager from './inputs/InputKeyboard.js';
+import InputManager from './inputs/InputManager.js';
 
 
 // const AssetManagerInstance = new AssetManager(ImageAssetPaths);

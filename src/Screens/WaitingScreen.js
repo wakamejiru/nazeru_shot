@@ -1,5 +1,6 @@
 import { BaseScreen, FRAME_DURATION, SCREEN_STATE } from './BaseScreen.js';
 import { ImageAssetPaths, MusicOrVoicePaths } from '../game_status.js'; 
+import {IsChromeBrowser} from "../utils.js"
 
 export const WatingScreenImages = [
   "waitingImage"
@@ -7,6 +8,7 @@ export const WatingScreenImages = [
 
 // playerにクリックさせて音が出るようにする画面
 // 同時に何か注意書きぐらいできたらいいなぐらい
+// Chrome以外なら先に進めなくする
 
 export class WaitingScreen extends BaseScreen{
 	/**
@@ -168,7 +170,8 @@ export class WaitingScreen extends BaseScreen{
 		super.EventPoll(DeltaTime, InputCurrentState);
 		
 		// Keyの入力が何かあったかを判断する
-		if(this.AnyKeyInput == true){
+		// Chromeなら進めさせない
+		if((this.AnyKeyInput == true) && (IsChromeBrowser() == true)){
 			return SCREEN_STATE.LOGO_SCREEN;
 		}
 

@@ -17,3 +17,20 @@ function waitfunc(seconds){
     setTimeout(resolve, seconds * 1000); // setTimeoutはミリ秒単位で指定
   });
 }
+
+/**
+ * 現在のブラウザがGoogle Chromeであるかを判定します。
+ * (Chromium Edgeは除外します)
+ * @returns {boolean} Chromeであればtrue、それ以外はfalse
+ */
+export function IsChromeBrowser() {
+    const ua = navigator.userAgent;
+
+    // EdgeのUser-Agentには 'Chrome' と 'Edg/' の両方が含まれる
+    const isEdge = ua.includes('Edg/');
+    
+    // ChromeのUser-Agentには 'Chrome' が含まれ、'Edg/' は含まれない
+    const isChrome = ua.includes('Chrome') && !isEdge;
+    
+    return isChrome;
+}
