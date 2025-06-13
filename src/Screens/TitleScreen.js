@@ -140,8 +140,6 @@ const ButtonConfigs = [
     }
 ];
 
-// 現在選択されているボタンを記憶する
-let NowSelectButton = ButtonID.Button1; // 初期はボタン1
 
 export const TitleScreenImages = [
   "titleImageBg",
@@ -170,6 +168,13 @@ export class TitileScreen extends BaseScreen{
 		this.descriptionContainer = null; // 全体をまとめるコンテナ
         this.descriptionBackground = null;  // 背景パネル
         this.descriptionText = null;        // テキスト
+
+		
+		// 現在選択されているボタンを記憶する
+		this.NowSelectButton = ButtonID.Button1; // 初期はボタン1
+		this.selectedButtonIndex = 0;
+        this.InputCooldown = 0;       // キー入力のクールダウンタイマー
+        this.COOLDOWN_TIME = 0.2;     // キー入力のクールダウン時間(秒)
     }
 
 	/**
@@ -201,7 +206,7 @@ export class TitileScreen extends BaseScreen{
 
 		// 画像を追加
 		this.ScreenContainer.addChild(this.TitleBackgroundImage);
-        NowSelectButton = ButtonID.Button1; // 初期はボタン1
+        this.NowSelectButton = ButtonID.Button1; // 初期はボタン1
 
 		// キャラ画像を選択
 		const TitleLogoTexture = PIXI.Texture.from("gameLogo");
@@ -259,26 +264,10 @@ export class TitileScreen extends BaseScreen{
 			button.y = 0;
 
 			button.pivot.set(button.width / 2, button.height / 2); // 中央を基点にする
-			
-			// クリック時のイベントリスナー
-			button.on('button_click', (id) => {
-				console.log(`${id} がクリックされました！`);
-			});
-
-			button.on('pointerover', () => {
-				// IDを元に説明文データを探してテキストを更新
-				this.descriptionText.text = ButtonDescriptions[button.id] || ''; 
-			});
-
-			// カーソルが外れた時のイベント
-			button.on('pointerout', () => {
-				// デフォルトのテキストに戻す
-				this.descriptionText.text = 'ボタンにカーソルを合わせると説明が表示されます。';
-			});
-
 			this.ScreenContainer.addChild(button);
 			this.buttons.push(button);
 		}
+		this.updateButtonSelection(); // ボタンの初期位置を設定
 
 
 
@@ -411,6 +400,47 @@ export class TitileScreen extends BaseScreen{
 	   */
 	  EventPoll(DeltaTime, InputCurrentState){
 		super.EventPoll(DeltaTime, InputCurrentState);
+		 if (this.InputCooldown > 0) {
+            this.InputCooldown -= DeltaTime;
+        }
+
+		// Keyの入力が何かあったかを判断する
+        if (InputCurrentState && this.InputCooldown <= 0) {
+            let selectionChanged = false;
+
+            // --- 上矢印キー ---
+            if (InputCurrentState.keys.has('ArrowUp')) {
+                this.selectedButtonIndex--;
+                if (this.selectedButtonIndex < 0) {
+                    // 配列の末尾にループ
+                    this.selectedButtonIndex = this.buttons.length - 1;
+                }
+                selectionChanged = true;
+            }
+            // --- 下矢印キー ---
+            else if (InputCurrentState.keys.has('ArrowDown')) {
+                this.selectedButtonIndex++;
+                if (this.selectedButtonIndex >= this.buttons.length) {
+                    // 配列の先頭にループ
+                    this.selectedButtonIndex = 0;
+                }
+                selectionChanged = true;
+            }
+            // --- エンターキー ---
+            else if (InputCurrentState.keys.has('Enter')) {
+                const selectedButton = this.buttons[this.selectedButtonIndex];
+                if (selectedButton) {
+                    selectedButton.triggerClick(); // クリックを発火
+                    this.InputCooldown = this.COOLDOWN_TIME; // 決定後、少し待つ
+                }
+            }
+
+            // 選択が変わった場合
+            if (selectionChanged) {
+                this.updateButtonSelection(); // 見た目を更新
+                this.InputCooldown = this.COOLDOWN_TIME; // キーリピートによる高速移動を防ぐ
+            }
+        }
 		
 		// Keyの入力が何かあったかを判断する
         return this.ScreenState;
@@ -420,4 +450,23 @@ export class TitileScreen extends BaseScreen{
 	  Sound(){
 	
 	  }
+
+	  /**
+     * ボタンの選択状態と説明文を更新するヘルパー関数
+     */
+    updateButtonSelection() {
+        if (!this.buttons || this.buttons.length === 0) return;
+
+        this.buttons.forEach((button, index) => {
+            // 現在のインデックスと一致するかどうかで選択状態を設定
+            const isSelected = (index === this.selectedButtonIndex);
+            button.setSelected(isSelected);
+        });
+
+        // 選択中のボタンの説明文を表示
+        const selectedButton = this.buttons[this.selectedButtonIndex];
+        if (selectedButton) {
+            this.descriptionText.text = ButtonDescriptions[selectedButton.id] || '';
+        }
+    }
 }

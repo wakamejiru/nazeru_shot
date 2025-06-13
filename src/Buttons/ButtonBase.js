@@ -71,7 +71,7 @@ export class CustomButton extends PIXI.Container {
             iconPath: null,
             animation: {
                 type: 'scale',
-                duration: 0.2,
+                duration: 1.0,
             },
             nineSlice: {
                 left: 30,
@@ -85,13 +85,8 @@ export class CustomButton extends PIXI.Container {
         this.id = this.#config.id;
         this.renderer = renderer;
 
-        this.interactive = true;
+        this.interactive = false;
         this.cursor = 'pointer';
-        this.on('pointerdown', this.#onPress)
-             .on('pointerup', this.#onRelease)
-             .on('pointerupoutside', this.#onRelease)
-             .on('pointerover', this.#onHover)
-             .on('pointerout', this.#onLeave);
     }
 
     /**
@@ -189,6 +184,49 @@ export class CustomButton extends PIXI.Container {
         }
     }
 
+    /**
+     * ボタンの選択状態を外部から設定します。
+     * @param {boolean} isSelected - 選択状態にする場合はtrue、解除する場合はfalse
+     */
+    setSelected(isSelected) {
+        // 既に同じ状態なら何もしない
+        if (this.#isSelected === isSelected) return;
+
+        this.#isSelected = isSelected;
+
+        if (this.#isSelected) {
+            // アニメーションを開始し、選択状態のテクスチャを適用
+            this._startSelectionAnimation();
+        } else {
+            // アニメーションを停止し、通常状態のテクスチャに戻す
+            this._stopSelectionAnimation();
+        }
+    }
+
+    /**
+     * ボタンのクリック動作をプログラムから実行します。
+     */
+    triggerClick() {
+        // 押された時の見た目を一瞬だけ適用
+        this.#background.texture = this.#textures.pressed;
+        
+        // 元の見た目に戻す（選択状態なら選択、非選択なら通常）
+        if (this.#isSelected) {
+            this.#onRelease();
+        } else {
+            // 選択されていないボタンがEnterで押された場合も
+            // 通常状態に戻す
+            this.#background.texture = this.#textures.normal;
+        }
+
+        // サウンド再生とイベント発行
+        if (this.#sound) {
+            this.#sound.play();
+        }
+        this.emit('button_click', this.id);
+        console.log(`${this.id} がプログラムによりクリックされました！`);
+    }
+
    
     /**
      * ボタンの状態を更新します（ポーリング用）。
@@ -205,15 +243,6 @@ export class CustomButton extends PIXI.Container {
             // 選択 -> 非選択 になった
             this._stopSelectionAnimation();
         }
-
-        // ▼▼▼【今回の修正点】以下の if ブロックを削除、またはコメントアウトします ▼▼▼
-        /*
-        // 非選択時の色更新 ← この処理がマウスホバーの表示を上書きしてしまっていた
-        if(!this.#isSelected) {
-            this.#background.texture = this.#textures.normal;
-        }
-        */
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
     }
 
     hide() {
@@ -294,7 +323,7 @@ export class CustomButton extends PIXI.Container {
         this.#background.texture = this.#textures.normal;
     }
 
-    // --- イベントハンドラ ---
+    // --- イベントハンドラ ---(まとめ関数と化してる)
     
     #onPress = () => {
         this.#background.texture = this.#textures.pressed;
@@ -319,9 +348,12 @@ export class CustomButton extends PIXI.Container {
     }
 
     #onLeave = () => {
+        // ▼▼▼【ここから変更 2/2】▼▼▼
+        // マウスが離れても、キーボードで選択されている場合はテクスチャを戻さない
         if (!this.#isSelected) {
             this.#background.texture = this.#textures.normal;
         }
+        // ▲▲▲【ここまで変更 2/2】▲▲▲
     }
 }
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
