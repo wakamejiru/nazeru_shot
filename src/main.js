@@ -65,8 +65,6 @@ if (NowWindowRatio > OverallAspectRatio) {
 
 let MainScaleFactor = CurrentTotalWidth / OVERALL_BASE_WIDTH;
 
-const InitialScalerFactor = CurrentTotalWidth / OVERALL_BASE_WIDTH;
-
 let LastTime = 0; // メインループ時間管理用カウンタタイマ
 let UpdateLoadingLigicState = 0; // 初期化に用いるステイと処理
 
@@ -126,20 +124,14 @@ function ResizeGame() {
         newWidth = TargetAvailableWidth;
         newHeight = newWidth / NowWindowRatio;
     }
-    
-
-    
-    console.log(`画面サイズ変更1:`, { newHeight: newHeight, CurrentTotalHeight: CurrentTotalHeight });
 
     // 前回からの変更量を参考に変更する
-    MainScaleFactor = ((newHeight / CurrentTotalHeight)) * InitialScalerFactor;
+    MainScaleFactor = newWidth / OVERALL_BASE_WIDTH;
     
     CurrentTotalHeight = newHeight;
     CurrentTotalWidth = newWidth;
 
     // すべての画面，及び生成済みのインスタンスにUpscaleを行う
-    console.log(`倍率:`, { MainScaleFactor: MainScaleFactor });
-
     ScreenList.forEach(Screen => {
         Screen.ResizeScreen(App, MainScaleFactor);
     });
