@@ -5,11 +5,10 @@ import { BaseScreen, FRAME_DURATION, SCREEN_STATE } from './BaseScreen.js';
 
 // 項目は5つ
 const ButtonID = Object.freeze({
-    Button1: "Game Start",
-    Button2: "Extra Mode",
-    Button3: "Gallery",
-    Button4: "Audio Room",
-    Button5: "OPTION",
+    Button1: "Easy",
+    Button2: "Normal",
+    Button3: "Hard",
+    Button4: "Lunatic"
 });
 
 const TitleButtonSizeWidth = 400;
@@ -18,7 +17,7 @@ const TitleButtonSizeHeight = 130;
 // --- ボタンの設定 ---
 const ButtonConfigs = [
     {
-        id: "game_start",
+        id: "easy_button",
         width: TitleButtonSizeWidth,
         height: TitleButtonSizeHeight,
         label: ButtonID.Button1,
@@ -43,7 +42,7 @@ const ButtonConfigs = [
 			
     },
 	{
-        id: "extra_mode",
+        id: "normal_button",
         width: TitleButtonSizeWidth,
         height: TitleButtonSizeHeight,
         label: ButtonID.Button2,
@@ -67,7 +66,7 @@ const ButtonConfigs = [
 		},
     },
 	{
-        id: "gallery",
+        id: "hard_button",
         width: TitleButtonSizeWidth,
         height: TitleButtonSizeHeight,
         label: ButtonID.Button3,
@@ -91,34 +90,10 @@ const ButtonConfigs = [
 		},
     },
 	{
-        id: "audio_room",
+        id: "lunatic_button",
         width: TitleButtonSizeWidth,
         height: TitleButtonSizeHeight,
         label: ButtonID.Button4,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: 20
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0x7fffd4,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-    },
-	{
-        id: "option",
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        label: ButtonID.Button5,
         iconPath: '',
         soundPath: 'system45',
         shape: {
@@ -141,17 +116,15 @@ const ButtonConfigs = [
 ];
 
 
-export const TitleScreenImages = [
-  "titleImageBg",
-  "gameLogo"
+export const ScreenImages = [
+  "titleImageBg"
 ];
 
 const ButtonDescriptions = {
-    "game_start": "メインゲームです．",
-    "extra_mode": "メインゲームクリア後に行える、特別なモードです。",
-    "gallery": "イラストや動画，開発者の愚痴を鑑賞できます。",
-    "audio_room": "ゲーム内で使用されているBGMを聴くことができます。",
-    "option": "操作方法など，ゲームの各種設定を変更します。"
+    "easy_button": "最も攻撃が少なく、穏やかな難易度です.",
+    "normal_button": "標準的な難易度です。EazyModeが許されるのはSTG未経験者までだよね～ww",
+    "hard_button": "割と自慢できる難易度です。演出を愉しむ余裕など要らないね。",
+    "lunactic_button": "いつもの難易度です。意味が分からなければ遊ばない。"
 };
 
 export class DifficultySelectScreen extends BaseScreen{
@@ -162,8 +135,8 @@ export class DifficultySelectScreen extends BaseScreen{
      */
     constructor(App, ScreenState){
         super(App, ScreenState);
-		this.TitleTextures = [];
-		this.TitleBackgroundImage = null;
+		this.ScreenTextures = [];
+		this.ScreenBackgroundImage = null;
 		this.buttons = [];
 		this.descriptionContainer = null; // 全体をまとめるコンテナ
         this.descriptionBackground = null;  // 背景パネル
@@ -190,35 +163,23 @@ export class DifficultySelectScreen extends BaseScreen{
 		this.App.stage.addChild(this.ScreenContainer); // メインステージに追加
 
 		// 画像の読み込みを行う
-		await this.LoadTitleScreenAssetsForPixi();
+		await this.LoadScreenAssetsForPixi();
 
 		// 画像を作成
-		const TitleBgTexture = PIXI.Texture.from("titleImageBg");
-		this.TitleBackgroundImage = new PIXI.Sprite(TitleBgTexture);
+		const ScreenBgTexture = PIXI.Texture.from("titleImageBg");
+		this.ScreenBackgroundImage = new PIXI.Sprite(ScreenBgTexture);
 
 		// 画像のアンカーを設定
-      	this.TitleBackgroundImage.anchor.set(0);// 左上が座標
-      	this.TitleBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+      	this.ScreenBackgroundImage.anchor.set(0);// 左上が座標
+      	this.ScreenBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
 
 		// 画像の位置を調整
-      	this.TitleBackgroundImage.x = 0; // 画面の一番左上に合わせる
-      	this.TitleBackgroundImage.y = 0;
+      	this.ScreenBackgroundImage.x = 0; // 画面の一番左上に合わせる
+      	this.ScreenBackgroundImage.y = 0;
 
 		// 画像を追加
-		this.ScreenContainer.addChild(this.TitleBackgroundImage);
+		this.ScreenContainer.addChild(this.ScreenBackgroundImage);
         this.NowSelectButton = ButtonID.Button1; // 初期はボタン1
-
-		// キャラ画像を選択
-		const TitleLogoTexture = PIXI.Texture.from("gameLogo");
-		this.TitleLogoImage = new PIXI.Sprite(TitleLogoTexture);
-		// 画像のアンカーを設定
-      	this.TitleLogoImage.anchor.set(0.5);
-      	this.TitleLogoImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
-		// 画像の位置を調整
-      	this.TitleLogoImage.x = this.TitleBackgroundImage.width / 10 + this.TitleLogoImage.width / 2; // 画面の一番左上に合わせる
-      	this.TitleLogoImage.y = this.TitleBackgroundImage.height/2;
-		// 画像を追加
-		this.ScreenContainer.addChild(this.TitleLogoImage);
 		
 		this.descriptionContainer = new PIXI.Container();
 
@@ -281,35 +242,24 @@ export class DifficultySelectScreen extends BaseScreen{
 	   */
 		ResizeScreen(App, CurrentOverallScale){
 			if (!this.ScreenContainer) return;
-			let BaseTextureWidth = this.TitleBackgroundImage.texture.orig.width;
-			let BaseTextureHeight = this.TitleBackgroundImage.texture.orig.height;
+			let BaseTextureWidth = this.ScreenBackgroundImage.texture.orig.width;
+			let BaseTextureHeight = this.ScreenBackgroundImage.texture.orig.height;
 			const DisplaySizeWidth = this.App.screen.width;
 			const DisplaySizeheight = this.App.screen.height;
 			const newTitleSize = this.CalculateAspectRatioFit(BaseTextureWidth, BaseTextureHeight, DisplaySizeWidth, DisplaySizeheight);
-			this.TitleBackgroundImage.width = newTitleSize.width;
-			this.TitleBackgroundImage.height = newTitleSize.height;	
+			this.ScreenBackgroundImage.width = newTitleSize.width;
+			this.ScreenBackgroundImage.height = newTitleSize.height;	
 			// 一番左上を合わせる
-			const ScreenStartPointWidth = (App.screen.width  - this.TitleBackgroundImage.width)  /2;
-			const ScreenStartPointheight = (App.screen.height - this.TitleBackgroundImage.height) / 2;
-			this.TitleBackgroundImage.x = ScreenStartPointWidth;
-			this.TitleBackgroundImage.y = ScreenStartPointheight;
+			const ScreenStartPointWidth = (App.screen.width  - this.ScreenBackgroundImage.width)  /2;
+			const ScreenStartPointheight = (App.screen.height - this.ScreenBackgroundImage.height) / 2;
+			this.ScreenBackgroundImage.x = ScreenStartPointWidth;
+			this.ScreenBackgroundImage.y = ScreenStartPointheight;
 
 			// ここからはAppのサイズは当てにならないので，バックグラウンドの画像で判断を付ける(バックグラウンドが実質画面サイズ)
-			const NowImageSizeWidth = this.TitleBackgroundImage.width;
-			const NowImageSizeHeight = this.TitleBackgroundImage.height;
-			const NowStartPointX = this.TitleBackgroundImage.x;
-			const NowStartPointY = this.TitleBackgroundImage.y;
-
-			// キャラ画像を合わせる
-			BaseTextureWidth = this.TitleLogoImage.texture.orig.width;
-			BaseTextureHeight = this.TitleLogoImage.texture.orig.height;
-
-			this.TitleLogoImage.width = BaseTextureWidth * CurrentOverallScale;
-			this.TitleLogoImage.height = BaseTextureHeight * CurrentOverallScale;
-
-			this.TitleLogoImage.x = NowStartPointX + (NowImageSizeWidth / 10 + this.TitleLogoImage.width / 2);
-			this.TitleLogoImage.y = NowStartPointY + (NowImageSizeHeight * 0.1 + this.TitleLogoImage.height / 2);
-
+			const NowImageSizeWidth = this.ScreenBackgroundImage.width;
+			const NowImageSizeHeight = this.ScreenBackgroundImage.height;
+			const NowStartPointX = this.ScreenBackgroundImage.x;
+			const NowStartPointY = this.ScreenBackgroundImage.y;
 			
 			const StartButtonY = NowImageSizeHeight * 0.1;
 			const ButtonDuringPoint = NowImageSizeHeight * 0.05;
@@ -379,15 +329,15 @@ export class DifficultySelectScreen extends BaseScreen{
     /**
      * 画像を読み込み、PixiJSテクスチャを準備する関数
      */
-	async LoadTitleScreenAssetsForPixi() {
-        const TitleFrameKeysToLoad = TitleScreenImages.filter(key => ImageAssetPaths[key]);
-        const AssetsToLoadForPixi = TitleFrameKeysToLoad.map(key => ({ alias: key, src: ImageAssetPaths[key] }));
+	async LoadScreenAssetsForPixi() {
+        const FrameKeysToLoad = ScreenImages.filter(key => ImageAssetPaths[key]);
+        const AssetsToLoadForPixi = FrameKeysToLoad.map(key => ({ alias: key, src: ImageAssetPaths[key] }));
         if (AssetsToLoadForPixi.length > 0) {
             await PIXI.Assets.load(AssetsToLoadForPixi);
 
-            TitleFrameKeysToLoad.forEach(key => {
+            FrameKeysToLoad.forEach(key => {
             const texture = PIXI.Texture.from(key);
-            this.TitleTextures.push(texture);
+            this.ScreenTextures.push(texture);
             });
         }
 	}

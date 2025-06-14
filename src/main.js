@@ -21,6 +21,8 @@ import * as LoadScreen from './Screens/LoadScreen.js';
 import * as LogoScreen from './Screens/LogoScreen.js';
 import * as WatingScreen from './Screens/WaitingScreen.js';
 import * as TitileScreen from './Screens/TitleScreen.js';
+import * as DifficultyScreen from './Screens/DifficultySelectScreen.js';
+
 
 
 import * as Utils from "./utils.js";
@@ -197,7 +199,9 @@ async function UpdateLoadingLogic() {
                 await titleScreen.InitializeScreen(MainScaleFactor); // ★ awaitを追加
                 break;  
             case 3:
-
+                const DifficultySelectScreen = new DifficultyScreen.DifficultySelectScreen(App, BaseScreen.SCREEN_STATE.GAME_TITLE);
+                ScreenList.push(DifficultySelectScreen);
+                await DifficultySelectScreen.InitializeScreen(MainScaleFactor); // ★ awaitを追加
                 break;
 
             case 4:
