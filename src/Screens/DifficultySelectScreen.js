@@ -202,7 +202,7 @@ export class DifficultySelectScreen extends BaseScreen{
 			lineHeight: 40,
 			align: 'left', // 左揃え
 		});
-		this.descriptionText = new PIXI.Text('ボタンにカーソルを合わせると説明が表示されます。', descriptionStyle);
+		this.descriptionText = new PIXI.Text('', descriptionStyle);
 		this.descriptionText.anchor.set(0.5); // テキスト自体のアンカーは中央
 		// テキストを背景パネルの中央に配置
 		this.descriptionText.x = baseDescWidth / 2;
@@ -216,8 +216,8 @@ export class DifficultySelectScreen extends BaseScreen{
 			let baseConfig  = ButtonConfigs[i];
 			// 幅を更新する(現在の大きさに合わせてサイズを変更して入れる) // デフォは1920*1080想定で設計
 			// 幅を新しく設定
-			baseConfig.width = this.TitleBackgroundImage.texture.orig.width * 0.27;
-			baseConfig.height = ((this.TitleBackgroundImage.texture.orig.height * 0.7) / ButtonConfigs.length) - (this.TitleBackgroundImage.texture.orig.height * 0.05);
+			baseConfig.width = this.ScreenBackgroundImage.texture.orig.width * 0.4;
+			baseConfig.height = ((this.ScreenBackgroundImage.texture.orig.height * 0.5) / ButtonConfigs.length) - (this.ScreenBackgroundImage.texture.orig.height * 0.05);
 			// app.rendererを渡してボタンを非同期で生成
 			const button = await CustomButton.create(this.App.renderer, baseConfig);
 			button.x = 0;
@@ -270,7 +270,8 @@ export class DifficultySelectScreen extends BaseScreen{
 				button.resizeButton(App, CurrentOverallScale);
 
 				// 2. ボタンの位置を再計算する
-				button.x = ScreenStartPointWidth + NowImageSizeWidth - ((NowImageSizeWidth / 10 ) + button.width/2);
+				// 真ん中に再配置
+				button.x = ScreenStartPointWidth + NowImageSizeWidth/2;
 				button.y = ScreenStartPointheight + StartButtonY + (i* (button.height + ButtonDuringPoint));
 			});
 
@@ -425,6 +426,12 @@ export class DifficultySelectScreen extends BaseScreen{
             if (selectedButton) {
                 selectedButton.triggerClick(); // クリックを発火
                 this.InputCooldown = this.COOLDOWN_TIME; // 決定後、少し待つ
+
+				// 押されたボタンに対して遷移先を決定する
+				switch(selectedButton){
+					case ButtonID.Button1:
+						break; 
+				}
             }
         }
 		

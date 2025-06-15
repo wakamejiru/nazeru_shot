@@ -186,22 +186,22 @@ async function UpdateLoadingLogic() {
             case 0:
                 const logoScreen = new LogoScreen.LogoScreen(App, BaseScreen.SCREEN_STATE.LOGO_SCREEN);
                 ScreenList.push(logoScreen);
-                await logoScreen.InitializeScreen(MainScaleFactor); // ★ awaitを追加
+                await logoScreen.InitializeScreen(MainScaleFactor);
                 break;
             case 1:
                 const waitingScreen = new WatingScreen.WaitingScreen(App, BaseScreen.SCREEN_STATE.WATING_SCREEN);
                 ScreenList.push(waitingScreen);
-                await waitingScreen.InitializeScreen(MainScaleFactor); // ★ awaitを追加
+                await waitingScreen.InitializeScreen(MainScaleFactor);
                 break;
             case 2:
                 const titleScreen = new TitileScreen.TitileScreen(App, BaseScreen.SCREEN_STATE.GAME_TITLE);
                 ScreenList.push(titleScreen);
-                await titleScreen.InitializeScreen(MainScaleFactor); // ★ awaitを追加
+                await titleScreen.InitializeScreen(MainScaleFactor);
                 break;  
             case 3:
-                const DifficultySelectScreen = new DifficultyScreen.DifficultySelectScreen(App, BaseScreen.SCREEN_STATE.GAME_TITLE);
+                const DifficultySelectScreen = new DifficultyScreen.DifficultySelectScreen(App, BaseScreen.SCREEN_STATE.DIFFICULTY_SELECT);
                 ScreenList.push(DifficultySelectScreen);
-                await DifficultySelectScreen.InitializeScreen(MainScaleFactor); // ★ awaitを追加
+                await DifficultySelectScreen.InitializeScreen(MainScaleFactor);
                 break;
 
             case 4:
@@ -299,6 +299,8 @@ async function GameLoop(CurrentTime){
         InputManagerInstance.clearInputState(); // 入力を削除
         NowScreenInstance.EndScreen();
         NowScreenInstance = GetScreenInstance(CurrentScreen);
+        
+        console.log(`${NowScreenInstance.GetScreenKey()}`);
         NowScreenInstance.StartScreen();
 
         // フェード停止

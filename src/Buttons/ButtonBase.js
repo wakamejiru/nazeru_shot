@@ -100,7 +100,7 @@ export class CustomButton extends PIXI.Container {
             assetsToLoad.push({ alias: `${this.id}_icon`, src: imageUrl });
         }
         if (this.#config.soundPath) {
-            this.#sound = Sound.from(this.#config.soundPath);
+            this.#sound = Sound.from(MusicOrVoicePaths[this.#config.soundPath]);
         }
         const loadedAssets = await PIXI.Assets.load(assetsToLoad);
 

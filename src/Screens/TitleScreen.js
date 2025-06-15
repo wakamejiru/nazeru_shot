@@ -409,6 +409,7 @@ export class TitileScreen extends BaseScreen{
             return this.ScreenState;
         }
 
+		let NextScreen = this.ScreenState; // 次のスクリーン情報
         let selectionChanged = false;
         let confirmed = false;
 
@@ -475,11 +476,18 @@ export class TitileScreen extends BaseScreen{
             if (selectedButton) {
                 selectedButton.triggerClick(); // クリックを発火
                 this.InputCooldown = this.COOLDOWN_TIME; // 決定後、少し待つ
+
+				// 押されたボタンに対して遷移先を決定する
+				switch(selectedButton.id){
+					case "game_start":
+						NextScreen = SCREEN_STATE.DIFFICULTY_SELECT;
+						break; 
+				}
             }
         }
 		
 		// Keyの入力が何かあったかを判断する
-        return this.ScreenState;
+        return NextScreen;
 	  }
 	
 	
