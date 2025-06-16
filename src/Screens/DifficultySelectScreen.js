@@ -460,7 +460,11 @@ export class DifficultySelectScreen extends BaseScreen{
 					case "back_button":
 						NextScreen = SCREEN_STATE.GAME_TITLE;
 						break; 
+					default:
+						NextScreen = SCREEN_STATE.STAGE_SELECT;
+						break;
 				}
+
             }
         }
 		

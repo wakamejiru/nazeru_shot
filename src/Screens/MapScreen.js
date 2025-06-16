@@ -332,6 +332,8 @@ const ButtonConfigs = [
 			color: {
 				normal:   0x000000,
 				selected: 0xFFFFFF,
+
+
 				pressed:  0x48d1cc,
 			},
 		},
@@ -341,10 +343,11 @@ const ButtonConfigs = [
 
 
 export const ScreenImages = [
-  "MapBgScreen"
+  "MapBgScreen",
+  "MapImage"
 ];
 
-export class DifficultySelectScreen extends BaseScreen{
+export class MapScreen extends BaseScreen{
 	/**
      * コンストラクタ
      * @param {PIXI.Application} App - メインPixiインスタンス
@@ -355,13 +358,13 @@ export class DifficultySelectScreen extends BaseScreen{
 		this.ScreenTextures = [];
 		this.ScreenBackgroundImage = null;
 		this.buttons = [];
-
+		this.scrollSpeed = 8; // スクロール速度
 		
 		// 現在選択されているボタンを記憶する
-		this.NowSelectButton = ButtonID.Button1; // 初期はボタン1
-		this.selectedButtonIndex = 0;
-        this.InputCooldown = 0;       // キー入力のクールダウンタイマー
-        this.COOLDOWN_TIME = 0.2;     // キー入力のクールダウン時間(秒)
+		// this.NowSelectButton = ButtonID.Button1; // 初期はボタン1
+		// this.selectedButtonIndex = 0;
+        // this.InputCooldown = 0;       // キー入力のクールダウンタイマー
+        // this.COOLDOWN_TIME = 0.2;     // キー入力のクールダウン時間(秒)
     }
 
 	/**
@@ -390,32 +393,40 @@ export class DifficultySelectScreen extends BaseScreen{
 		// 画像の位置を調整
       	this.ScreenBackgroundImage.x = 0; // 画面の一番左上に合わせる
       	this.ScreenBackgroundImage.y = 0;
-
-		// 画像を追加
 		this.ScreenContainer.addChild(this.ScreenBackgroundImage);
-        this.NowSelectButton = ButtonID.Button1; // 初期はボタン1
 
+		// 背景画像をコンテナに追加するのではなく、コンテナそのものに背景画像を追加する
+		this.MapContainer = new PIXI.Container();
 
+		const MapImageTexture = PIXI.Texture.from("MapImage");
+		this.ScreenMapImage = new PIXI.Sprite(MapImageTexture);
 
-		for (let i = 0; i < ButtonConfigs.length; i++) {
-			let baseConfig  = ButtonConfigs[i];
-			// 幅を更新する(現在の大きさに合わせてサイズを変更して入れる) // デフォは1920*1080想定で設計
-			// 幅を新しく設定
-			baseConfig.width = this.ScreenBackgroundImage.texture.orig.width * 0.4;
-			baseConfig.height = ((this.ScreenBackgroundImage.texture.orig.height * 0.5) / ButtonConfigs.length) - (this.ScreenBackgroundImage.texture.orig.height * 0.05);
-			// app.rendererを渡してボタンを非同期で生成
+		// 画像のアンカーを設定
+      	this.ScreenMapImage.anchor.set(0);// 左上が座標
+      	this.ScreenMapImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+
+		// 画像の位置を調整
+      	this.ScreenMapImage.x = 0; // 画面の一番左上に合わせる
+      	this.ScreenMapImage.y = 0;
+		this.MapContainer.addChild(this.ScreenMapImage);
+
+		for (const baseConfig of ButtonConfigs) {
 			const button = await CustomButton.create(this.App.renderer, baseConfig);
-			button.x = 0;
-			// Y座標：初期位置を基準に、画面全体のスケールに合わせて調整
-			button.y = 0;
 
-			button.pivot.set(button.width / 2, button.height / 2); // 中央を基点にする
-			this.ScreenContainer.addChild(button);
+            // ▼▼▼【変更点】▼▼▼
+            // 設定ファイルから読み込んだマップ座標にボタンを配置
+			button.x = this.ScreenBackgroundImage.width / ButtonConfigs.length;
+			button.y = this.ScreenBackgroundImage.height / 2;
+
+			// button.pivot.set(button.width / 2, button.height / 2); // 必要であれば設定
+			this.MapContainer.addChild(button);
 			this.buttons.push(button);
 		}
-		this.updateButtonSelection(); // ボタンの初期位置を設定
 
 
+
+
+		this.ScreenContainer.addChild(this.MapContainer);
 
 		super.SetScreenVisible(false); // 初期は非表示
 	}
@@ -427,10 +438,12 @@ export class DifficultySelectScreen extends BaseScreen{
 	   */
 		ResizeScreen(App, CurrentOverallScale){
 			if (!this.ScreenContainer) return;
-			let BaseTextureWidth = this.ScreenBackgroundImage.texture.orig.width;
-			let BaseTextureHeight = this.ScreenBackgroundImage.texture.orig.height;
+
+			// 背景の黒い画像を用意する
 			const DisplaySizeWidth = this.App.screen.width;
 			const DisplaySizeheight = this.App.screen.height;
+			let BaseTextureWidth = this.ScreenBackgroundImage.texture.orig.width;
+			let BaseTextureHeight = this.ScreenBackgroundImage.texture.orig.height;
 			const newTitleSize = this.CalculateAspectRatioFit(BaseTextureWidth, BaseTextureHeight, DisplaySizeWidth, DisplaySizeheight);
 			this.ScreenBackgroundImage.width = newTitleSize.width;
 			this.ScreenBackgroundImage.height = newTitleSize.height;	
@@ -440,14 +453,32 @@ export class DifficultySelectScreen extends BaseScreen{
 			this.ScreenBackgroundImage.x = ScreenStartPointWidth;
 			this.ScreenBackgroundImage.y = ScreenStartPointheight;
 
+			// 今回の表示方法は一味違う
+			// 1 16:9の画像を入れて、現在表示できる画面の横幅、縦幅をもらう
+			// 縦をめいいっぱい表示する
+			const NewBGScreenWidht = this.ScreenBackgroundImage.width;
+			const NewBGScreenHeight = this.ScreenBackgroundImage.height;
+			
+			// 背景の画像をそのサイズに合うように修正
+			// 縦幅でサイズの倍率を調べる
+			this.ScreenMapImage.height = NewBGScreenHeight;
+			// アスペクト比を出す
+			const MapImageAspect = this.ScreenBackgroundImage.texture.orig.width / this.ScreenBackgroundImage.texture.orig.height;
+			this.ScreenMapImage.width = MapImageAspect * this.ScreenBackgroundImage.texture.orig.width;
+			this.ScreenMapImage.x = this.ScreenBackgroundImage.x;
+			this.ScreenMapImage.y = this.ScreenBackgroundImage.y;
+
+
+			
 			// ここからはAppのサイズは当てにならないので，バックグラウンドの画像で判断を付ける(バックグラウンドが実質画面サイズ)
-			const NowImageSizeWidth = this.ScreenBackgroundImage.width;
-			const NowImageSizeHeight = this.ScreenBackgroundImage.height;
+			const MapImageSizeWidth = this.ScreenMapImage.width;
+			const MapImageSizeHeight = this.ScreenMapImage.height;
+
 			const NowStartPointX = this.ScreenBackgroundImage.x;
 			const NowStartPointY = this.ScreenBackgroundImage.y;
 			
-			const StartButtonY = NowImageSizeHeight * 0.1;
-			const ButtonDuringPoint = NowImageSizeHeight * 0.05;
+			const StartButtonX = MapImageSizeWidth * 0.05;
+			const StartButtonY = MapImageSizeHeight * 0.5;
 
 			// 登録されているボタンのリサイズを行う
 			this.buttons.forEach((button, i) => {
@@ -456,9 +487,11 @@ export class DifficultySelectScreen extends BaseScreen{
 
 				// 2. ボタンの位置を再計算する
 				// 真ん中に再配置
-				button.x = ScreenStartPointWidth + NowImageSizeWidth/2;
-				button.y = ScreenStartPointheight + StartButtonY + (i* (button.height + ButtonDuringPoint));
+				button.x = ScreenStartPointWidth + StartButtonX + i * ((MapImageSizeWidth-StartButtonX) / button.length);
+				button.y = ScreenStartPointheight + StartButtonY + ((i%2 == 0)? +(MapImageSizeHeight*0.25) : -(MapImageSizeHeight*0.25));
 			});
+
+
 
 			
 		}
@@ -596,22 +629,12 @@ export class DifficultySelectScreen extends BaseScreen{
 	
 	  }
 
-	  /**
+	  	  /**
      * ボタンの選択状態と説明文を更新するヘルパー関数
      */
     updateButtonSelection() {
         if (!this.buttons || this.buttons.length === 0) return;
 
-        this.buttons.forEach((button, index) => {
-            // 現在のインデックスと一致するかどうかで選択状態を設定
-            const isSelected = (index === this.selectedButtonIndex);
-            button.setSelected(isSelected);
-        });
 
-        // 選択中のボタンの説明文を表示
-        const selectedButton = this.buttons[this.selectedButtonIndex];
-        if (selectedButton) {
-            this.descriptionText.text = ButtonDescriptions[selectedButton.id] || '';
-        }
     }
 }

@@ -15,13 +15,14 @@
 // script.js (メインファイル)
 
 // 各import
-//import { AssetManager } from './asset_manager.js'; // AssetManagerをインポート
 import * as BaseScreen from './Screens/BaseScreen.js'
 import * as LoadScreen from './Screens/LoadScreen.js';
 import * as LogoScreen from './Screens/LogoScreen.js';
 import * as WatingScreen from './Screens/WaitingScreen.js';
 import * as TitileScreen from './Screens/TitleScreen.js';
 import * as DifficultyScreen from './Screens/DifficultySelectScreen.js';
+import * as MapScreen from './Screens/MapScreen.js';
+
 
 
 
@@ -205,6 +206,9 @@ async function UpdateLoadingLogic() {
                 break;
 
             case 4:
+                const mapScreen = new MapScreen.MapScreen(App, BaseScreen.SCREEN_STATE.STAGE_SELECT);
+                ScreenList.push(mapScreen);
+                await mapScreen.InitializeScreen(MainScaleFactor);
 
                 break;
 
