@@ -365,6 +365,7 @@ export class MapScreen extends BaseScreen{
 		// this.selectedButtonIndex = 0;
         // this.InputCooldown = 0;       // キー入力のクールダウンタイマー
         // this.COOLDOWN_TIME = 0.2;     // キー入力のクールダウン時間(秒)
+
     }
 
 	/**
@@ -423,8 +424,9 @@ export class MapScreen extends BaseScreen{
 			this.buttons.push(button);
 		}
 
-
-
+		this.ClippingMask = new PIXI.Graphics();
+		this.MapContainer.addChild(this.ClippingMask);
+		this.ScreenMapImage.mask = this.ClippingMask; // スプライトにマスクを追加
 
 		this.ScreenContainer.addChild(this.MapContainer);
 
@@ -491,8 +493,11 @@ export class MapScreen extends BaseScreen{
 				button.y = ScreenStartPointheight + StartButtonY + ((i%2 == 0)? +(MapImageSizeHeight*0.25) : -(MapImageSizeHeight*0.25));
 			});
 
-
-
+			this.ClippingMask.clear();
+			this.ClippingMask.beginFill(0xFFFFFF);
+			// マスクの位置とサイズを前景コンテナと完全に一致させる
+			this.ClippingMask.drawRect(NowStartPointX, NowStartPointY, NewBGScreenWidht, NewBGScreenHeight);
+			this.ClippingMask.endFill();
 			
 		}
 	
