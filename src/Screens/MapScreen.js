@@ -5,23 +5,30 @@ import { BaseScreen, FRAME_DURATION, SCREEN_STATE } from './BaseScreen.js';
 
 // 項目は4つ
 const ButtonID = Object.freeze({
-    Button1: "Easy",
-    Button2: "Normal",
-    Button3: "Hard",
-    Button4: "Lunatic",
-	Button5: "Back"
+    Button1: "ButtonStage1",
+    Button2: "ButtonStage2",
+    Button3: "ButtonStage3",
+    Button4: "ButtonStage4",
+    Button5: "ButtonStage5",
+    Button6: "ButtonStage6",
+    Button7: "ButtonStage7",
+    Button8: "ButtonStage8",
+    Button9: "ButtonStage9",
+    Button10: "ButtonStage10",
+    Button11: "ButtonStage11",
+    Button12: "ButtonStage12",
+    Button13: "ButtonStage13",
 });
 
-const TitleButtonSizeWidth = 400;
-const TitleButtonSizeHeight = 130;
+const TitleButtonSizeWidth = 100
+const TitleButtonSizeHeight = 100;
 
 // --- ボタンの設定 ---
 const ButtonConfigs = [
     {
-        id: "easy_button",
+        id: ButtonID.Button1,
         width: TitleButtonSizeWidth,
         height: TitleButtonSizeHeight,
-        label: ButtonID.Button1,
         iconPath: '',
         soundPath: 'system45',
         shape: {
@@ -29,7 +36,7 @@ const ButtonConfigs = [
 		},
 		fill_colors: {
 			normal: 0xFFFFFF,
-			selected: 0x2196F3,
+			selected: 0xff00ff,
 			pressed: 0x48d1cc,
 		},
 		stroke:{
@@ -43,10 +50,9 @@ const ButtonConfigs = [
 			
     },
 	{
-        id: "normal_button",
+        id: ButtonID.Button2,
         width: TitleButtonSizeWidth,
         height: TitleButtonSizeHeight,
-        label: ButtonID.Button2,
         iconPath: '',
         soundPath: 'system45',
         shape: {
@@ -54,7 +60,7 @@ const ButtonConfigs = [
 		},
 		fill_colors: {
 			normal: 0xFFFFFF,
-			selected: 0x00A968,
+			selected: 0xff00ff,
 			pressed: 0x48d1cc,
 		},
 		stroke:{
@@ -65,12 +71,36 @@ const ButtonConfigs = [
 				pressed:  0x48d1cc,
 			},
 		},
+			
+    },	
+	{
+        id: ButtonID.Button3,
+        width: TitleButtonSizeWidth,
+        height: TitleButtonSizeHeight,
+        iconPath: '',
+        soundPath: 'system45',
+        shape: {
+			cornerRadius: 20
+		},
+		fill_colors: {
+			normal: 0xFFFFFF,
+			selected: 0xff00ff,
+			pressed: 0x48d1cc,
+		},
+		stroke:{
+			width: 3,
+			color: {
+				normal:   0x000000,
+				selected: 0xFFFFFF,
+				pressed:  0x48d1cc,
+			},
+		},
+			
     },
 	{
-        id: "hard_button",
+        id: ButtonID.Button4,
         width: TitleButtonSizeWidth,
         height: TitleButtonSizeHeight,
-        label: ButtonID.Button3,
         iconPath: '',
         soundPath: 'system45',
         shape: {
@@ -78,7 +108,7 @@ const ButtonConfigs = [
 		},
 		fill_colors: {
 			normal: 0xFFFFFF,
-			selected: 0xF44336,
+			selected: 0xff00ff,
 			pressed: 0x48d1cc,
 		},
 		stroke:{
@@ -89,12 +119,12 @@ const ButtonConfigs = [
 				pressed:  0x48d1cc,
 			},
 		},
+			
     },
 	{
-        id: "lunactic_button",
+        id: ButtonID.Button5,
         width: TitleButtonSizeWidth,
         height: TitleButtonSizeHeight,
-        label: ButtonID.Button4,
         iconPath: '',
         soundPath: 'system45',
         shape: {
@@ -102,7 +132,7 @@ const ButtonConfigs = [
 		},
 		fill_colors: {
 			normal: 0xFFFFFF,
-			selected: 0x673AB7,
+			selected: 0xff00ff,
 			pressed: 0x48d1cc,
 		},
 		stroke:{
@@ -113,12 +143,12 @@ const ButtonConfigs = [
 				pressed:  0x48d1cc,
 			},
 		},
+			
     },
 	{
-        id: "back_button",
+        id: ButtonID.Button6,
         width: TitleButtonSizeWidth,
         height: TitleButtonSizeHeight,
-        label: ButtonID.Button5,
         iconPath: '',
         soundPath: 'system45',
         shape: {
@@ -126,7 +156,7 @@ const ButtonConfigs = [
 		},
 		fill_colors: {
 			normal: 0xFFFFFF,
-			selected: 0x673AB7,
+			selected: 0xff00ff,
 			pressed: 0x48d1cc,
 		},
 		stroke:{
@@ -137,21 +167,182 @@ const ButtonConfigs = [
 				pressed:  0x48d1cc,
 			},
 		},
+			
+    },
+	{
+        id: ButtonID.Button7,
+        width: TitleButtonSizeWidth,
+        height: TitleButtonSizeHeight,
+        iconPath: '',
+        soundPath: 'system45',
+        shape: {
+			cornerRadius: 20
+		},
+		fill_colors: {
+			normal: 0xFFFFFF,
+			selected: 0xff00ff,
+			pressed: 0x48d1cc,
+		},
+		stroke:{
+			width: 3,
+			color: {
+				normal:   0x000000,
+				selected: 0xFFFFFF,
+				pressed:  0x48d1cc,
+			},
+		},
+			
+    },
+	{
+        id: ButtonID.Button8,
+        width: TitleButtonSizeWidth,
+        height: TitleButtonSizeHeight,
+        iconPath: '',
+        soundPath: 'system45',
+        shape: {
+			cornerRadius: 20
+		},
+		fill_colors: {
+			normal: 0xFFFFFF,
+			selected: 0xff00ff,
+			pressed: 0x48d1cc,
+		},
+		stroke:{
+			width: 3,
+			color: {
+				normal:   0x000000,
+				selected: 0xFFFFFF,
+				pressed:  0x48d1cc,
+			},
+		},
+			
+    },
+	{
+        id: ButtonID.Button9,
+        width: TitleButtonSizeWidth,
+        height: TitleButtonSizeHeight,
+        iconPath: '',
+        soundPath: 'system45',
+        shape: {
+			cornerRadius: 20
+		},
+		fill_colors: {
+			normal: 0xFFFFFF,
+			selected: 0xff00ff,
+			pressed: 0x48d1cc,
+		},
+		stroke:{
+			width: 3,
+			color: {
+				normal:   0x000000,
+				selected: 0xFFFFFF,
+				pressed:  0x48d1cc,
+			},
+		},
+			
+    },
+	{
+        id: ButtonID.Button10,
+        width: TitleButtonSizeWidth,
+        height: TitleButtonSizeHeight,
+        iconPath: '',
+        soundPath: 'system45',
+        shape: {
+			cornerRadius: 20
+		},
+		fill_colors: {
+			normal: 0xFFFFFF,
+			selected: 0xff00ff,
+			pressed: 0x48d1cc,
+		},
+		stroke:{
+			width: 3,
+			color: {
+				normal:   0x000000,
+				selected: 0xFFFFFF,
+				pressed:  0x48d1cc,
+			},
+		},
+			
+    },
+	{
+        id: ButtonID.Button11,
+        width: TitleButtonSizeWidth,
+        height: TitleButtonSizeHeight,
+        iconPath: '',
+        soundPath: 'system45',
+        shape: {
+			cornerRadius: 20
+		},
+		fill_colors: {
+			normal: 0xFFFFFF,
+			selected: 0xff00ff,
+			pressed: 0x48d1cc,
+		},
+		stroke:{
+			width: 3,
+			color: {
+				normal:   0x000000,
+				selected: 0xFFFFFF,
+				pressed:  0x48d1cc,
+			},
+		},
+			
+    },
+	{
+        id: ButtonID.Button12,
+        width: TitleButtonSizeWidth,
+        height: TitleButtonSizeHeight,
+        iconPath: '',
+        soundPath: 'system45',
+        shape: {
+			cornerRadius: 20
+		},
+		fill_colors: {
+			normal: 0xFFFFFF,
+			selected: 0xff00ff,
+			pressed: 0x48d1cc,
+		},
+		stroke:{
+			width: 3,
+			color: {
+				normal:   0x000000,
+				selected: 0xFFFFFF,
+				pressed:  0x48d1cc,
+			},
+		},
+			
+    },
+	{
+        id: ButtonID.Button13,
+        width: TitleButtonSizeWidth,
+        height: TitleButtonSizeHeight,
+        iconPath: '',
+        soundPath: 'system45',
+        shape: {
+			cornerRadius: 20
+		},
+		fill_colors: {
+			normal: 0xFFFFFF,
+			selected: 0xff00ff,
+			pressed: 0x48d1cc,
+		},
+		stroke:{
+			width: 3,
+			color: {
+				normal:   0x000000,
+				selected: 0xFFFFFF,
+				pressed:  0x48d1cc,
+			},
+		},
+			
     }
 ];
 
 
 export const ScreenImages = [
-  "titleImageBg"
+  "MapBgScreen"
 ];
-
-const ButtonDescriptions = {
-    "easy_button": "最も攻撃が少なく、穏やかな難易度です.",
-    "normal_button": "標準的な難易度です。\nEazyModeが許されるのはSTG未経験者までだよね～ww",
-    "hard_button": "割と自慢できる難易度です。演出を愉しむ余裕など要らないね。",
-    "lunactic_button": "いつもの難易度です。意味が分からなければ遊ばない。",
-	"back_button": "タイトル画面に戻ります。"
-};
 
 export class DifficultySelectScreen extends BaseScreen{
 	/**
@@ -164,9 +355,6 @@ export class DifficultySelectScreen extends BaseScreen{
 		this.ScreenTextures = [];
 		this.ScreenBackgroundImage = null;
 		this.buttons = [];
-		this.descriptionContainer = null; // 全体をまとめるコンテナ
-        this.descriptionBackground = null;  // 背景パネル
-        this.descriptionText = null;        // テキスト
 
 		
 		// 現在選択されているボタンを記憶する
@@ -192,7 +380,7 @@ export class DifficultySelectScreen extends BaseScreen{
 		await this.LoadScreenAssetsForPixi();
 
 		// 画像を作成
-		const ScreenBgTexture = PIXI.Texture.from("titleImageBg");
+		const ScreenBgTexture = PIXI.Texture.from("MapBgScreen");
 		this.ScreenBackgroundImage = new PIXI.Sprite(ScreenBgTexture);
 
 		// 画像のアンカーを設定
@@ -206,37 +394,8 @@ export class DifficultySelectScreen extends BaseScreen{
 		// 画像を追加
 		this.ScreenContainer.addChild(this.ScreenBackgroundImage);
         this.NowSelectButton = ButtonID.Button1; // 初期はボタン1
-		
-		this.descriptionContainer = new PIXI.Container();
 
-		// 1. 背景パネルをGraphicsで描画
-		const baseDescWidth = 800;  // 背景の基準となる幅
-		const baseDescHeight = 120; // 背景の基準となる高さ
-		this.descriptionBackground = new PIXI.Graphics();
-		this.descriptionBackground.roundRect(0, 0, baseDescWidth, baseDescHeight, 15); // x, y, width, height, cornerRadius
-		this.descriptionBackground.fill({ color: 0xffffff, alpha: 0.85 }); // 半透明の白で塗りつぶし
-		this.descriptionBackground.stroke({ width: 4, color: 0x333333, alpha: 0.9 });      // 枠線
-		this.descriptionContainer.addChild(this.descriptionBackground);
 
-		// 2. テキストを作成
-		const descriptionStyle = new PIXI.TextStyle({
-			fontSize: 32,
-			fill: '#000000', // テキストの色を黒に変更
-			wordWrap: true,
-			// 折り返し幅は、背景の幅から左右の余白を引いたサイズに
-			wordWrapWidth: baseDescWidth - 40, 
-			lineHeight: 40,
-			align: 'left', // 左揃え
-		});
-		this.descriptionText = new PIXI.Text('', descriptionStyle);
-		this.descriptionText.anchor.set(0.5); // テキスト自体のアンカーは中央
-		// テキストを背景パネルの中央に配置
-		this.descriptionText.x = baseDescWidth / 2;
-		this.descriptionText.y = baseDescHeight / 2;
-		this.descriptionContainer.addChild(this.descriptionText);
-
-		// 3. 画面に説明文コンテナを追加
-		this.ScreenContainer.addChild(this.descriptionContainer);
 
 		for (let i = 0; i < ButtonConfigs.length; i++) {
 			let baseConfig  = ButtonConfigs[i];
@@ -301,40 +460,7 @@ export class DifficultySelectScreen extends BaseScreen{
 				button.y = ScreenStartPointheight + StartButtonY + (i* (button.height + ButtonDuringPoint));
 			});
 
-			if (this.descriptionContainer) {
-				// --- 基準サイズを定義 ---
-				const baseFontSize = 32;
-				const basePadding = 20; // テキストの左右の余白
-
-				// --- スケールを適用した新しいサイズを計算 ---
-				// 幅は背景の7割
-				// 高さはボタンの二倍
-				const newWidth = NowImageSizeWidth * 0.7;
-				const newHeight = this.buttons[1].height * 3;
-				const newFontSize = baseFontSize * CurrentOverallScale;
-				const newPadding = basePadding * CurrentOverallScale;
-
-				// 1. 背景パネルを再描画
-				this.descriptionBackground.clear(); // 以前の描画をクリア
-				this.descriptionBackground.roundRect(0, 0, newWidth, newHeight, 15 * CurrentOverallScale);
-				this.descriptionBackground.fill({ color: 0xffffff, alpha: 0.85 });
-				this.descriptionBackground.stroke({ width: 4 * CurrentOverallScale, color: 0x333333, alpha: 0.9 });
-
-				// 2. テキストスタイルを更新
-				this.descriptionText.style.fontSize = newFontSize;
-				this.descriptionText.style.lineHeight = newFontSize * 1.25;
-				this.descriptionText.style.wordWrapWidth = newWidth - (newPadding * 2);
-				
-				// 3. テキストを再中央化
-				this.descriptionText.x = newWidth / 2;
-				this.descriptionText.y = newHeight / 2;
-
-				// 4. コンテナ全体の位置を調整（例：画面下部中央）
-				const screenCenterX = (NowImageSizeWidth - newWidth)/ 2;
-				const bottomMargin = NowImageSizeHeight * 0.05; // 画面下から5%の位置
-				this.descriptionContainer.x = NowStartPointX + screenCenterX;
-				this.descriptionContainer.y = NowStartPointY + NowImageSizeHeight - newHeight - bottomMargin;
-			}
+			
 		}
 	
 		/**
@@ -388,8 +514,6 @@ export class DifficultySelectScreen extends BaseScreen{
 
         let selectionChanged = false;
         let confirmed = false;
-		let NextScreen = this.ScreenState; // 次のスクリーン情報
-
 
         // ▼▼▼【ここから変更】ゲームパッド優先ロジック ▼▼▼
 
@@ -456,16 +580,15 @@ export class DifficultySelectScreen extends BaseScreen{
                 this.InputCooldown = this.COOLDOWN_TIME; // 決定後、少し待つ
 
 				// 押されたボタンに対して遷移先を決定する
-				switch(selectedButton.id){
-					case "back_button":
-						NextScreen = SCREEN_STATE.GAME_TITLE;
+				switch(selectedButton){
+					case ButtonID.Button1:
 						break; 
 				}
             }
         }
 		
 		// Keyの入力が何かあったかを判断する
-        return NextScreen;
+        return this.ScreenState;
 	  }
 	
 	
