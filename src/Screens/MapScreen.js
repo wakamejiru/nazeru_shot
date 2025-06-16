@@ -366,6 +366,9 @@ export class MapScreen extends BaseScreen{
         this.InputCooldown = 0;       // キー入力のクールダウンタイマー
         this.COOLDOWN_TIME = 0.2;     // キー入力のクールダウン時間(秒)
 
+		this.ScrollPointXMin = 0;
+		this.ScrollPointXMax = 0;
+
     }
 
 	/**
@@ -425,7 +428,7 @@ export class MapScreen extends BaseScreen{
 		}
 
 		this.ClippingMask = new PIXI.Graphics();
-		this.MapContainer.addChild(this.ClippingMask);
+		this.ScreenContainer.addChild(this.ClippingMask);
 		this.ScreenMapImage.mask = this.ClippingMask; // スプライトにマスクを追加
 
 		this.ScreenContainer.addChild(this.MapContainer);
@@ -489,9 +492,13 @@ export class MapScreen extends BaseScreen{
 
 				// 2. ボタンの位置を再計算する
 				// 真ん中に再配置
-				button.x = ScreenStartPointWidth + StartButtonX + i * ((MapImageSizeWidth-StartButtonX) / button.length);
+				button.x = ScreenStartPointWidth + StartButtonX + i * ((MapImageSizeWidth-StartButtonX) / ButtonConfigs.length);
 				button.y = ScreenStartPointheight + StartButtonY + ((i%2 == 0)? +(MapImageSizeHeight*0.25) : -(MapImageSizeHeight*0.25));
 			});
+
+			this.ScrollPointXMin = ScreenStartPointWidth;
+			this.ScrollPointXMax = ScreenStartPointWidth + NewBGScreenWidht;
+
 
 			this.ClippingMask.clear();
 			this.ClippingMask.beginFill(0xFFFFFF);
@@ -559,14 +566,14 @@ export class MapScreen extends BaseScreen{
         if (InputCurrentState.gamepad) {
             const pad = InputCurrentState.gamepad;
 
-            // --- 十字キーまたは左スティックの上下 ---
-            if (pad.dpad.up) {
+            // --- 十字キーまたは左スティックの左右 ---
+            if (pad.dpad.left) {
                 this.selectedButtonIndex--;
                 if (this.selectedButtonIndex < 0) {
                     this.selectedButtonIndex = this.buttons.length - 1;
                 }
                 selectionChanged = true;
-            } else if (pad.dpad.down) {
+            } else if (pad.dpad.right) {
                 this.selectedButtonIndex++;
                 if (this.selectedButtonIndex >= this.buttons.length) {
                     this.selectedButtonIndex = 0;
@@ -581,8 +588,8 @@ export class MapScreen extends BaseScreen{
         }
         // 2. ゲームパッドの入力がなければ、キーボードをチェック
         else {
-            // --- 上矢印キー ---
-            if (InputCurrentState.keys.has('ArrowUp')) {
+            // --- 左矢印キー ---
+            if (InputCurrentState.keys.has('ArrowLeft')) {
                 this.selectedButtonIndex--;
                 if (this.selectedButtonIndex < 0) {
                     this.selectedButtonIndex = this.buttons.length - 1;
@@ -590,7 +597,7 @@ export class MapScreen extends BaseScreen{
                 selectionChanged = true;
             }
             // --- 下矢印キー ---
-            else if (InputCurrentState.keys.has('ArrowDown')) {
+            else if (InputCurrentState.keys.has('ArrowRight')) {
                 this.selectedButtonIndex++;
                 if (this.selectedButtonIndex >= this.buttons.length) {
                     this.selectedButtonIndex = 0;
@@ -634,12 +641,48 @@ export class MapScreen extends BaseScreen{
 	
 	  }
 
-	  	  /**
+	/**
      * ボタンの選択状態と説明文を更新するヘルパー関数
      */
     updateButtonSelection() {
         if (!this.buttons || this.buttons.length === 0) return;
+		// 今回はボタンに加えて，背景が移動する
+		// 新しく選択したボタンのNumberを取得
+		const NowSelectButtonIndex = this.selectedButtonIndex;
+
+		// 今のボタンが表示できる範囲を求める
+		const NowSelectButton = this.buttons[NowSelectButtonIndex];
+		const NowButtonX = NowSelectButton.x;
+		let ShiftNumberX = 0;
+		// 今のX座標が表示されているかを見る
+		if(NowButtonX > this.ScrollPointXMin && NowButtonX < this.ScrollPointXMax){
+			// ボタンが現在の座標の間にある場合は，スクロールを行わない
+		}else{
+			// スクロールを行う 表示したいボタンと，現在の位置の差分:1.5倍を移動させる
+			// 右に表示しきれていないか，左に表示しきれていないかで引く値が変化する
+			ShiftNumberX = (NowButtonX - ((NowButtonX > this.ScrollPointXMin) ? this.ScrollPointXMax : this.ScrollPointXMin)) * 1.5;
+		}
+
+		// マップ画像の最大側を超えていないかを確認する
+		if (ShiftNumberX +  this.ScrollPointXMax > this.ScreenMapImage.width) {
+			// 超えていた場合　this.ScrollPointXMaxを最大値に，this.ScrollPointXMinをMaxから逆算した値に
+			this.ScrollPointXMax = this.ScreenMapImage.width;
+			this.ScrollPointXMin = this.ScrollPointXMax - this.ScreenBackgroundImage.width;
+		}
+		// 次にマップ画像の最小側を超えていないかを確認する 
+		else if(ShiftNumberX +  this.ScrollPointXMin < 0){
+			// 超えていた場合 this.ScrollPointXMinを最小値にthis.ScrollPointXMaxをそこから逆算した値に
+			this.ScrollPointXMax = this.ScreenBackgroundImage.width;
+			this.ScrollPointXMin = 0;
+		}else{
+			this.ScrollPointXMax += ShiftNumberX;
+			this.ScrollPointXMin -= ShiftNumberX;
+		}
+
+		// マスク部分もずらす必要がある
 
 
+		this.MapContainer.x = this.ScrollPointXMin;
     }
+
 }
