@@ -361,10 +361,10 @@ export class MapScreen extends BaseScreen{
 		this.scrollSpeed = 8; // スクロール速度
 		
 		// 現在選択されているボタンを記憶する
-		// this.NowSelectButton = ButtonID.Button1; // 初期はボタン1
-		// this.selectedButtonIndex = 0;
-        // this.InputCooldown = 0;       // キー入力のクールダウンタイマー
-        // this.COOLDOWN_TIME = 0.2;     // キー入力のクールダウン時間(秒)
+		this.NowSelectButton = ButtonID.Button1; // 初期はボタン1
+		this.selectedButtonIndex = 0;
+        this.InputCooldown = 0;       // キー入力のクールダウンタイマー
+        this.COOLDOWN_TIME = 0.2;     // キー入力のクールダウン時間(秒)
 
     }
 
