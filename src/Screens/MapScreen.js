@@ -459,7 +459,7 @@ export class MapScreen extends BaseScreen{
 
 		this.ClippingMask = new PIXI.Graphics();
 		this.ScreenContainer.addChild(this.ClippingMask);
-		this.ScreenMapImage.mask = this.ClippingMask; // スプライトにマスクを追加
+		this.MapContainer.mask = this.ClippingMask; // スプライトにマスクを追加
 
 		this.ScreenContainer.addChild(this.MapContainer);
 		this.updateButtonSelection(); // ボタンの初期位置を設定
@@ -500,8 +500,8 @@ export class MapScreen extends BaseScreen{
 			// アスペクト比を出す
 			const MapImageAspect = this.ScreenBackgroundImage.texture.orig.width / this.ScreenBackgroundImage.texture.orig.height;
 			this.ScreenMapImage.width = MapImageAspect * this.ScreenBackgroundImage.texture.orig.width;
-			this.ScreenMapImage.x = this.ScreenBackgroundImage.x;
-			this.ScreenMapImage.y = this.ScreenBackgroundImage.y;
+			this.ScreenMapImage.x = 0;
+			this.ScreenMapImage.y = 0;
 
 
 			
@@ -522,8 +522,8 @@ export class MapScreen extends BaseScreen{
 
 				// 2. ボタンの位置を再計算する
 				// 真ん中に再配置
-				button.x = ScreenStartPointWidth + StartButtonX + i * ((MapImageSizeWidth-StartButtonX) / ButtonConfigs.length);
-				button.y = ScreenStartPointheight + StartButtonY + ((i%2 == 0)? +(MapImageSizeHeight*0.25) : -(MapImageSizeHeight*0.25));
+				button.x = this.ScreenMapImage.x + StartButtonX + i * ((MapImageSizeWidth-StartButtonX) / ButtonConfigs.length);
+				button.y = this.ScreenMapImage.y + StartButtonY + ((i%2 == 0)? +(MapImageSizeHeight*0.25) : -(MapImageSizeHeight*0.25));
 			});
 
 			this.ScrollPointXMin = ScreenStartPointWidth;
