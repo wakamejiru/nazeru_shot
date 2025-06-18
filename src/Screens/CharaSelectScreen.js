@@ -188,28 +188,23 @@ export class CharaSelectScreen extends BaseScreen{
 			const NewBGScreenWidht = this.ScreenBackgroundImage.width;
 			const NewBGScreenHeight = this.ScreenBackgroundImage.height;
 			
-			// // 背景の画像をそのサイズに合うように修正
-			// // 縦幅でサイズの倍率を調べる
-			// this.ScreenMapImage.height = NewBGScreenHeight;
-			// // アスペクト比を出す
-			// const MapImageAspect = this.ScreenBackgroundImage.texture.orig.width / this.ScreenBackgroundImage.texture.orig.height;
-			// this.ScreenMapImage.width = MapImageAspect * this.ScreenBackgroundImage.texture.orig.width;
-			// this.ScreenMapImage.x = 0;
-			// this.ScreenMapImage.y = 0;
+			// 背景の画像をそのサイズに合うように修正
+			// まずは表の設計を行っていく
 
-
+			// キャラの面積は半分
+			const InfoTableSizeW1 = (NewBGScreenWidht /2)  - (NewBGScreenWidht /2)*0.2;
 			
-			// // ここからはAppのサイズは当てにならないので，バックグラウンドの画像で判断を付ける(バックグラウンドが実質画面サイズ)
-			// const MapImageSizeWidth = this.ScreenMapImage.width;
-			// const MapImageSizeHeight = this.ScreenMapImage.height;
-
-			// const NowStartPointX = this.ScreenBackgroundImage.x;
-			// const NowStartPointY = this.ScreenBackgroundImage.y;
-
-			// this.ScrollPointXMin = ScreenStartPointWidth;
-			// this.ScrollPointXMax = ScreenStartPointWidth + NewBGScreenWidht;
 
 
+
+
+
+			const InfoTableSizeW2 = (NewBGScreenWidht /2)  - (NewBGScreenWidht /2)*0.2;
+		
+		
+		
+		
+		
 			// this.ClippingMask.clear();
 			// this.ClippingMask.beginFill(0xFFFFFF);
 			// // マスクの位置とサイズを前景コンテナと完全に一致させる
