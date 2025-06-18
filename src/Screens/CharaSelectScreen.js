@@ -38,6 +38,17 @@ export const ScreenImages = [
   "ArrowImageUp",
 ];
 
+
+// バレットのインフォメーションテキストを埋めていく
+// 3列×8行
+export const InfomationBulletTexts = Object.freeze({
+  RateOfFire: "発射速度",
+  BulletSpeed: "弾の速度",
+  MainBulleName1: "メインバレット1",
+  MainBulleName2: "メインバレット2"
+});
+
+
 export class CharaSelectScreen extends BaseScreen{
 	/**
      * コンストラクタ
@@ -112,7 +123,7 @@ export class CharaSelectScreen extends BaseScreen{
         InfomationGraphics.lineStyle(2, 0xffffff);
 		// サブが5つ、メインが2つ、のため
 		// 枠は名称、発射レート、威力
-		const BulletTextNumber = (5 + 2 + 1)*3;
+		const BulletTextNumber = (5 + 2 + 1)*2;
 		// サブスキル2 ULT1 項目が3
 		const SkillTextNumber = (2+1+1)*3;
 
@@ -124,16 +135,22 @@ export class CharaSelectScreen extends BaseScreen{
             align: 'center',
         });
 
+		this.BulletInfoTexts = [];
+
 		// コンテナを追加する
 		for (let i = 0; i < (BulletTextNumber); i++) {
 			const text = new PIXI.Text(String("a"), textStyle);
 			this.CharaInfoContainer1.addChild(text);
+			this.BulletInfoTexts.push(text);
 		}
+
+		this.SkillInfoTexts = [];
 
 		// コンテナを追加する
 		for (let i = 0; i < (SkillTextNumber); i++) {
 			const text = new PIXI.Text(String("a"), textStyle);
 			this.CharaInfoContainer2.addChild(text);
+			this.SkillInfoTexts.push(text);
 		}
 
 		// コンテナに追加するのではなく、キャラ選択ごとにコンテナを作成する
@@ -156,6 +173,8 @@ export class CharaSelectScreen extends BaseScreen{
 		// this.MapContainer.mask = this.ClippingMask; // スプライトにマスクを追加
 
 		this.ScreenContainer.addChild(this.CharaImageContainer);
+		this.ScreenContainer.addChild(this.CharaInfoContainer1);
+		this.ScreenContainer.addChild(this.CharaInfoContainer2);
 		this.updateButtonSelection(); // ボタンの初期位置を設定
 		super.SetScreenVisible(false); // 初期は非表示
 	}
@@ -187,20 +206,42 @@ export class CharaSelectScreen extends BaseScreen{
 			// 縦をめいいっぱい表示する
 			const NewBGScreenWidht = this.ScreenBackgroundImage.width;
 			const NewBGScreenHeight = this.ScreenBackgroundImage.height;
+
+			// 表示画面の基準位置
+			const ScreenStartX = this.ScreenBackgroundImage.x;
+			const ScreenStartY = this.ScreenBackgroundImage.y;
 			
 			// 背景の画像をそのサイズに合うように修正
 			// まずは表の設計を行っていく
+			// 表の配置は右側，半分を使用する
+			// 縦は上2割がキャラ名，バレット説明4割，キャラ説明4割
+			// キャラ名表示区間を定義
+			const CharaNameHeight = (NewBGScreenHeight * 0.2);
+			
+			
+			
+			// 各余白を定義
+			const InfoMarginWidth = (NewBGScreenWidht)*0.05;
+			const InfoMarginHeight = (NewBGScreenHeight)*0.05;
 
-			// キャラの面積は半分
-			const InfoTableSizeW1 = (NewBGScreenWidht /2)  - (NewBGScreenWidht /2)*0.2;
+			const InfoTableSizeW1 = (NewBGScreenWidht /2)  - InfoMarginWidth*2; // 左右で2倍
+			const InfoTableSizeH1 = (NewBGScreenHeight * 0.4) - InfoMarginHeight*2; // 左右で2倍
+
+			this.CharaInfoBgImg1.width = InfoTableSizeW1;
+			this.CharaInfoBgImg1.height = InfoTableSizeH1;
+			this.CharaInfoBgImg1.x = ScreenStartX + (NewBGScreenWidht /2) + InfoMarginWidth;
+			this.CharaInfoBgImg1.y = ScreenStartY + CharaNameHeight + InfoMarginHeight;
+
+			this.CharaInfoBgImg2.width = InfoTableSizeW1;
+			this.CharaInfoBgImg2.height = InfoTableSizeH1;
+			this.CharaInfoBgImg2.x = ScreenStartX + (NewBGScreenWidht /2) + InfoMarginWidth;
+			this.CharaInfoBgImg2.y = this.CharaInfoBgImg1.y + this.CharaInfoBgImg1.height + InfoMarginHeight;
 			
 
 
+			
 
 
-
-			const InfoTableSizeW2 = (NewBGScreenWidht /2)  - (NewBGScreenWidht /2)*0.2;
-		
 		
 		
 		
@@ -352,5 +393,58 @@ export class CharaSelectScreen extends BaseScreen{
 		// ボタンをアクティブ状態に変更
 		
     }
+
+	/**
+     * キャラの情報を更新
+     */
+	UpdateBulletSkillInfomation(){
+		// 間に文字を入れていく
+		this.BulletInfoTexts[0].text = "";
+		this.BulletInfoTexts[1].text = "発射速度";
+		this.BulletInfoTexts[2].text = "威力";
+
+		this.BulletInfoTexts[3].text = "メイン武器1";
+		this.BulletInfoTexts[4].text = "メイン武器2";
+
+		this.BulletInfoTexts[5].text = "サブ武器1";
+		this.BulletInfoTexts[6].text = "サブ武器2";
+		this.BulletInfoTexts[7].text = "サブ武器3";
+		this.BulletInfoTexts[8].text = "サブ武器4";
+		this.BulletInfoTexts[9].text = "サブ武器5";
+
+		// キャラのBulletの弾速度
+		// Main
+		this.BulletInfoTexts[10].text = "10.0 m/s";
+		this.BulletInfoTexts[11].text = "10.0 m/s";
+		// Sub
+		this.BulletInfoTexts[12].text = "10.0 m/s";
+		this.BulletInfoTexts[13].text = "10.0 m/s";
+		this.BulletInfoTexts[14].text = "10.0 m/s";
+		this.BulletInfoTexts[15].text = "10.0 m/s";
+		this.BulletInfoTexts[16].text = "10.0 m/s";
+		
+		// キャラのBulletの威力
+		// Main
+		this.BulletInfoTexts[17].text = "10";
+		this.BulletInfoTexts[18].text = "10";
+		// Sub
+		this.BulletInfoTexts[19].text = "10";
+		this.BulletInfoTexts[20].text = "10";
+		this.BulletInfoTexts[21].text = "10";
+		this.BulletInfoTexts[22].text = "10";
+		this.BulletInfoTexts[23].text = "10";
+
+		// 次にスキルの欄を記入する
+		this.SkillInfoTexts[1].text = "スキル項目";
+		this.SkillInfoTexts[2].text = "効果";
+		// スキル種類名
+		this.SkillInfoTexts[3].text = "スキル1";
+		this.SkillInfoTexts[4].text = "スキル2";
+		this.SkillInfoTexts[5].text = "ULT";
+
+		this.SkillInfoTexts[6].text = "15秒ごとに4秒間弾が追尾弾になる";
+		this.SkillInfoTexts[7].text = "7秒ごとに100ヒーリング";
+		this.SkillInfoTexts[8].text = "ULT効果";
+	}
 
 }
