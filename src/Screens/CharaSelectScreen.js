@@ -40,6 +40,15 @@ export const ScreenImages = [
 
 
 // バレットのインフォメーションテキストを埋めていく
+const InfoFontSize = 38;
+// 通常テキスト用のスタイル
+const textStyle = new PIXI.TextStyle({
+	fontFamily: '"Helvetica Neue", "Arial", "Noto Serif JP"',
+	fontSize: InfoFontSize,
+	fill: '#000000', // 黒
+	align: 'center',
+});
+
 // 3列×8行
 export const InfomationBulletTexts = Object.freeze({
   RateOfFire: "発射速度",
@@ -123,17 +132,11 @@ export class CharaSelectScreen extends BaseScreen{
         InfomationGraphics.lineStyle(2, 0xffffff);
 		// サブが5つ、メインが2つ、のため
 		// 枠は名称、発射レート、威力
-		const BulletTextNumber = (5 + 2 + 1)*2;
+		const BulletTextNumber = (5 + 2 + 1)*3;
 		// サブスキル2 ULT1 項目が3
-		const SkillTextNumber = (2+1+1)*3;
+		const SkillTextNumber = (2+1+1)*2;
 
-		// 通常テキスト用のスタイル
-        const textStyle = new PIXI.TextStyle({
-            fontFamily: '"Helvetica Neue", "Arial", "Noto Serif JP"',
-            fontSize: 48,
-            fill: '#000000', // 黒
-            align: 'center',
-        });
+
 
 		this.BulletInfoTexts = [];
 
@@ -237,14 +240,59 @@ export class CharaSelectScreen extends BaseScreen{
 			this.CharaInfoBgImg2.x = ScreenStartX + (NewBGScreenWidht /2) + InfoMarginWidth;
 			this.CharaInfoBgImg2.y = this.CharaInfoBgImg1.y + this.CharaInfoBgImg1.height + InfoMarginHeight;
 			
+			// 表になるように文字を配置していく
 
+			// マージン
+			const BulletInfoMarginHeight = this.CharaInfoBgImg1.height*0.025;
+			const BulletInfoMarginWidth = this.CharaInfoBgImg1.width*0.025;
+			// 情報表示の開始位置
+			const BulletStartPosX = this.CharaInfoBgImg1.x + BulletInfoMarginWidth;
+			const BulletStartPosY = this.CharaInfoBgImg1.y + BulletInfoMarginHeight;
 
+			// バレットの部分は横3つ縦8つのため
+			// 縦の長さは8分割
+			const BulletInfoHeight = (this.CharaInfoBgImg1.height - BulletInfoMarginHeight*2) / 8;
+			// 横は項目ごとに大きさが異なる 
+			const BulletInfoWidth = (this.CharaInfoBgImg1.width - BulletInfoMarginWidth*2);
+			// 5:2.5:2.5
+			const BulletInfoNameWidth = BulletInfoWidth*0.4;
+			const BulletInfoRateWidth = BulletInfoWidth*0.3;
+			const BulletInfoPowerWidth = BulletInfoWidth*0.3;
+
+			this.BulletInfoTexts[0].x = BulletStartPosX;
+			this.BulletInfoTexts[0].y = BulletStartPosY;
+
+			this.BulletInfoTexts[1].x = this.BulletInfoTexts[0].x + BulletInfoNameWidth;
+			this.BulletInfoTexts[1].y = BulletStartPosY;
+
+			this.BulletInfoTexts[2].x = this.BulletInfoTexts[1].x + BulletInfoRateWidth;
+			this.BulletInfoTexts[2].y = BulletStartPosY;
+			
+			// 縦一列3から9まで
+			// 一列で規則性をもって変化するのでヘルパ関数で処理をする
+			const BulletInfoPositionStart = (BulletInfoNamberStart, BulletInfoNamberEnd, StartXPoint, BulletBaseInfoHeight, CurrentOverallScale) => {
+				let PreviousPositionY=BulletBaseInfoHeight;
+				for (let i = BulletInfoNamberStart; i <=BulletInfoNamberEnd; ++i){
+					this.BulletInfoTexts[i].x = StartXPoint;
+					this.BulletInfoTexts[i].y = PreviousPositionY + BulletInfoHeight;
+					this.BulletInfoTexts[i].style.fontSize = InfoFontSize * CurrentOverallScale;
+					PreviousPositionY = this.BulletInfoTexts[i].y;
+				}
+			};
+
+			// 弾の種類(3から9が同じ)
+			BulletInfoPositionStart(3, 9, this.BulletInfoTexts[0].x, this.BulletInfoTexts[0].y, CurrentOverallScale);
+			
+			// 弾の発射レート
+			BulletInfoPositionStart(10, 16, this.BulletInfoTexts[1].x, this.BulletInfoTexts[1].y, CurrentOverallScale);
+
+			// 弾の威力
+			BulletInfoPositionStart(17, 23, this.BulletInfoTexts[2].x, this.BulletInfoTexts[2].y, CurrentOverallScale);
+
+			// スキル表も位置作成
 			
 
-
-		
-		
-		
+			
 		
 			// this.ClippingMask.clear();
 			// this.ClippingMask.beginFill(0xFFFFFF);
@@ -260,6 +308,7 @@ export class CharaSelectScreen extends BaseScreen{
 	   * @param {boolean} Visible - true:ON false:OFF
 	   */
 	  StartScreen(){
+			this.UpdateBulletSkillInfomation();
 			super.StartScreen();
 	  }
 		
@@ -435,16 +484,16 @@ export class CharaSelectScreen extends BaseScreen{
 		this.BulletInfoTexts[23].text = "10";
 
 		// 次にスキルの欄を記入する
-		this.SkillInfoTexts[1].text = "スキル項目";
-		this.SkillInfoTexts[2].text = "効果";
+		this.SkillInfoTexts[0].text = "スキル項目";
+		this.SkillInfoTexts[1].text = "効果";
 		// スキル種類名
-		this.SkillInfoTexts[3].text = "スキル1";
-		this.SkillInfoTexts[4].text = "スキル2";
-		this.SkillInfoTexts[5].text = "ULT";
+		this.SkillInfoTexts[2].text = "スキル1";
+		this.SkillInfoTexts[3].text = "スキル2";
+		this.SkillInfoTexts[4].text = "ULT";
 
-		this.SkillInfoTexts[6].text = "15秒ごとに4秒間弾が追尾弾になる";
-		this.SkillInfoTexts[7].text = "7秒ごとに100ヒーリング";
-		this.SkillInfoTexts[8].text = "ULT効果";
+		this.SkillInfoTexts[5].text = "15秒ごとに4秒間弾が追尾弾になる";
+		this.SkillInfoTexts[6].text = "7秒ごとに100ヒーリング";
+		this.SkillInfoTexts[7].text = "ULT効果";
 	}
 
 }
