@@ -3,279 +3,30 @@ import { ImageAssetPaths } from '../game_status.js';
 import { BaseScreen, FRAME_DURATION, SCREEN_STATE } from './BaseScreen.js';
 // タイトル画面
 
+// このページにボタンは不必要
+
 // 項目は4つ
 const ButtonID = Object.freeze({
-    Button1: "ButtonChara1",
-    Button2: "ButtonChara2",
-    Button3: "ButtonChara3",
-    Button4: "ButtonChara4",
-    Button5: "ButtonChara5",
-    Button6: "ButtonChara6",
-    Button7: "ButtonChara7",
-    Button8: "ButtonChara8",
-    Button9: "ButtonChara9",
-    Button10: "ButtonChara10"
+    
 });
 
 const CharaImagePath = Object.freeze({
-    Chara1: "CharaSelect1",
-    Chara2: "CharaSelect2",
-    Chara3: "CharaSelect3",
-    Chara4: "CharaSelect4",
-    Chara5: "CharaSelect5",
-    Chara6: "CharaSelect6",
-    Chara7: "CharaSelect7",
-    Chara8: "CharaSelect8",
-    Chara9: "CharaSelect9",
-    Chara10: "CharaSelect10"
+    CharaSelect1: "CharaSelect1",
+    CharaSelect2: "CharaSelect2",
+    CharaSelect3: "CharaSelect3",
+    CharaSelect4: "CharaSelect4",
+    CharaSelect5: "CharaSelect5",
+    CharaSelect6: "CharaSelect6",
+    CharaSelect7: "CharaSelect7",
+    CharaSelect8: "CharaSelect8",
+    CharaSelect9: "CharaSelect9",
+    CharaSelect10: "CharaSelect10"
 });
-
-const TitleButtonSizeWidth = 150
-const TitleButtonSizeHeight = 100;
-const ButtonCornerRadius = 10;
 
 // --- ボタンの設定 ---
 const ButtonConfigs = [
     {
-        id: ButtonID.Button1,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    },
-	{
-        id: ButtonID.Button2,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    },	
-	{
-        id: ButtonID.Button3,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    },
-	{
-        id: ButtonID.Button4,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    },
-	{
-        id: ButtonID.Button5,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    },
-	{
-        id: ButtonID.Button6,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    },
-	{
-        id: ButtonID.Button7,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    },
-	{
-        id: ButtonID.Button8,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    },
-	{
-        id: ButtonID.Button9,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    },
-	{
-        id: ButtonID.Button10,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    }
+	}
 ];
 
 
@@ -283,7 +34,8 @@ export const ScreenImages = [
   "CharaBgScreen",
   "InfomationBgScreen1",
   "InfomationBgScreen2",
-  "ArrowImage"
+  "ArrowImageDown",
+  "ArrowImageUp",
 ];
 
 export class CharaSelectScreen extends BaseScreen{
@@ -344,6 +96,17 @@ export class CharaSelectScreen extends BaseScreen{
       	this.CharaInfoBgImg1.y = 0;
 		this.CharaInfoContainer1.addChild(this.CharaInfoBgImg1);
 
+
+		this.CharaInfoContainer2 = new PIXI.Container();
+		const InfomationBgTexture2 = PIXI.Texture.from("InfomationBgScreen2");
+		this.CharaInfoBgImg2 = new PIXI.Sprite(InfomationBgTexture2);
+      	this.CharaInfoBgImg2.anchor.set(0);// 左上が座標
+      	this.CharaInfoBgImg2.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+      	this.CharaInfoBgImg2.x = 0; // 画面の一番左上に合わせる
+      	this.CharaInfoBgImg2.y = 0;
+		this.CharaInfoContainer2.addChild(this.CharaInfoBgImg2);
+
+
 		// 各情報を入れる枠を作る
 		const InfomationGraphics = new PIXI.Graphics();
         InfomationGraphics.lineStyle(2, 0xffffff);
@@ -353,49 +116,46 @@ export class CharaSelectScreen extends BaseScreen{
 		// サブスキル2 ULT1 項目が3
 		const SkillTextNumber = (2+1+1)*3;
 
+		// 通常テキスト用のスタイル
+        const textStyle = new PIXI.TextStyle({
+            fontFamily: '"Helvetica Neue", "Arial", "Noto Serif JP"',
+            fontSize: 48,
+            fill: '#000000', // 黒
+            align: 'center',
+        });
+
 		// コンテナを追加する
 		for (let i = 0; i < (BulletTextNumber); i++) {
 			const text = new PIXI.Text(String("a"), textStyle);
 			this.CharaInfoContainer1.addChild(text);
 		}
 
-
-
-
-
-		// 背景画像をコンテナに追加するのではなく、コンテナそのものに背景画像を追加する
-		this.MapContainer = new PIXI.Container();
-
-		const MapImageTexture = PIXI.Texture.from("MapImage");
-		this.ScreenMapImage = new PIXI.Sprite(MapImageTexture);
-
-		// 画像のアンカーを設定
-      	this.ScreenMapImage.anchor.set(0);// 左上が座標
-      	this.ScreenMapImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
-
-		// 画像の位置を調整
-      	this.ScreenMapImage.x = 0; // 画面の一番左上に合わせる
-      	this.ScreenMapImage.y = 0;
-		this.MapContainer.addChild(this.ScreenMapImage);
-
-		for (const baseConfig of ButtonConfigs) {
-			const button = await CustomButton.create(this.App.renderer, baseConfig);
-
-            // ▼▼▼【変更点】▼▼▼
-            // 設定ファイルから読み込んだマップ座標にボタンを配置
-			button.x = this.ScreenBackgroundImage.width / ButtonConfigs.length;
-			button.y = this.ScreenBackgroundImage.height / 2;
-
-			// button.pivot.set(button.width / 2, button.height / 2); // 必要であれば設定
-			this.MapContainer.addChild(button);
-			this.buttons.push(button);
+		// コンテナを追加する
+		for (let i = 0; i < (SkillTextNumber); i++) {
+			const text = new PIXI.Text(String("a"), textStyle);
+			this.CharaInfoContainer2.addChild(text);
 		}
 
-		this.ClippingMask = new PIXI.Graphics();
-		this.ScreenContainer.addChild(this.ClippingMask);
-		this.MapContainer.mask = this.ClippingMask; // スプライトにマスクを追加
+		// コンテナに追加するのではなく、キャラ選択ごとにコンテナを作成する
+		this.CharaImageContainer = new PIXI.Container();
+		// テストとしてキャラ1だけでのみ作成
+		const CharaImageTexture = PIXI.Texture.from(CharaImagePath.CharaSelect1);
+		this.ScreenChara1Image = new PIXI.Sprite(CharaImageTexture);
 
-		this.ScreenContainer.addChild(this.MapContainer);
+		// 画像のアンカーを設定
+      	this.ScreenChara1Image.anchor.set(0.5);
+      	this.ScreenChara1Image.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+
+		// 画像の位置を調整
+      	this.ScreenChara1Image.x = 0; // 画面の一番左上に合わせる
+      	this.ScreenChara1Image.y = 0;
+		this.CharaImageContainer.addChild(this.ScreenChara1Image);
+
+		// this.ClippingMask = new PIXI.Graphics();
+		// this.ScreenContainer.addChild(this.ClippingMask);
+		// this.MapContainer.mask = this.ClippingMask; // スプライトにマスクを追加
+
+		this.ScreenContainer.addChild(this.CharaImageContainer);
 		this.updateButtonSelection(); // ボタンの初期位置を設定
 		super.SetScreenVisible(false); // 初期は非表示
 	}
@@ -428,47 +188,33 @@ export class CharaSelectScreen extends BaseScreen{
 			const NewBGScreenWidht = this.ScreenBackgroundImage.width;
 			const NewBGScreenHeight = this.ScreenBackgroundImage.height;
 			
-			// 背景の画像をそのサイズに合うように修正
-			// 縦幅でサイズの倍率を調べる
-			this.ScreenMapImage.height = NewBGScreenHeight;
-			// アスペクト比を出す
-			const MapImageAspect = this.ScreenBackgroundImage.texture.orig.width / this.ScreenBackgroundImage.texture.orig.height;
-			this.ScreenMapImage.width = MapImageAspect * this.ScreenBackgroundImage.texture.orig.width;
-			this.ScreenMapImage.x = 0;
-			this.ScreenMapImage.y = 0;
+			// // 背景の画像をそのサイズに合うように修正
+			// // 縦幅でサイズの倍率を調べる
+			// this.ScreenMapImage.height = NewBGScreenHeight;
+			// // アスペクト比を出す
+			// const MapImageAspect = this.ScreenBackgroundImage.texture.orig.width / this.ScreenBackgroundImage.texture.orig.height;
+			// this.ScreenMapImage.width = MapImageAspect * this.ScreenBackgroundImage.texture.orig.width;
+			// this.ScreenMapImage.x = 0;
+			// this.ScreenMapImage.y = 0;
 
 
 			
-			// ここからはAppのサイズは当てにならないので，バックグラウンドの画像で判断を付ける(バックグラウンドが実質画面サイズ)
-			const MapImageSizeWidth = this.ScreenMapImage.width;
-			const MapImageSizeHeight = this.ScreenMapImage.height;
+			// // ここからはAppのサイズは当てにならないので，バックグラウンドの画像で判断を付ける(バックグラウンドが実質画面サイズ)
+			// const MapImageSizeWidth = this.ScreenMapImage.width;
+			// const MapImageSizeHeight = this.ScreenMapImage.height;
 
-			const NowStartPointX = this.ScreenBackgroundImage.x;
-			const NowStartPointY = this.ScreenBackgroundImage.y;
-			
-			const StartButtonX = this.buttons[1].width/2;
-			const StartButtonY = MapImageSizeHeight * 0.5;
+			// const NowStartPointX = this.ScreenBackgroundImage.x;
+			// const NowStartPointY = this.ScreenBackgroundImage.y;
 
-			// 登録されているボタンのリサイズを行う
-			this.buttons.forEach((button, i) => {
-				// 1. 各ボタンのリサイズ関数を呼び出す
-				button.resizeButton(App, CurrentOverallScale);
-
-				// 2. ボタンの位置を再計算する
-				// 真ん中に再配置
-				button.x = this.ScreenMapImage.x + StartButtonX + i * ((MapImageSizeWidth-StartButtonX) / ButtonConfigs.length);
-				button.y = this.ScreenMapImage.y + StartButtonY + ((i%2 == 0)? +(MapImageSizeHeight*0.25) : -(MapImageSizeHeight*0.25));
-			});
-
-			this.ScrollPointXMin = ScreenStartPointWidth;
-			this.ScrollPointXMax = ScreenStartPointWidth + NewBGScreenWidht;
+			// this.ScrollPointXMin = ScreenStartPointWidth;
+			// this.ScrollPointXMax = ScreenStartPointWidth + NewBGScreenWidht;
 
 
-			this.ClippingMask.clear();
-			this.ClippingMask.beginFill(0xFFFFFF);
-			// マスクの位置とサイズを前景コンテナと完全に一致させる
-			this.ClippingMask.drawRect(NowStartPointX, NowStartPointY, NewBGScreenWidht, NewBGScreenHeight);
-			this.ClippingMask.endFill();
+			// this.ClippingMask.clear();
+			// this.ClippingMask.beginFill(0xFFFFFF);
+			// // マスクの位置とサイズを前景コンテナと完全に一致させる
+			// this.ClippingMask.drawRect(NowStartPointX, NowStartPointY, NewBGScreenWidht, NewBGScreenHeight);
+			// this.ClippingMask.endFill();
 
 			this.updateButtonSelection(); // ボタンの初期位置を設定(スクロール状態を更新)
 		}
@@ -524,7 +270,7 @@ export class CharaSelectScreen extends BaseScreen{
 
         let selectionChanged = false;
         let confirmed = false;
-
+		let NextScreen = this.ScreenState; // 次のスクリーン情報
         // ▼▼▼【ここから変更】ゲームパッド優先ロジック ▼▼▼
 
         // 1. ゲームパッドの入力を優先してチェック
@@ -590,15 +336,12 @@ export class CharaSelectScreen extends BaseScreen{
                 this.InputCooldown = this.COOLDOWN_TIME; // 決定後、少し待つ
 
 				// 押されたボタンに対して遷移先を決定する
-				switch(selectedButton){
-					case ButtonID.Button1:
-						break; 
-				}
+				// 現在表示されている回転方向に応じてキャラクターを選択する
             }
         }
 		
 		// Keyの入力が何かあったかを判断する
-        return this.ScreenState;
+        return NextScreen;
 	  }
 	
 	
@@ -612,38 +355,7 @@ export class CharaSelectScreen extends BaseScreen{
     updateButtonSelection() {
         if (!this.buttons || this.buttons.length == 0) return;
 		// ボタンをアクティブ状態に変更
-		this.buttons.forEach((button, index) => {
-            // 現在のインデックスと一致するかどうかで選択状態を設定
-            const isSelected = (index === this.selectedButtonIndex);
-            button.setSelected(isSelected);
-        });
-
-		// 新しく選択されたボタンを取得
-		const selectedButton = this.buttons[this.selectedButtonIndex];
-
-		// 画面の中心のX座標を計算
-		const viewportCenterX = this.ScreenBackgroundImage.x + this.ScreenBackgroundImage.width / 2;
-
-		// ボタンを中央に配置するために必要なMapContainerの目標X座標を計算
-		let targetX = viewportCenterX - selectedButton.x;
-
-		// スクロール範囲の制限
-		// 左端の限界値: これ以上右には行けない
-		const minX = this.ScreenBackgroundImage.x;
-		// 右端の限界値: これ以上左には行けない
-		const maxX = this.ScreenBackgroundImage.x + this.ScreenBackgroundImage.width - this.ScreenMapImage.width;
 		
-		// targetXが範囲内に収まるように調整
-		// (マップ画像が背景より小さい場合はスクロールさせない)
-		if (this.ScreenMapImage.width > this.ScreenBackgroundImage.width) {
-			targetX = Math.max(maxX, Math.min(targetX, minX));
-		} else {
-			// マップが画面より小さい場合は左端に固定
-			targetX = minX;
-		}
-
-		// 計算した目標座標にMapContainerを移動させる
-		gsap.to(this.MapContainer, { x: targetX, duration: 0.3, ease: "power2.out" });
     }
 
 }

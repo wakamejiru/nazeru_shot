@@ -22,7 +22,7 @@ import * as WatingScreen from './Screens/WaitingScreen.js';
 import * as TitileScreen from './Screens/TitleScreen.js';
 import * as DifficultyScreen from './Screens/DifficultySelectScreen.js';
 import * as MapScreen from './Screens/MapScreen.js';
-
+import * as CharaSelectScreen from './Screens/CharaSelectScreen.js';
 
 
 
@@ -213,6 +213,9 @@ async function UpdateLoadingLogic() {
                 break;
 
             case 5:
+                const charaSelectScreen = new CharaSelectScreen.CharaSelectScreen(App, BaseScreen.SCREEN_STATE.CHARACTER_SELECT);
+                ScreenList.push(charaSelectScreen);
+                await charaSelectScreen.InitializeScreen(MainScaleFactor);
 
                 break;
             case 6:

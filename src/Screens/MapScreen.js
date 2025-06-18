@@ -396,9 +396,6 @@ export class MapScreen extends BaseScreen{
         this.InputCooldown = 0;       // キー入力のクールダウンタイマー
         this.COOLDOWN_TIME = 0.2;     // キー入力のクールダウン時間(秒)
 
-		this.ScrollPointXMin = 0;
-		this.ScrollPointXMax = 0;
-
     }
 
 	/**
@@ -452,7 +449,7 @@ export class MapScreen extends BaseScreen{
 			button.x = this.ScreenBackgroundImage.width / ButtonConfigs.length;
 			button.y = this.ScreenBackgroundImage.height / 2;
 
-			// button.pivot.set(button.width / 2, button.height / 2); // 必要であれば設定
+			button.pivot.set(button.width / 2, button.height / 2); // 必要であれば設定
 			this.MapContainer.addChild(button);
 			this.buttons.push(button);
 		}
@@ -526,9 +523,6 @@ export class MapScreen extends BaseScreen{
 				button.y = this.ScreenMapImage.y + StartButtonY + ((i%2 == 0)? +(MapImageSizeHeight*0.25) : -(MapImageSizeHeight*0.25));
 			});
 
-			this.ScrollPointXMin = ScreenStartPointWidth;
-			this.ScrollPointXMax = ScreenStartPointWidth + NewBGScreenWidht;
-
 
 			this.ClippingMask.clear();
 			this.ClippingMask.beginFill(0xFFFFFF);
@@ -552,7 +546,9 @@ export class MapScreen extends BaseScreen{
 	   * @param {boolean} Visible - true:ON false:OFF
 	   */
 	  EndScreen(){
-		super.EndScreen();
+			this.MapContainer.mask = null; // マスクを解除
+    	    this.ClippingMask.clear(); // グラフィックスをクリア
+			super.EndScreen();
 	  }
 
     /**
@@ -642,6 +638,7 @@ export class MapScreen extends BaseScreen{
         }
 
         // --- 入力後の処理を共通化 ---
+		let NextScreen = this.ScreenState; // 次のスクリーン情報
 
         // 選択が変更された場合
         if (selectionChanged) {
@@ -660,11 +657,12 @@ export class MapScreen extends BaseScreen{
 					case ButtonID.Button1:
 						break; 
 				}
+				NextScreen = SCREEN_STATE.CHARACTER_SELECT;
             }
         }
 		
 		// Keyの入力が何かあったかを判断する
-        return this.ScreenState;
+        return NextScreen;
 	  }
 	
 	

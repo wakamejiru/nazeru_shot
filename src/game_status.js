@@ -895,6 +895,21 @@ export const ImageAssetPaths = Object.freeze({
   iconImage1: "../image/icon/chevron_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg",
   MapImage: "../image/map/map_backscreen.jpg",
   MapBgScreen: "../image/map/MapBG.png",
+  CharaSelect1: "../image/chara_select/chara1.png",
+  CharaSelect2: "../image/chara_select/chara2.png",
+  CharaSelect3: "../image/chara_select/chara3.png",
+  CharaSelect4: "../image/chara_select/chara4.png",
+  CharaSelect5: "../image/chara_select/chara5.png",
+  CharaSelect6: "../image/chara_select/chara6.png",
+  CharaSelect7: "../image/chara_select/chara7.png",
+  CharaSelect8: "../image/chara_select/chara8.png",
+  CharaSelect9: "../image/chara_select/chara9.png",
+  CharaSelect10: "../image/chara_select/chara10.png",
+  CharaBgScreen: "../image/chara_select/chara_image_bg.png",
+  InfomationBgScreen1: "../image/chara_select/InfomationBgScreen1.jpg",
+  InfomationBgScreen2: "../image/chara_select/InfomationBgScreen2.jpg",
+  ArrowImageDown: "../image/chara_select/ArrowDown.png",
+  ArrowImageUp: "../image/chara_select/ArrowUp.png",
 });
 // AssetManagerで使う画像パスのリスト
 export const imageAssetPaths = Object.freeze({
