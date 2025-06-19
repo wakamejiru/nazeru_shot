@@ -3,15 +3,11 @@ import { ImageAssetPaths } from '../game_status.js';
 import { BaseScreen, FRAME_DURATION, SCREEN_STATE } from './BaseScreen.js';
 // タイトル画面
 
-// 項目は5つ
+// ボタンはない
 const ButtonID = Object.freeze({
-    Button1: "ExitButton",
-    Button2: "HelpButton"
 });
 
 const ButtonLabel = Object.freeze({
-    Button1: "Exit",
-    Button2: "Help"
 });
 
 const ButtonSizeWidth = 150;

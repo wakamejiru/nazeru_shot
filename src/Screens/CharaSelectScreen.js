@@ -173,7 +173,7 @@ export class CharaSelectScreen extends BaseScreen{
 		const CharaImageKeys = Object.values(CharaImagePath);
 		const CharaAngleStep = (2 * Math.PI) / CharaImageKeys.length;
 
-		this.ScreenChara1Images = [];
+		this.ScreenCharaImages = [];
 
 		for (let i = 0; i < CharaImageKeys.length; i++) {
 			const Angle = CharaAngleStep * i;
@@ -185,30 +185,39 @@ export class CharaSelectScreen extends BaseScreen{
 			CharaSprite.x = x;
 			CharaSprite.y = y;
 			CharaSprite.scale.set(InitialScale);
-			this.ScreenChara1Images.push(CharaSprite);
-			this.CharaImageContainer.addChild(this.ScreenChara1Images[i]);
+			this.ScreenCharaImages.push(CharaSprite);
+			this.CharaImageContainer.addChild(this.ScreenCharaImages[i]);
 		}
 
-		// // テストとしてキャラ1だけでのみ作成
-		// const CharaImageTexture = PIXI.Texture.from(CharaImagePath.CharaSelect1);
-		// this.ScreenChara1Image = new PIXI.Sprite(CharaImageTexture);
+		this.ClippingMask = new PIXI.Graphics();
+		this.ScreenContainer.addChild(this.ClippingMask);
+		this.CharaImageContainer.mask = this.ClippingMask; // マスクを追加
 
-		// // 画像のアンカーを設定
-      	// this.ScreenChara1Image.anchor.set(0.5);
-      	// this.ScreenChara1Image.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+		// 矢印のコンテナを作成
+		this.ArrowContainer = new PIXI.Container();
+		const ArrowUpTexture = PIXI.Texture.from("ArrowImageUp");
+		this.ArrowUpImage = new PIXI.Sprite(ArrowUpTexture);
+		this.ArrowUpImage.anchor.set(0.5);// 左上が座標
+      	this.ArrowUpImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+      	this.ArrowUpImage.x = 0; // 画面の一番左上に合わせる
+      	this.ArrowUpImage.y = 0;
+		this.ArrowContainer.addChild(this.ArrowUpImage);
 
-		// // 画像の位置を調整
-      	// this.ScreenChara1Image.x = 0; // 画面の一番左上に合わせる
-      	// this.ScreenChara1Image.y = 0;
-		// this.CharaImageContainer.addChild(this.ScreenChara1Image);
-
-		// this.ClippingMask = new PIXI.Graphics();
-		// this.ScreenContainer.addChild(this.ClippingMask);
-		// this.MapContainer.mask = this.ClippingMask; // スプライトにマスクを追加
+		const ArrowDownTexture = PIXI.Texture.from("ArrowImageDown");
+		this.ArrowDownImage = new PIXI.Sprite(ArrowDownTexture);
+		this.ArrowDownImage.anchor.set(0.5);// 左上が座標
+      	this.ArrowDownImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+      	this.ArrowDownImage.x = 0; // 画面の一番左上に合わせる
+      	this.ArrowDownImage.y = 0;
+		this.ArrowContainer.addChild(this.ArrowDownImage);
+		
+		// アニメを追加
+		this.AnimateArrows();
 
 		this.ScreenContainer.addChild(this.CharaImageContainer);
 		this.ScreenContainer.addChild(this.CharaInfoContainer1);
 		this.ScreenContainer.addChild(this.CharaInfoContainer2);
+		this.ScreenContainer.addChild(this.ArrowContainer);
 		this.updateButtonSelection(); // ボタンの初期位置を設定
 		super.SetScreenVisible(false); // 初期は非表示
 	}
@@ -220,6 +229,16 @@ export class CharaSelectScreen extends BaseScreen{
 	   */
 		ResizeScreen(App, CurrentOverallScale){
 			if (!this.ScreenContainer) return;
+
+			 // リサイズするためにアニメ描写を削除する
+			if (this.ArrowUpTween) {
+				this.ArrowUpTween.kill();
+			}
+			if (this.ArrowDownTween) {
+				this.ArrowDownTween.kill();
+			}
+			gsap.killTweensOf(this.ArrowUpImage);
+		    gsap.killTweensOf(this.ArrowDownImage);
 
 			// 背景の黒い画像を用意する
 			const DisplaySizeWidth = this.App.screen.width;
@@ -352,7 +371,6 @@ export class CharaSelectScreen extends BaseScreen{
 			const SkillInfoPositionStart = (InfoNamberStart, InfoNamberEnd, StartXPoint, BaseInfoHeight, CurrentOverallScale, WrapWidth) => {
 				let PreviousPositionY=BaseInfoHeight;
 				for (let i = InfoNamberStart; i <=InfoNamberEnd; ++i){
-					console.log("style width for", i, ":", this.SkillInfoTexts[i].style.wordWrapWidth);
 					this.SkillInfoTexts[i].x = StartXPoint;
 					this.SkillInfoTexts[i].y = PreviousPositionY + SkillInfoHeight;
 					
@@ -389,41 +407,63 @@ export class CharaSelectScreen extends BaseScreen{
 			// キャラの画像の再配置を行う
 
 
-		const CharaCenterX = 0; // 中心X
-		const CharaCenterY = NewBGScreenHeight/2; // 中心Y
+			const CharaCenterX = 0; // 中心X
+			const CharaCenterY = NewBGScreenHeight/2; // 中心Y
 
-		const CharaImageKeys = Object.values(CharaImagePath);
-		const CharaAngleStep = (2 * Math.PI) / CharaImageKeys.length;
+			const CharaImageKeys = Object.values(CharaImagePath);
+			const CharaAngleStep = (2 * Math.PI) / CharaImageKeys.length;
 
-		for (let i = 0; i < CharaImageKeys.length; i++) {
-			// 回転軸角度は通常よりπ分だけ早くなっている
-			const Angle = Math.PI + CharaAngleStep * i;
-			this.ScreenChara1Images[i].scale.set(CurrentOverallScale * 0.6);
-			// アンカーが画像の中心なので，半径は画像の幅も用いる
-			const CharaImageWidth = this.ScreenChara1Images[i].width;
-			const CharaRadius = NewBGScreenWidht - (NewBGScreenWidht*0.05 + CharaImageWidth / 2); // 円の半径
+			for (let i = 0; i < CharaImageKeys.length; i++) {
+				// 回転軸角度は通常よりπ分だけ早くなっている
+				const Angle = Math.PI + CharaAngleStep * i;
+				this.ScreenCharaImages[i].scale.set(CurrentOverallScale * 0.6);
+				// アンカーが画像の中心なので，半径は画像の幅も用いる
+				const CharaImageWidth = this.ScreenCharaImages[i].width;
+				const CharaRadius = NewBGScreenWidht - (NewBGScreenWidht*0.05 + CharaImageWidth / 2); // 円の半径
 
-			const x = ScreenStartX + NewBGScreenWidht + (CharaCenterX + CharaRadius * Math.cos(Angle));
-			const y = ScreenStartY + CharaCenterY + CharaRadius * Math.sin(Angle);
-			this.ScreenChara1Images[i].x = x;
-			this.ScreenChara1Images[i].y = y;
-		}
+				const x = ScreenStartX + NewBGScreenWidht + (CharaCenterX + CharaRadius * Math.cos(Angle));
+				const y = ScreenStartY + CharaCenterY + CharaRadius * Math.sin(Angle);
+				this.ScreenCharaImages[i].x = x;
+				this.ScreenCharaImages[i].y = y;
+			}
 
-		// 回転のコンテナの基準位置を設定する
-		// 回転の中心はバックグラウンド画像のX軸は端，Y軸は中心
-		const RadiusCenteX = this.ScreenBackgroundImage.x + NewBGScreenWidht;
-		const RadiusCenteY = this.ScreenBackgroundImage.y + (NewBGScreenHeight*0.5);
+			// 回転のコンテナの基準位置を設定する
+			// 回転の中心はバックグラウンド画像のX軸は端，Y軸は中心
+			const RadiusCenteX = this.ScreenBackgroundImage.x + NewBGScreenWidht;
+			const RadiusCenteY = this.ScreenBackgroundImage.y + (NewBGScreenHeight*0.5);
 
-		this.CharaImageContainer.pivot.set(RadiusCenteX, RadiusCenteY); // 回転の中心を設定
-		this.CharaImageContainer.position.set(RadiusCenteX, RadiusCenteY); // 表示位置
+			this.CharaImageContainer.pivot.set(RadiusCenteX, RadiusCenteY); // 回転の中心を設定
+			this.CharaImageContainer.position.set(RadiusCenteX, RadiusCenteY); // 表示位置
 
-			// this.ClippingMask.clear();
-			// this.ClippingMask.beginFill(0xFFFFFF);
-			// // マスクの位置とサイズを前景コンテナと完全に一致させる
-			// this.ClippingMask.drawRect(NowStartPointX, NowStartPointY, NewBGScreenWidht, NewBGScreenHeight);
-			// this.ClippingMask.endFill();
+			this.ClippingMask.clear();
+			this.ClippingMask.beginFill(0xFFFFFF);
+			// マスクの位置とサイズを前景コンテナと完全に一致させる
+			this.ClippingMask.drawRect(this.ScreenBackgroundImage.x, this.ScreenBackgroundImage.y, NewBGScreenWidht, NewBGScreenHeight);
+			this.ClippingMask.endFill();
+
+			// 矢印位置を設定する
+			// 横幅はキャラの回転半径の場所と同じ
+			const CharaRadiusX = ScreenStartX + (NewBGScreenWidht*0.05 + this.ScreenCharaImages[0].width / 2); // 円の半径
+
+			// キャラ画像を合わせる
+			BaseTextureWidth = this.ArrowDownImage.texture.orig.width;
+			BaseTextureHeight = this.ArrowDownImage.texture.orig.height;
+
+			this.ArrowDownImage.width = BaseTextureWidth * CurrentOverallScale*0.1;
+			this.ArrowDownImage.height = BaseTextureHeight * CurrentOverallScale*0.1;
+			this.ArrowDownImage.x = CharaRadiusX;
+			this.ArrowDownImage.y = ScreenStartY + NewBGScreenHeight*0.8 + (this.ArrowDownImage.height/2);
+
+			BaseTextureWidth = this.ArrowUpImage.texture.orig.width;
+			BaseTextureHeight = this.ArrowUpImage.texture.orig.height;
+
+			this.ArrowUpImage.width = BaseTextureWidth * CurrentOverallScale*0.1;
+			this.ArrowUpImage.height = BaseTextureHeight * CurrentOverallScale*0.1;
+			this.ArrowUpImage.x = CharaRadiusX;
+			this.ArrowUpImage.y = ScreenStartY + NewBGScreenHeight*0.2 - (this.ArrowUpImage.height/2);
 
 			this.updateButtonSelection(); // ボタンの初期位置を設定(スクロール状態を更新)
+			this.AnimateArrows();
 		}
 	
 		/**
@@ -432,6 +472,7 @@ export class CharaSelectScreen extends BaseScreen{
 	   */
 	  StartScreen(){
 			this.UpdateBulletSkillInfomation();
+			this.AnimateArrows();
 			super.StartScreen();
 	  }
 		
@@ -634,6 +675,27 @@ export class CharaSelectScreen extends BaseScreen{
 			});
 		}
 	
+	}
+
+	/**
+     * 矢印のアニメーションを描く
+     */
+	AnimateArrows() {
+		this.ArrowUpTween = gsap.to(this.ArrowUpImage, {
+			y: this.ArrowUpImage.y - (this.ArrowUpImage.height*0.1),
+			duration: 0.6,
+			yoyo: true,
+			repeat: -1,
+			ease: "sine.inOut",
+		});
+
+		this.ArrowDownTween = gsap.to(this.ArrowDownImage, {
+			y: this.ArrowDownImage.y + (this.ArrowDownImage.height*0.1),
+			duration: 0.6,
+			yoyo: true,
+			repeat: -1,
+			ease: "sine.inOut",
+		});
 	}
 
 }
