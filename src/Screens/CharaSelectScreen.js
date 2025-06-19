@@ -77,12 +77,13 @@ export class CharaSelectScreen extends BaseScreen{
 		
 		// 現在選択されているボタンを記憶する
 		this.NowSelectButton = ButtonID.Button1; // 初期はボタン1
-		this.selectedButtonIndex = 0;
+		this.selectedCharaIndex = 0;
         this.InputCooldown = 0;       // キー入力のクールダウンタイマー
         this.COOLDOWN_TIME = 0.2;     // キー入力のクールダウン時間(秒)
 		this.CharaInfoContainer = null;
 		this.CharaInfoBgImg1 = null;
 		this.CharaInfoBgImg2 = null;
+		this.RotationCharaNow = false;
     }
 
 	/**
@@ -408,6 +409,14 @@ export class CharaSelectScreen extends BaseScreen{
 			this.ScreenChara1Images[i].y = y;
 		}
 
+		// 回転のコンテナの基準位置を設定する
+		// 回転の中心はバックグラウンド画像のX軸は端，Y軸は中心
+		const RadiusCenteX = this.ScreenBackgroundImage.x + NewBGScreenWidht;
+		const RadiusCenteY = this.ScreenBackgroundImage.y + (NewBGScreenHeight*0.5);
+
+		this.CharaImageContainer.pivot.set(RadiusCenteX, RadiusCenteY); // 回転の中心を設定
+		this.CharaImageContainer.position.set(RadiusCenteX, RadiusCenteY); // 表示位置
+
 			// this.ClippingMask.clear();
 			// this.ClippingMask.beginFill(0xFFFFFF);
 			// // マスクの位置とサイズを前景コンテナと完全に一致させる
@@ -470,24 +479,19 @@ export class CharaSelectScreen extends BaseScreen{
         let selectionChanged = false;
         let confirmed = false;
 		let NextScreen = this.ScreenState; // 次のスクリーン情報
-        // ▼▼▼【ここから変更】ゲームパッド優先ロジック ▼▼▼
+        let DetectionRotation = false;
+		// ▼▼▼【ここから変更】ゲームパッド優先ロジック ▼▼▼
 
         // 1. ゲームパッドの入力を優先してチェック
         if (InputCurrentState.gamepad) {
             const pad = InputCurrentState.gamepad;
 
             // --- 十字キーまたは左スティックの左右 ---
-            if (pad.dpad.left) {
-                this.selectedButtonIndex--;
-                if (this.selectedButtonIndex < 0) {
-                    this.selectedButtonIndex = this.buttons.length - 1;
-                }
+            if (pad.dpad.Up) {
+                DetectionRotation = true;
                 selectionChanged = true;
-            } else if (pad.dpad.right) {
-                this.selectedButtonIndex++;
-                if (this.selectedButtonIndex >= this.buttons.length) {
-                    this.selectedButtonIndex = 0;
-                }
+            } else if (pad.dpad.down) {
+                DetectionRotation = false;
                 selectionChanged = true;
             }
 
@@ -499,19 +503,13 @@ export class CharaSelectScreen extends BaseScreen{
         // 2. ゲームパッドの入力がなければ、キーボードをチェック
         else {
             // --- 左矢印キー ---
-            if (InputCurrentState.keys.has('ArrowLeft')) {
-                this.selectedButtonIndex--;
-                if (this.selectedButtonIndex < 0) {
-                    this.selectedButtonIndex = this.buttons.length - 1;
-                }
+            if (InputCurrentState.keys.has('ArrowUp')) {
+                DetectionRotation = true;
                 selectionChanged = true;
             }
             // --- 下矢印キー ---
-            else if (InputCurrentState.keys.has('ArrowRight')) {
-                this.selectedButtonIndex++;
-                if (this.selectedButtonIndex >= this.buttons.length) {
-                    this.selectedButtonIndex = 0;
-                }
+            else if (InputCurrentState.keys.has('ArrowDown')) {
+                DetectionRotation = false;
                 selectionChanged = true;
             }
             // --- エンターキー ---
@@ -524,8 +522,11 @@ export class CharaSelectScreen extends BaseScreen{
 
         // 選択が変更された場合
         if (selectionChanged) {
-            this.updateButtonSelection(); // 見た目を更新
-            this.InputCooldown = this.COOLDOWN_TIME; // キーリピートによる高速移動を防ぐ
+            // this.updateButtonSelection(); // 見た目を更新
+            // キャラ画像の回転を行う
+			this.RotateCharaContainer(DetectionRotation);
+			
+			this.InputCooldown = this.COOLDOWN_TIME; // キーリピートによる高速移動を防ぐ
         }
         // 決定が押された場合
         else if (confirmed) {
@@ -608,6 +609,31 @@ export class CharaSelectScreen extends BaseScreen{
 		this.SkillInfoTexts[5].text = "15秒ごとに4秒間弾が追尾弾になる";
 		this.SkillInfoTexts[6].text = "7秒ごとに100ヒーリング";
 		this.SkillInfoTexts[7].text = "ULT効果";
+	}
+
+	/**
+     * キャラの画像を回転させる
+	 * @param {bool} direction  回転方向 true:時計回り false:反時計回り
+     */
+	RotateCharaContainer(direction) {
+		if(this.RotationCharaNow == false){
+			const CharaImageKeys = Object.values(CharaImagePath);
+			const CharaAngleStep = (2 * Math.PI) / CharaImageKeys.length;
+
+			const targetRotation = this.CharaImageContainer.rotation + (direction ? 1 : -1) * CharaAngleStep;
+			this.RotationCharaNow = true;
+			gsap.to(this.CharaImageContainer, {
+				rotation: targetRotation,
+				duration: 0.5,
+				ease: "power2.out",
+				onComplete: () => {
+					// キャラ情報を更新させる
+					// 回転運動のキャンセルを行う
+					this.RotationCharaNow = false;
+				}
+			});
+		}
+	
 	}
 
 }
