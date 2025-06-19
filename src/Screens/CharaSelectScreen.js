@@ -161,18 +161,44 @@ export class CharaSelectScreen extends BaseScreen{
 
 		// コンテナに追加するのではなく、キャラ選択ごとにコンテナを作成する
 		this.CharaImageContainer = new PIXI.Container();
-		// テストとしてキャラ1だけでのみ作成
-		const CharaImageTexture = PIXI.Texture.from(CharaImagePath.CharaSelect1);
-		this.ScreenChara1Image = new PIXI.Sprite(CharaImageTexture);
 
-		// 画像のアンカーを設定
-      	this.ScreenChara1Image.anchor.set(0.5);
-      	this.ScreenChara1Image.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+		// キャラクターの画像の表示を行う
+		// まず円形の画像を用意する
+		const CharaRadius = this.ScreenBackgroundImage.width - this.ScreenBackgroundImage.width*0.05 - (this.ScreenBackgroundImage.width/2 - 0.1*this.ScreenBackgroundImage.width); // 円の半径
+		const CharaCenterX = 0; // 中心X
+		const CharaCenterY = this.ScreenBackgroundImage.height/2; // 中心Y
 
-		// 画像の位置を調整
-      	this.ScreenChara1Image.x = 0; // 画面の一番左上に合わせる
-      	this.ScreenChara1Image.y = 0;
-		this.CharaImageContainer.addChild(this.ScreenChara1Image);
+		const CharaImageKeys = Object.values(CharaImagePath);
+		const CharaAngleStep = (2 * Math.PI) / CharaImageKeys.length;
+
+		this.ScreenChara1Images = [];
+
+		for (let i = 0; i < CharaImageKeys.length; i++) {
+			const Angle = CharaAngleStep * i;
+			const x = this.ScreenBackgroundImage.width - (CharaCenterX + CharaRadius * Math.cos(Angle)); // 中心座標軸が異なるため、修正する
+			const y = CharaCenterY + CharaRadius * Math.sin(Angle);
+			const CharaImageTexture = PIXI.Texture.from(CharaImageKeys[i]);
+			const CharaSprite = new PIXI.Sprite(CharaImageTexture);
+			CharaSprite.anchor.set(0.5);
+			CharaSprite.x = x;
+			CharaSprite.y = y;
+			CharaSprite.scale.set(InitialScale);
+			this.ScreenChara1Images.push(CharaSprite);
+			this.CharaImageContainer.addChild(CharaSprite);
+		}
+
+		// // テストとしてキャラ1だけでのみ作成
+		// const CharaImageTexture = PIXI.Texture.from(CharaImagePath.CharaSelect1);
+		// this.ScreenChara1Image = new PIXI.Sprite(CharaImageTexture);
+
+		// // 画像のアンカーを設定
+      	// this.ScreenChara1Image.anchor.set(0.5);
+      	// this.ScreenChara1Image.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+
+		// // 画像の位置を調整
+      	// this.ScreenChara1Image.x = 0; // 画面の一番左上に合わせる
+      	// this.ScreenChara1Image.y = 0;
+		// this.CharaImageContainer.addChild(this.ScreenChara1Image);
 
 		// this.ClippingMask = new PIXI.Graphics();
 		// this.ScreenContainer.addChild(this.ClippingMask);
@@ -346,9 +372,6 @@ export class CharaSelectScreen extends BaseScreen{
 					this.CharaInfoContainer2.removeChild(oldText);
 					this.CharaInfoContainer2.addChild(newText);
 					this.SkillInfoTexts[i] = newText;
-
-					console.log("WrapWidth:", WrapWidth);
-					console.log("style width for", i, ":", this.SkillInfoTexts[i].style.wordWrapWidth);
 					PreviousPositionY = this.SkillInfoTexts[i].y;
 				}
 			};
@@ -360,7 +383,25 @@ export class CharaSelectScreen extends BaseScreen{
 			// こちらはフォントサイズをもっと下げる
 			const SkillContatinFomatMag = CurrentOverallScale*0.5;
 			SkillInfoPositionStart(5, 7, this.SkillInfoTexts[1].x, this.SkillInfoTexts[1].y, SkillContatinFomatMag, SkillContainWidth);
-		
+			
+			// キャラの画像の再配置を行う
+
+		const CharaRadius = NewBGScreenWidht - NewBGScreenWidht*0.05 - (NewBGScreenWidht/2 - 0.1*NewBGScreenWidht); // 円の半径
+		const CharaCenterX = 0; // 中心X
+		const CharaCenterY = NewBGScreenHeight/2; // 中心Y
+
+		const CharaImageKeys = Object.values(CharaImagePath);
+		const CharaAngleStep = (2 * Math.PI) / CharaImageKeys.length;
+
+		for (let i = 0; i < CharaImageKeys.length; i++) {
+			const Angle = CharaAngleStep * i;
+			const x = ScreenStartX + NewBGScreenWidht - (CharaCenterX + CharaRadius * Math.cos(Angle)); // 中心座標軸が異なるため、修正する
+			const y = ScreenStartY + CharaCenterY + CharaRadius * Math.sin(Angle);
+			this.ScreenChara1Images[i].x = x;
+			this.ScreenChara1Images[i].y = y;
+			this.ScreenChara1Images[i].scale.set(CurrentOverallScale);
+		}
+
 			// this.ClippingMask.clear();
 			// this.ClippingMask.beginFill(0xFFFFFF);
 			// // マスクの位置とサイズを前景コンテナと完全に一致させる
