@@ -40,13 +40,16 @@ export const ScreenImages = [
 
 
 // バレットのインフォメーションテキストを埋めていく
-const InfoFontSize = 38;
+const InfoFontSize = 34;
 // 通常テキスト用のスタイル
 const textStyle = new PIXI.TextStyle({
 	fontFamily: '"Helvetica Neue", "Arial", "Noto Serif JP"',
 	fontSize: InfoFontSize,
 	fill: '#000000', // 黒
 	align: 'center',
+	wordWrap: false,
+    wordWrapWidth: 1, 
+	align: 'left', 
 });
 
 // 3列×8行
@@ -218,8 +221,11 @@ export class CharaSelectScreen extends BaseScreen{
 			// まずは表の設計を行っていく
 			// 表の配置は右側，半分を使用する
 			// 縦は上2割がキャラ名，バレット説明4割，キャラ説明4割
+			const CharaInfoHeightParcent = 0.2;
+			const BulletInfoHeightParcent = 0.4;
+			const SkillInfoHeightParcent = 0.4;
 			// キャラ名表示区間を定義
-			const CharaNameHeight = (NewBGScreenHeight * 0.2);
+			const CharaNameHeight = (NewBGScreenHeight * CharaInfoHeightParcent);
 			
 			
 			
@@ -228,7 +234,7 @@ export class CharaSelectScreen extends BaseScreen{
 			const InfoMarginHeight = (NewBGScreenHeight)*0.05;
 
 			const InfoTableSizeW1 = (NewBGScreenWidht /2)  - InfoMarginWidth*2; // 左右で2倍
-			const InfoTableSizeH1 = (NewBGScreenHeight * 0.4) - InfoMarginHeight*2; // 左右で2倍
+			const InfoTableSizeH1 = (NewBGScreenHeight * BulletInfoHeightParcent) - InfoMarginHeight*2; // 左右で2倍
 
 			this.CharaInfoBgImg1.width = InfoTableSizeW1;
 			this.CharaInfoBgImg1.height = InfoTableSizeH1;
@@ -290,9 +296,70 @@ export class CharaSelectScreen extends BaseScreen{
 			BulletInfoPositionStart(17, 23, this.BulletInfoTexts[2].x, this.BulletInfoTexts[2].y, CurrentOverallScale);
 
 			// スキル表も位置作成
+			// 半分を書く
+			const BulletInfoMarginHeight2 = this.CharaInfoBgImg2.height*0.025;
+			const BulletInfoMarginWidth2 = this.CharaInfoBgImg2.width*0.025;
 			
+			// 情報表示の開始位置
+			const BulletStartPosX2 = this.CharaInfoBgImg2.x + BulletInfoMarginHeight2;
+			const BulletStartPosY2 = this.CharaInfoBgImg2.y + BulletInfoMarginWidth2;
 
+			// 表の一項目当たりの大きさを宣言
+			const SkillInfoHeight = (this.CharaInfoBgImg2.height - BulletInfoMarginHeight2*2) / 4;
+			// 横は項目ごとに大きさが異なる 
+			const SkillInfoWidth = (this.CharaInfoBgImg1.width - BulletInfoMarginWidth2*2);
+			// スキルの項目名と効果の部分で線を分ける
+			const SkillNameWidhtParcet =  0.4;
+			const SkillContainWidhtParcet =  1 - SkillNameWidhtParcet;
+			const SkillNameWidth = SkillInfoWidth*SkillNameWidhtParcet;
+			const SkillContainWidth = SkillInfoWidth*SkillContainWidhtParcet;
+
+			this.SkillInfoTexts[0].x = BulletStartPosX2;
+			this.SkillInfoTexts[0].y = BulletStartPosY2;
+
+			this.SkillInfoTexts[1].x = this.SkillInfoTexts[0].x + SkillNameWidth;
+			this.SkillInfoTexts[1].y = BulletStartPosY2;
 			
+			// 一列で規則性をもって変化するのでヘルパ関数で処理をする
+			const SkillInfoPositionStart = (InfoNamberStart, InfoNamberEnd, StartXPoint, BaseInfoHeight, CurrentOverallScale, WrapWidth) => {
+				let PreviousPositionY=BaseInfoHeight;
+				for (let i = InfoNamberStart; i <=InfoNamberEnd; ++i){
+					console.log("style width for", i, ":", this.SkillInfoTexts[i].style.wordWrapWidth);
+					this.SkillInfoTexts[i].x = StartXPoint;
+					this.SkillInfoTexts[i].y = PreviousPositionY + SkillInfoHeight;
+					
+					// 謎使用
+					// 謎仕様によってインスタンスを作り直さないと反映されない
+					const oldText = this.SkillInfoTexts[i];
+					const newText = new PIXI.Text(oldText.text, new PIXI.TextStyle({
+						fontSize: InfoFontSize * CurrentOverallScale,
+						wordWrap: true,
+						wordWrapWidth: WrapWidth,
+						breakWords: true,
+						fill: '#000000',
+						fontFamily: oldText.style.fontFamily,
+						align: oldText.style.align,
+					}));
+
+					newText.x = oldText.x;
+					newText.y = oldText.y;
+					this.CharaInfoContainer2.removeChild(oldText);
+					this.CharaInfoContainer2.addChild(newText);
+					this.SkillInfoTexts[i] = newText;
+
+					console.log("WrapWidth:", WrapWidth);
+					console.log("style width for", i, ":", this.SkillInfoTexts[i].style.wordWrapWidth);
+					PreviousPositionY = this.SkillInfoTexts[i].y;
+				}
+			};
+
+			// スキルの種類
+			SkillInfoPositionStart(2, 4, this.SkillInfoTexts[0].x, this.SkillInfoTexts[0].y, CurrentOverallScale, SkillNameWidth);
+			
+			// スキル効果
+			// こちらはフォントサイズをもっと下げる
+			const SkillContatinFomatMag = CurrentOverallScale*0.5;
+			SkillInfoPositionStart(5, 7, this.SkillInfoTexts[1].x, this.SkillInfoTexts[1].y, SkillContatinFomatMag, SkillContainWidth);
 		
 			// this.ClippingMask.clear();
 			// this.ClippingMask.beginFill(0xFFFFFF);
