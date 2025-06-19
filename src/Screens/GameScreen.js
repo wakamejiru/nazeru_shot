@@ -20,9 +20,11 @@ export const ScreenImages = [
   "LogoImage",
   "ULTBgImg",
   "ScoreBgImg",
-  "ULTPointImage",
+  "ULTPointImageOn",
+  "ULTPointImageOff",
 ];
 
+// 実際のゲーム画面を設計する
 export class GameScreen extends BaseScreen{
 	/**
      * コンストラクタ
@@ -34,10 +36,6 @@ export class GameScreen extends BaseScreen{
 		this.ScreenTextures = [];
 		this.ScreenBackgroundImage = null;
 		this.buttons = [];
-
-		this.selectedButtonIndex = 0;
-        this.InputCooldown = 0;       // キー入力のクールダウンタイマー
-        this.COOLDOWN_TIME = 0.2;     // キー入力のクールダウン時間(秒)
     }
 
 	/**
@@ -66,14 +64,75 @@ export class GameScreen extends BaseScreen{
 		// 画像の位置を調整
       	this.ScreenBackgroundImage.x = 0; // 画面の一番左上に合わせる
       	this.ScreenBackgroundImage.y = 0;
-
 		// 画像を追加
 		this.ScreenContainer.addChild(this.ScreenBackgroundImage);
 
+		// 背景に置くロゴを追加
+		this.LogoImage = new PIXI.Sprite(PIXI.Texture.from("LogoImage"));
+      	this.LogoImage.anchor.set(0);// 左上が座標
+      	this.LogoImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+      	this.LogoImage.x = 0; // 画面の一番左上に合わせる
+      	this.LogoImage.y = 0;
+		// 画像を追加
+		this.ScreenContainer.addChild(this.LogoImage);
 
 
+		// シューティングゲームの操作画面を作成(コンテナでまとめる)
+		// キャラなどはStart時に追加
+		this.ShootingContainer = new PIXI.Container();
+		this.ShootingBackgroundImage = new PIXI.Sprite(PIXI.Texture.from("ShootingScreen"));
+      	this.ShootingBackgroundImage.anchor.set(0);// 左上が座標
+      	this.ShootingBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+      	this.ShootingBackgroundImage.x = 0; // 画面の一番左上に合わせる
+      	this.ShootingBackgroundImage.y = 0;
+		this.ShootingContainer.addChild(this.ShootingBackgroundImage);
 
-        
+		// スコアの背景を追加(コンテナにまとめる)
+		this.ScoreContainer = new PIXI.Container();
+		// スコア用の文字列と，背景画像
+		this.ScoreBackgroundImage = new PIXI.Sprite(PIXI.Texture.from("ScoreBgImg"));
+      	this.ScoreBackgroundImage.anchor.set(0);// 左上が座標
+      	this.ScoreBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+      	this.ScoreBackgroundImage.x = 0; // 画面の一番左上に合わせる
+      	this.ScoreBackgroundImage.y = 0;
+		this.ScoreContainer.addChild(this.ScoreBackgroundImage);
+
+		// 文字列を追加する
+		this.ScoreTextStyle = new PIXI.TextStyle({
+			fontFamily: 'Arial',
+			fontSize: 36,
+			fill: '#000000',
+			align: 'right'
+		});
+		this.ScoreText = new PIXI.Text('Score: 0', this.ScoreTextStyle);
+		this.ScoreText.x = 0;
+		this.ScoreText.y = 0;
+		this.ScoreContainer.addChild(this.ScoreText); // スコアを表示するコンテナに追加
+
+		
+		// ULTポイント画面を作成する
+		// ULTコンテナ内に，ULTONコンテナとULTOFFコンテナを作成，ULTを上にしておいて，非表示にすることでOFF状態を作成する
+		this.ULTContainer = new PIXI.Container();
+		this.ULTContainerOn = new PIXI.Container();
+		this.ULTContainerOff = new PIXI.Container();
+		this.UltPointOns=[];
+		this.UltPointOffs=[]
+		for (let i =0; i < 5; ++i){
+			this.UltPointOns[i] = new PIXI.Sprite(PIXI.Texture.from("ULTPointImageOn"));
+			this.UltPointOns[i].anchor.set(0);// 左上が座標
+			this.UltPointOns[i].scale.set(InitialScale); // 初期スケールと画像サイズ調整
+			this.UltPointOns[i].x = 0; // 画面の一番左上に合わせる
+			this.UltPointOns[i].y = 0;
+			this.ULTContainerOn.addChild(this.UltPointOns[i]);
+
+			this.UltPointOffs[i] = new PIXI.Sprite(PIXI.Texture.from("ULTPointImageOff"));
+			this.UltPointOffs[i].anchor.set(0);// 左上が座標
+			this.UltPointOffs[i].scale.set(InitialScale); // 初期スケールと画像サイズ調整
+			this.UltPointOffs[i].x = 0; // 画面の一番左上に合わせる
+			this.UltPointOffs[i].y = 0;
+			this.ULTContainerOff.addChild(this.UltPointOffs[i]);
+		}
+
 		super.SetScreenVisible(false); // 初期は非表示
 	}
 	

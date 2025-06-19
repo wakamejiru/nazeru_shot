@@ -910,6 +910,14 @@ export const ImageAssetPaths = Object.freeze({
   InfomationBgScreen2: "../image/chara_select/InfomationBgScreen2.jpg",
   ArrowImageDown: "../image/chara_select/ArrowDown.png",
   ArrowImageUp: "../image/chara_select/ArrowUp.png",
+  GameBgScreen: "../image/game/game_image_bg.png",
+  ShootingScreen: "../image/game/shooting_bg.jpg",
+  LogoImage: "../image/game/gamelogo.png",
+  ULTBgImg: "../image/game/ult_bg.jpg",
+  ScoreBgImg: "../image/game/score_bg.jpg",
+  ULTPointImageOn: "../image/game/ult_point_on.png",
+  ULTPointImageOff: "../image/game/ult_point_off.png",
+
 });
 // AssetManagerで使う画像パスのリスト
 export const imageAssetPaths = Object.freeze({
