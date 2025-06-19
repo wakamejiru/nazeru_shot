@@ -36,6 +36,7 @@ export const ScreenImages = [
   "InfomationBgScreen2",
   "ArrowImageDown",
   "ArrowImageUp",
+  ...Object.values(CharaImagePath) // ←これでキャラ画像を読み込む
 ];
 
 
@@ -184,7 +185,7 @@ export class CharaSelectScreen extends BaseScreen{
 			CharaSprite.y = y;
 			CharaSprite.scale.set(InitialScale);
 			this.ScreenChara1Images.push(CharaSprite);
-			this.CharaImageContainer.addChild(CharaSprite);
+			this.CharaImageContainer.addChild(this.ScreenChara1Images[i]);
 		}
 
 		// // テストとしてキャラ1だけでのみ作成
@@ -386,7 +387,7 @@ export class CharaSelectScreen extends BaseScreen{
 			
 			// キャラの画像の再配置を行う
 
-		const CharaRadius = NewBGScreenWidht - NewBGScreenWidht*0.05 - (NewBGScreenWidht/2 - 0.1*NewBGScreenWidht); // 円の半径
+
 		const CharaCenterX = 0; // 中心X
 		const CharaCenterY = NewBGScreenHeight/2; // 中心Y
 
@@ -396,12 +397,15 @@ export class CharaSelectScreen extends BaseScreen{
 		for (let i = 0; i < CharaImageKeys.length; i++) {
 			// 回転軸角度は通常よりπ分だけ早くなっている
 			const Angle = Math.PI + CharaAngleStep * i;
-			const x = ScreenStartX + NewBGScreenWidht - (CharaCenterX + CharaRadius * Math.cos(Angle)); // 中心座標軸が異なるため、修正する
+			this.ScreenChara1Images[i].scale.set(CurrentOverallScale * 0.6);
+			// アンカーが画像の中心なので，半径は画像の幅も用いる
+			const CharaImageWidth = this.ScreenChara1Images[i].width;
+			const CharaRadius = NewBGScreenWidht - (NewBGScreenWidht*0.05 + CharaImageWidth / 2); // 円の半径
+
+			const x = ScreenStartX + NewBGScreenWidht + (CharaCenterX + CharaRadius * Math.cos(Angle));
 			const y = ScreenStartY + CharaCenterY + CharaRadius * Math.sin(Angle);
 			this.ScreenChara1Images[i].x = x;
 			this.ScreenChara1Images[i].y = y;
-			this.ScreenChara1Images[i].scale.set(CurrentOverallScale);
-			console.log(`Chara ${i} - X: ${x}, Y: ${y}, Scale: ${CurrentOverallScale}, Visible: ${this.ScreenChara1Images[i].visible}`);
 		}
 
 			// this.ClippingMask.clear();
