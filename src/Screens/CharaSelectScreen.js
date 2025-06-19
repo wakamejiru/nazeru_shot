@@ -394,12 +394,14 @@ export class CharaSelectScreen extends BaseScreen{
 		const CharaAngleStep = (2 * Math.PI) / CharaImageKeys.length;
 
 		for (let i = 0; i < CharaImageKeys.length; i++) {
-			const Angle = CharaAngleStep * i;
+			// 回転軸角度は通常よりπ分だけ早くなっている
+			const Angle = Math.PI + CharaAngleStep * i;
 			const x = ScreenStartX + NewBGScreenWidht - (CharaCenterX + CharaRadius * Math.cos(Angle)); // 中心座標軸が異なるため、修正する
 			const y = ScreenStartY + CharaCenterY + CharaRadius * Math.sin(Angle);
 			this.ScreenChara1Images[i].x = x;
 			this.ScreenChara1Images[i].y = y;
 			this.ScreenChara1Images[i].scale.set(CurrentOverallScale);
+			console.log(`Chara ${i} - X: ${x}, Y: ${y}, Scale: ${CurrentOverallScale}, Visible: ${this.ScreenChara1Images[i].visible}`);
 		}
 
 			// this.ClippingMask.clear();
