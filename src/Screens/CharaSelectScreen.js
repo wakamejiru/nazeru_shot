@@ -487,7 +487,7 @@ export class CharaSelectScreen extends BaseScreen{
             const pad = InputCurrentState.gamepad;
 
             // --- 十字キーまたは左スティックの左右 ---
-            if (pad.dpad.Up) {
+            if (pad.dpad.up) {
                 DetectionRotation = true;
                 selectionChanged = true;
             } else if (pad.dpad.down) {
