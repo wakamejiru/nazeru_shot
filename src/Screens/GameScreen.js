@@ -143,13 +143,14 @@ export class GameScreen extends BaseScreen{
 	   */
 		ResizeScreen(App, CurrentOverallScale){
 			if (!this.ScreenContainer) return;
-			let BaseTextureWidth = this.TitleBackgroundImage.texture.orig.width;
-			let BaseTextureHeight = this.TitleBackgroundImage.texture.orig.height;
+			let BaseTextureWidth = this.ScreenBackgroundImage.texture.orig.width;
+			let BaseTextureHeight = this.ScreenBackgroundImage.texture.orig.height;
 			const DisplaySizeWidth = this.App.screen.width;
 			const DisplaySizeheight = this.App.screen.height;
 			const newTitleSize = this.CalculateAspectRatioFit(BaseTextureWidth, BaseTextureHeight, DisplaySizeWidth, DisplaySizeheight);
-			this.TitleBackgroundImage.width = newTitleSize.width;
-			this.TitleBackgroundImage.height = newTitleSize.height;	
+			this.ScreenBackgroundImage.width = newTitleSize.width;
+			this.ScreenBackgroundImage.height = newTitleSize.height;
+
 			// 一番左上を合わせる
 			const ScreenStartPointWidth = (App.screen.width  - this.TitleBackgroundImage.width)  /2;
 			const ScreenStartPointheight = (App.screen.height - this.TitleBackgroundImage.height) / 2;
@@ -163,63 +164,66 @@ export class GameScreen extends BaseScreen{
 			const NowStartPointY = this.TitleBackgroundImage.y;
 
 			// キャラ画像を合わせる
-			BaseTextureWidth = this.TitleLogoImage.texture.orig.width;
-			BaseTextureHeight = this.TitleLogoImage.texture.orig.height;
+			BaseTextureWidth = this.LogoImage.texture.orig.width;
+			BaseTextureHeight = this.LogoImage.texture.orig.height;
+			this.LogoImage.width = BaseTextureWidth * CurrentOverallScale;
+			this.LogoImage.height = BaseTextureHeight * CurrentOverallScale;
+			this.LogoImage.x = NowStartPointX + NowImageSizeWidth*0.75;
+			this.LogoImage.y = NowStartPointY + NowImageSizeHeight*0.75;
 
-			this.TitleLogoImage.width = BaseTextureWidth * CurrentOverallScale;
-			this.TitleLogoImage.height = BaseTextureHeight * CurrentOverallScale;
+			// シューティング画面をリサイズ
+			this.ShootingBackgroundImage.width = NowImageSizeWidth*0.4;
+			this.ShootingBackgroundImage.height = NowImageSizeHeight*0.4;
+			this.ShootingBackgroundImage.x = NowStartPointX + NowImageSizeWidth*0.5*0.05;
+			this.ShootingBackgroundImage.y = NowStartPointY + NowImageSizeHeight*0.5*0.05;
 
-			this.TitleLogoImage.x = NowStartPointX + (NowImageSizeWidth / 10 + this.TitleLogoImage.width / 2);
-			this.TitleLogoImage.y = NowStartPointY + (NowImageSizeHeight * 0.1 + this.TitleLogoImage.height / 2);
+			// const StartButtonY = NowImageSizeHeight * 0.1;
+			// const ButtonDuringPoint = NowImageSizeHeight * 0.05;
 
-			
-			const StartButtonY = NowImageSizeHeight * 0.1;
-			const ButtonDuringPoint = NowImageSizeHeight * 0.05;
+			// // 登録されているボタンのリサイズを行う
+			// this.buttons.forEach((button, i) => {
+			// 	// 1. 各ボタンのリサイズ関数を呼び出す
+			// 	button.resizeButton(App, CurrentOverallScale);
 
-			// 登録されているボタンのリサイズを行う
-			this.buttons.forEach((button, i) => {
-				// 1. 各ボタンのリサイズ関数を呼び出す
-				button.resizeButton(App, CurrentOverallScale);
+			// 	// 2. ボタンの位置を再計算する
+			// 	button.x = ScreenStartPointWidth + NowImageSizeWidth - ((NowImageSizeWidth / 10 ) + button.width/2);
+			// 	button.y = ScreenStartPointheight + StartButtonY + (i* (button.height + ButtonDuringPoint));
+			// });
 
-				// 2. ボタンの位置を再計算する
-				button.x = ScreenStartPointWidth + NowImageSizeWidth - ((NowImageSizeWidth / 10 ) + button.width/2);
-				button.y = ScreenStartPointheight + StartButtonY + (i* (button.height + ButtonDuringPoint));
-			});
+			// if (this.descriptionContainer) {
+			// 	// --- 基準サイズを定義 ---
+			// 	const baseFontSize = 32;
+			// 	const basePadding = 20; // テキストの左右の余白
 
-			if (this.descriptionContainer) {
-				// --- 基準サイズを定義 ---
-				const baseFontSize = 32;
-				const basePadding = 20; // テキストの左右の余白
+			// 	// --- スケールを適用した新しいサイズを計算 ---
+			// 	// 幅は1/3から，ボタンのお尻まで
+			// 	// 高さはボタンの二倍
+			// 	const newWidth = (((this.buttons[1].x) + this.buttons[1].width/2)- NowImageSizeWidth / 3) - NowStartPointX;
+			// 	const newHeight = this.buttons[1].height * 1;
+			// 	const newFontSize = baseFontSize * CurrentOverallScale;
+			// 	const newPadding = basePadding * CurrentOverallScale;
 
-				// --- スケールを適用した新しいサイズを計算 ---
-				// 幅は1/3から，ボタンのお尻まで
-				// 高さはボタンの二倍
-				const newWidth = (((this.buttons[1].x) + this.buttons[1].width/2)- NowImageSizeWidth / 3) - NowStartPointX;
-				const newHeight = this.buttons[1].height * 1;
-				const newFontSize = baseFontSize * CurrentOverallScale;
-				const newPadding = basePadding * CurrentOverallScale;
+			// 	// 1. 背景パネルを再描画
+			// 	this.descriptionBackground.clear(); // 以前の描画をクリア
+			// 	this.descriptionBackground.roundRect(0, 0, newWidth, newHeight, 15 * CurrentOverallScale);
+			// 	this.descriptionBackground.fill({ color: 0xffffff, alpha: 0.85 });
+			// 	this.descriptionBackground.stroke({ width: 4 * CurrentOverallScale, color: 0x333333, alpha: 0.9 });
 
-				// 1. 背景パネルを再描画
-				this.descriptionBackground.clear(); // 以前の描画をクリア
-				this.descriptionBackground.roundRect(0, 0, newWidth, newHeight, 15 * CurrentOverallScale);
-				this.descriptionBackground.fill({ color: 0xffffff, alpha: 0.85 });
-				this.descriptionBackground.stroke({ width: 4 * CurrentOverallScale, color: 0x333333, alpha: 0.9 });
-
-				// 2. テキストスタイルを更新
-				this.descriptionText.style.fontSize = newFontSize;
-				this.descriptionText.style.lineHeight = newFontSize * 1.25;
-				this.descriptionText.style.wordWrapWidth = newWidth - (newPadding * 2);
+			// 	// 2. テキストスタイルを更新
+			// 	this.descriptionText.style.fontSize = newFontSize;
+			// 	this.descriptionText.style.lineHeight = newFontSize * 1.25;
+			// 	this.descriptionText.style.wordWrapWidth = newWidth - (newPadding * 2);
 				
-				// 3. テキストを再中央化
-				this.descriptionText.x = newWidth / 2;
-				this.descriptionText.y = newHeight / 2;
+			// 	// 3. テキストを再中央化
+			// 	this.descriptionText.x = newWidth / 2;
+			// 	this.descriptionText.y = newHeight / 2;
 
-				// 4. コンテナ全体の位置を調整（例：画面下部中央）
-				const screenCenterX = NowImageSizeWidth / 3;
-				const bottomMargin = NowImageSizeHeight * 0.05; // 画面下から5%の位置
-				this.descriptionContainer.x = NowStartPointX + screenCenterX;
-				this.descriptionContainer.y = NowStartPointY + NowImageSizeHeight - newHeight - bottomMargin;
-			}
+			// 	// 4. コンテナ全体の位置を調整（例：画面下部中央）
+			// 	const screenCenterX = NowImageSizeWidth / 3;
+			// 	const bottomMargin = NowImageSizeHeight * 0.05; // 画面下から5%の位置
+			// 	this.descriptionContainer.x = NowStartPointX + screenCenterX;
+			// 	this.descriptionContainer.y = NowStartPointY + NowImageSizeHeight - newHeight - bottomMargin;
+			//}
 		}
 	
 		/**

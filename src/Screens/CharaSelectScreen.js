@@ -578,6 +578,8 @@ export class CharaSelectScreen extends BaseScreen{
 
 				// 押されたボタンに対して遷移先を決定する
 				// 現在表示されている回転方向に応じてキャラクターを選択する
+
+				NextScreen = SCREEN_STATE.GAMEPLAY;
             }
         }
 		
