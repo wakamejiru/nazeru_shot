@@ -571,16 +571,12 @@ export class CharaSelectScreen extends BaseScreen{
         }
         // 決定が押された場合
         else if (confirmed) {
-            const selectedButton = this.buttons[this.selectedButtonIndex];
-            if (selectedButton) {
-                selectedButton.triggerClick(); // クリックを発火
-                this.InputCooldown = this.COOLDOWN_TIME; // 決定後、少し待つ
+			this.InputCooldown = this.COOLDOWN_TIME; // 決定後、少し待つ
 
-				// 押されたボタンに対して遷移先を決定する
-				// 現在表示されている回転方向に応じてキャラクターを選択する
+			// 押されたボタンに対して遷移先を決定する
+			// 現在表示されている回転方向に応じてキャラクターを選択する
 
-				NextScreen = SCREEN_STATE.GAMEPLAY;
-            }
+			NextScreen = SCREEN_STATE.GAMEPLAY;
         }
 		
 		// Keyの入力が何かあったかを判断する

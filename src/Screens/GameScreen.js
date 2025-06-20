@@ -69,7 +69,7 @@ export class GameScreen extends BaseScreen{
 
 		// 背景に置くロゴを追加
 		this.LogoImage = new PIXI.Sprite(PIXI.Texture.from("LogoImage"));
-      	this.LogoImage.anchor.set(0);// 左上が座標
+      	this.LogoImage.anchor.set(0.5);// 左上が座標
       	this.LogoImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
       	this.LogoImage.x = 0; // 画面の一番左上に合わせる
       	this.LogoImage.y = 0;
@@ -107,6 +107,7 @@ export class GameScreen extends BaseScreen{
 		this.ScoreText = new PIXI.Text('Score: 0', this.ScoreTextStyle);
 		this.ScoreText.x = 0;
 		this.ScoreText.y = 0;
+		this.ScoreText.anchor.set(0, 0.5);
 		this.ScoreContainer.addChild(this.ScoreText); // スコアを表示するコンテナに追加
 
 		
@@ -119,20 +120,33 @@ export class GameScreen extends BaseScreen{
 		this.UltPointOffs=[]
 		for (let i =0; i < 5; ++i){
 			this.UltPointOns[i] = new PIXI.Sprite(PIXI.Texture.from("ULTPointImageOn"));
-			this.UltPointOns[i].anchor.set(0);// 左上が座標
+			this.UltPointOns[i].anchor.set(0, 0.5);
 			this.UltPointOns[i].scale.set(InitialScale); // 初期スケールと画像サイズ調整
 			this.UltPointOns[i].x = 0; // 画面の一番左上に合わせる
 			this.UltPointOns[i].y = 0;
 			this.ULTContainerOn.addChild(this.UltPointOns[i]);
 
 			this.UltPointOffs[i] = new PIXI.Sprite(PIXI.Texture.from("ULTPointImageOff"));
-			this.UltPointOffs[i].anchor.set(0);// 左上が座標
+			this.UltPointOffs[i].anchor.set(0, 0.5);
 			this.UltPointOffs[i].scale.set(InitialScale); // 初期スケールと画像サイズ調整
 			this.UltPointOffs[i].x = 0; // 画面の一番左上に合わせる
 			this.UltPointOffs[i].y = 0;
 			this.ULTContainerOff.addChild(this.UltPointOffs[i]);
 		}
+		
+		// ULTの背景を追加
+		this.ULTBackgroundImage = new PIXI.Sprite(PIXI.Texture.from("ULTBgImg"));
+      	this.ULTBackgroundImage.anchor.set(0);// 左上が座標
+      	this.ULTBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+      	this.ULTBackgroundImage.x = 0; // 画面の一番左上に合わせる
+      	this.ULTBackgroundImage.y = 0;
+		this.ULTContainer.addChild(this.ULTBackgroundImage);
+		this.ULTContainer.addChild(this.ULTContainerOn);
+		this.ULTContainer.addChild(this.ULTContainerOff);
 
+		this.ScreenContainer.addChild(this.ShootingContainer);
+		this.ScreenContainer.addChild(this.ScoreContainer);
+		this.ScreenContainer.addChild(this.ULTContainer);
 		super.SetScreenVisible(false); // 初期は非表示
 	}
 	
@@ -152,78 +166,69 @@ export class GameScreen extends BaseScreen{
 			this.ScreenBackgroundImage.height = newTitleSize.height;
 
 			// 一番左上を合わせる
-			const ScreenStartPointWidth = (App.screen.width  - this.TitleBackgroundImage.width)  /2;
-			const ScreenStartPointheight = (App.screen.height - this.TitleBackgroundImage.height) / 2;
-			this.TitleBackgroundImage.x = ScreenStartPointWidth;
-			this.TitleBackgroundImage.y = ScreenStartPointheight;
+			const ScreenStartPointWidth = (App.screen.width  - this.ScreenBackgroundImage.width)  /2;
+			const ScreenStartPointheight = (App.screen.height - this.ScreenBackgroundImage.height) / 2;
+			this.ScreenBackgroundImage.x = ScreenStartPointWidth;
+			this.ScreenBackgroundImage.y = ScreenStartPointheight;
 
 			// ここからはAppのサイズは当てにならないので，バックグラウンドの画像で判断を付ける(バックグラウンドが実質画面サイズ)
-			const NowImageSizeWidth = this.TitleBackgroundImage.width;
-			const NowImageSizeHeight = this.TitleBackgroundImage.height;
-			const NowStartPointX = this.TitleBackgroundImage.x;
-			const NowStartPointY = this.TitleBackgroundImage.y;
+			const NowImageSizeWidth = this.ScreenBackgroundImage.width;
+			const NowImageSizeHeight = this.ScreenBackgroundImage.height;
+			const NowStartPointX = this.ScreenBackgroundImage.x;
+			const NowStartPointY = this.ScreenBackgroundImage.y;
 
-			// キャラ画像を合わせる
+			// ロゴ画像を合わせる
 			BaseTextureWidth = this.LogoImage.texture.orig.width;
 			BaseTextureHeight = this.LogoImage.texture.orig.height;
 			this.LogoImage.width = BaseTextureWidth * CurrentOverallScale;
 			this.LogoImage.height = BaseTextureHeight * CurrentOverallScale;
-			this.LogoImage.x = NowStartPointX + NowImageSizeWidth*0.75;
+			this.LogoImage.x = NowStartPointX + NowImageSizeWidth*0.8;
 			this.LogoImage.y = NowStartPointY + NowImageSizeHeight*0.75;
 
 			// シューティング画面をリサイズ
-			this.ShootingBackgroundImage.width = NowImageSizeWidth*0.4;
-			this.ShootingBackgroundImage.height = NowImageSizeHeight*0.4;
-			this.ShootingBackgroundImage.x = NowStartPointX + NowImageSizeWidth*0.5*0.05;
-			this.ShootingBackgroundImage.y = NowStartPointY + NowImageSizeHeight*0.5*0.05;
+			// 画面は7割区域までもっていく 左余白は2割で幅は5割固定
+			this.ShootingBackgroundImage.width = NowImageSizeWidth*0.5;
+			this.ShootingBackgroundImage.height = NowImageSizeHeight*0.9;
+			this.ShootingBackgroundImage.x = NowStartPointX + NowImageSizeWidth*0.1;
+			this.ShootingBackgroundImage.y = NowStartPointY + NowImageSizeHeight*0.05;
 
-			// const StartButtonY = NowImageSizeHeight * 0.1;
-			// const ButtonDuringPoint = NowImageSizeHeight * 0.05;
 
-			// // 登録されているボタンのリサイズを行う
-			// this.buttons.forEach((button, i) => {
-			// 	// 1. 各ボタンのリサイズ関数を呼び出す
-			// 	button.resizeButton(App, CurrentOverallScale);
+			// スコアの表示個所を作る
+			this.ScoreBackgroundImage.width = NowImageSizeWidth * 0.3
+			this.ScoreBackgroundImage.height = NowImageSizeHeight * 0.2
+    	  	this.ScoreBackgroundImage.x = this.ShootingBackgroundImage.x + this.ShootingBackgroundImage.width + NowImageSizeWidth*0.05;
+	      	this.ScoreBackgroundImage.y = this.ShootingBackgroundImage.y + NowImageSizeHeight * 0.1;
 
-			// 	// 2. ボタンの位置を再計算する
-			// 	button.x = ScreenStartPointWidth + NowImageSizeWidth - ((NowImageSizeWidth / 10 ) + button.width/2);
-			// 	button.y = ScreenStartPointheight + StartButtonY + (i* (button.height + ButtonDuringPoint));
-			// });
+			// スコアの文字列を背景に収める
+			this.ScoreText.style.fontSize = this.ScoreTextStyle.fontSize * CurrentOverallScale;
+			this.ScoreText.x = this.ScoreBackgroundImage.x + this.ScoreBackgroundImage.width*0.05;
+			this.ScoreText.y = this.ScoreBackgroundImage.y + this.ScoreBackgroundImage.height*0.5;
 
-			// if (this.descriptionContainer) {
-			// 	// --- 基準サイズを定義 ---
-			// 	const baseFontSize = 32;
-			// 	const basePadding = 20; // テキストの左右の余白
 
-			// 	// --- スケールを適用した新しいサイズを計算 ---
-			// 	// 幅は1/3から，ボタンのお尻まで
-			// 	// 高さはボタンの二倍
-			// 	const newWidth = (((this.buttons[1].x) + this.buttons[1].width/2)- NowImageSizeWidth / 3) - NowStartPointX;
-			// 	const newHeight = this.buttons[1].height * 1;
-			// 	const newFontSize = baseFontSize * CurrentOverallScale;
-			// 	const newPadding = basePadding * CurrentOverallScale;
+			// ULT用の背景を作成
+			this.ULTBackgroundImage.width = this.ScoreBackgroundImage.width;
+			this.ULTBackgroundImage.height = NowImageSizeHeight * 0.15;
+			this.ULTBackgroundImage.x = this.ScoreBackgroundImage.x;
+			this.ULTBackgroundImage.y = this.ScoreBackgroundImage.y + this.ScoreBackgroundImage.height + NowImageSizeHeight * 0.1;
 
-			// 	// 1. 背景パネルを再描画
-			// 	this.descriptionBackground.clear(); // 以前の描画をクリア
-			// 	this.descriptionBackground.roundRect(0, 0, newWidth, newHeight, 15 * CurrentOverallScale);
-			// 	this.descriptionBackground.fill({ color: 0xffffff, alpha: 0.85 });
-			// 	this.descriptionBackground.stroke({ width: 4 * CurrentOverallScale, color: 0x333333, alpha: 0.9 });
+			const ULTPointAreaWidht = this.ULTBackgroundImage.width*0.7;
+			const ULTPointAreaStartX = this.ULTBackgroundImage.x + (this.ULTBackgroundImage.width - ULTPointAreaWidht);
+			for (let i =0; i < 5; ++i){
+				this.UltPointOns[i].scale.set(CurrentOverallScale); // 初期スケールと画像サイズ調整
+				this.UltPointOns[i].width = ULTPointAreaWidht/5;
+				this.UltPointOns[i].height = this.UltPointOns[i].width; // 5角形なので同じ大きさ
+				this.UltPointOns[i].x = ULTPointAreaStartX + (i * this.UltPointOns[i].width);
+				this.UltPointOns[i].y = this.ULTBackgroundImage.y + this.ULTBackgroundImage.height / 2;
+				this.ULTContainerOn.addChild(this.UltPointOns[i]);
 
-			// 	// 2. テキストスタイルを更新
-			// 	this.descriptionText.style.fontSize = newFontSize;
-			// 	this.descriptionText.style.lineHeight = newFontSize * 1.25;
-			// 	this.descriptionText.style.wordWrapWidth = newWidth - (newPadding * 2);
-				
-			// 	// 3. テキストを再中央化
-			// 	this.descriptionText.x = newWidth / 2;
-			// 	this.descriptionText.y = newHeight / 2;
 
-			// 	// 4. コンテナ全体の位置を調整（例：画面下部中央）
-			// 	const screenCenterX = NowImageSizeWidth / 3;
-			// 	const bottomMargin = NowImageSizeHeight * 0.05; // 画面下から5%の位置
-			// 	this.descriptionContainer.x = NowStartPointX + screenCenterX;
-			// 	this.descriptionContainer.y = NowStartPointY + NowImageSizeHeight - newHeight - bottomMargin;
-			//}
+				this.UltPointOffs[i].scale.set(CurrentOverallScale); // 初期スケールと画像サイズ調整
+				this.UltPointOffs[i].width = ULTPointAreaWidht/5;
+				this.UltPointOffs[i].height = this.UltPointOffs[i].width; // 5角形なので同じ大きさ
+				this.UltPointOffs[i].x = ULTPointAreaStartX + (i * this.UltPointOffs[i].width); // 画面の一番左上に合わせる
+				this.UltPointOffs[i].y = this.ULTBackgroundImage.y + this.ULTBackgroundImage.height / 2;
+				this.ULTContainerOff.addChild(this.UltPointOffs[i]);
+			}
 		}
 	
 		/**
@@ -246,14 +251,14 @@ export class GameScreen extends BaseScreen{
      * 画像を読み込み、PixiJSテクスチャを準備する関数
      */
 	async LoadcreenAssetsForPixi() {
-        const TitleFrameKeysToLoad = TitleScreenImages.filter(key => ImageAssetPaths[key]);
-        const AssetsToLoadForPixi = TitleFrameKeysToLoad.map(key => ({ alias: key, src: ImageAssetPaths[key] }));
+        const FrameKeysToLoad = ScreenImages.filter(key => ImageAssetPaths[key]);
+        const AssetsToLoadForPixi = FrameKeysToLoad.map(key => ({ alias: key, src: ImageAssetPaths[key] }));
         if (AssetsToLoadForPixi.length > 0) {
             await PIXI.Assets.load(AssetsToLoadForPixi);
 
-            TitleFrameKeysToLoad.forEach(key => {
+            FrameKeysToLoad.forEach(key => {
             const texture = PIXI.Texture.from(key);
-            this.TitleTextures.push(texture);
+            this.ScreenTextures.push(texture);
             });
         }
 	}
