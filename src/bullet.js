@@ -1,5 +1,5 @@
 import { CharacterTypeEnum, SkillTypeEnum, UltTypeEnum, MainBulletEnum, SubBulletEnum, 
-	character_info_list, skill_info_list,  ult_info_list, main_bulled_info_list, sub_bulled_info_list, imageAssetPaths} from './game_status.js'; // Bulletクラスもインポート
+	character_info_list, skill_info_list,  ult_info_list, main_bulled_info_list, sub_bulled_info_list, ImageAssetPaths} from './game_status.js'; // Bulletクラスもインポート
 
 // ==================================================================
 // Bullet クラスの定義
@@ -9,7 +9,7 @@ import { CharacterTypeEnum, SkillTypeEnum, UltTypeEnum, MainBulletEnum, SubBulle
 // 打ち出し，設置は各クラスで制御する
 export class Bullet {
     // ひし形や三角，楕円の弾も扱えるようにする
-    constructor(startX, startY, asset_manager, options = {}) {
+    constructor(startX, startY, options = {}) {
         this.x = startX - options.width/2;
         this.y = startY;
 
@@ -23,10 +23,9 @@ export class Bullet {
 
         // 見た目の弾丸
         // 画像を使用する
-        this.asset_manager = asset_manager;   // 画像などのアセットを管理
         this.BulletImageKey = options.BulletImageKey;
         // 画像読み込み
-		this.spritebullet = this.BulletImageKey ? this.asset_manager.getImage(this.BulletImageKey) : null;
+		this.spritebullet = this.BulletImageKey ? ImageAssetPaths[this.BulletImageKey] : null;
 		if (this.BulletImageKey && !this.spritebullet) {
 			console.warn(`Player sprite for key "${this.avatar_image_key}" not loaded. Fallback color will be used.`);
 		}

@@ -1,7 +1,12 @@
+// ゲームプレイ画面
+
 import { CustomButton } from "../Buttons/ButtonBase.js";
 import { ImageAssetPaths } from '../game_status.js'; 
-import { BaseScreen, FRAME_DURATION, SCREEN_STATE } from './BaseScreen.js';
-// タイトル画面
+import { BaseScreen, FRAME_DURATION, SCREEN_STATE, MapIndex,  CharaIndex} from './BaseScreen.js';
+import {PlayerType1} from "../Player/Type1Player.js";
+import {EnemyType1} from "../Enemy/EnemyType1.js";
+import {EnemyType2} from "../Enemy/EnemyType2.js";
+
 
 // ボタンはない
 const ButtonID = Object.freeze({
@@ -35,7 +40,6 @@ export const ScreenImages = [
 
 
 
-
 // 実際のゲーム画面を設計する
 export class GameScreen extends BaseScreen{
 	/**
@@ -52,6 +56,10 @@ export class GameScreen extends BaseScreen{
 		
 		// ゲーム中の必要なパラメータはここで宣言する
 		this.NowULTPoint = 3;
+		// プレイヤーと敵のインスタンス	
+		this.PlayerInstance = null;
+		this.EnemyInstance = null;
+		
     }
 
 	/**
@@ -255,7 +263,7 @@ export class GameScreen extends BaseScreen{
 			this.NowULTPoint = 3;
 			// ULTの表示を反映
 			this.UpdateULTPointVeiw();
-
+			this.CreateEnemyPlayerInstance();
 			super.StartScreen();
 	  }
 		
@@ -405,7 +413,7 @@ export class GameScreen extends BaseScreen{
         }
     }
 
-	  /**
+	/**
      * 現在のULTPointの状態を表示に反映させる
      */
 	UpdateULTPointVeiw(){
@@ -418,6 +426,24 @@ export class GameScreen extends BaseScreen{
 		
 		for(let i = 0; i < nowUltPoint; ++i){
 			this.UltPointOffs[i].visible = false;		
+		}
+	}
+
+	/**
+     * 初期起動時のプレイヤーと敵のインスタンスを生成する
+     */
+	CreateEnemyPlayerInstance(){
+		switch(CharaIndex){
+			case 0:
+				this.PlayerInstance =  new PlayerType1(this.ShootingBackgroundImage.width/2, 
+					this.ShootingBackgroundImage.y + this.ShootingBackgroundImage.height*0.8, this.ShootingContainer, 
+				this.ShootingBackgroundImage.width, this.ShootingBackgroundImage.height);
+				break;
+			default:
+				this.PlayerInstance =  new PlayerType1(this.ShootingBackgroundImage.width/2, 
+					this.ShootingBackgroundImage.y + this.ShootingBackgroundImage.height*0.8, this.ShootingContainer, 
+				this.ShootingBackgroundImage.width, this.ShootingBackgroundImage.height);
+				break;
 		}
 	}
 

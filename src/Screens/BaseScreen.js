@@ -16,6 +16,13 @@ export const SCREEN_STATE = Object.freeze({
     GAMEPLAY: 'gameplay'
 });
 
+// ここに選んだマップ情報や，選んだキャラの情報を置いておく
+export let MapIndex = 0;
+export let CharaIndex = 0;
+
+
+
+
 export class BaseScreen{
 
 	/**

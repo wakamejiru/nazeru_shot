@@ -8,16 +8,16 @@ import {
     sub_bulled_info_list, 
     MainBulletEnum, 
     SubBulletEnum ,
-    SkillTypeEnum} from '../game_status.js';
+    SkillTypeEnum,
+    ImageAssetPaths} from '../game_status.js';
 import { Bullet } from '../bullet.js'; // Bulletクラスもインポート
 
 export class PlayerBase {    
     // コンストラクタ
-    constructor(InitialX, InitialY, AssetManager, Canvas, CharacterConfig, NowPlayAreaWidth, NowPlayAreaHeight) {
+    constructor(InitialX, InitialY, Canvas, CharacterConfig, NowPlayAreaWidth, NowPlayAreaHeight) {
         this.x = InitialX; //現在のぽじっしょん
         this.y = InitialY;
 
-        this.AssetManager = AssetManager;
         this.Canvas = Canvas;
         this.CurrentScaleFactor = 1.0;
 
@@ -46,8 +46,8 @@ export class PlayerBase {
         this.MaxHP = CharacterConfig.character_maxhp;
         this.NowHP = this.MaxHP;
         
-        this.SpriteAvator = this.AvatorImageKey ? this.AssetManager.getImage(this.AvatorImageKey) : null;
-        this.SpriteHitpoint = this.HitpointImageKey ? this.AssetManager.getImage(this.HitpointImageKey) : null;
+        this.SpriteAvator = this.AvatorImageKey ? ImageAssetPaths[this.AvatorImageKey] : null;
+        this.SpriteHitpoint = this.HitpointImageKey ? ImageAssetPaths[this.HitpointImageKey] : null;
 
         // スキル/攻撃パターン管理
         this.BasetrackingStrengthPower = 0.0;
@@ -321,7 +321,7 @@ export class PlayerBase {
                 };
 
             // 作ったインスタンスをpushする
-            PlayerBulletsArray.push(new Bullet(StartPointX, StartPointY, this.AssetManager, bulletOptions));
+            PlayerBulletsArray.push(new Bullet(StartPointX, StartPointY, bulletOptions));
         }
 
         return BulletInfo.rate; // クールダウン再セット

@@ -5,7 +5,7 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
     main_bulled_info_list, sub_bulled_info_list } from '../game_status.js';
 
 export class PlayerType1 extends PlayerBase {
-    constructor(InitialX, InitialY, AssetManager, Canvas, NowPlayAreaWidth, NowPlayAreaHeight) {
+    constructor(InitialX, InitialY, Canvas, NowPlayAreaWidth, NowPlayAreaHeight) {
         const myCharacterConfig = character_info_list[CharacterTypeEnum.TYPE_1];
         // PlayerBaseのコンストラクタに渡すための共通情報を抽出・設定
         const baseConfig = {
@@ -26,7 +26,7 @@ export class PlayerType1 extends PlayerBase {
             character_m_bullet: myCharacterConfig.character_m_bullet,
             character_s_bullet: myCharacterConfig.character_s_bullet,
         };
-        super(InitialX, InitialY, AssetManager, Canvas, baseConfig, NowPlayAreaWidth, NowPlayAreaHeight);
+        super(InitialX, InitialY, Canvas, baseConfig, NowPlayAreaWidth, NowPlayAreaHeight);
 
         this.main_bullet_list = [];
         this.sub_bullet_list = [];
