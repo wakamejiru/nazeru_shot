@@ -16,12 +16,13 @@ export const CharacterTypeEnum = Object.freeze({
   TYPE_7: "Type7",
   TYPE_8: "Type8",
   TYPE_9: "Type9",
+  TYPE_10: "Type10",
 });
 
 export const SkillTypeEnum = Object.freeze({
   NONE: "NONE", 
   SKILL_1: "skill_1", // 小回復
-  SKILL_1: "skill_2", // 追尾
+  SKILL_2: "skill_2", // 追尾
 });
 
 export const UltTypeEnum = Object.freeze({
@@ -38,33 +39,18 @@ export const MainBulletEnum = Object.freeze({
   NONE: "NONE",
   M_BULLET_1: "m_bullet_1", // 通常弾
   M_BULLET_2: "m_bullet_2", // 通常弾
-  M_BULLET_3: "m_bullet_2_R", // 通常弾
-  M_BULLET_4: "m_bullet_3", // 通常弾
-  M_BULLET_5: "m_bullet_3_R", // 通常弾
-  M_BULLET_6: "m_bullet_4", // 通常弾
-  M_BULLET_7: "m_bullet_4_R", // 通常弾
+  M_BULLET_3: "m_bullet_3", // 通常弾
+  M_BULLET_4: "m_bullet_4", // 通常弾
 });
 
 export const SubBulletEnum = Object.freeze({
   NONE: "NONE",
   S_BULLET_1: "s_bullet_1", // サブウェポン
-  S_BULLET_2: "s_bullet_1_R", // サブウェポン1のR
-  
-  S_BULLET_3: "s_bullet_2", // サブウェポン2
-  S_BULLET_4: "s_bullet_2_R", // サブウェポン2のR
-  
-  S_BULLET_5: "s_bullet_3", // サブウェポン3
-  S_BULLET_6: "s_bullet_3_R", // サブウェポン3のR
-
-  S_BULLET_7: "s_bullet_4_1", // サブウェポン4
-  S_BULLET_8: "s_bullet_4_2", // サブウェポン4
-  S_BULLET_9: "s_bullet_4_3", // サブウェポン4
-  S_BULLET_10: "s_bullet_4_4", // サブウェポン4
-  S_BULLET_11: "s_bullet_4_5", // サブウェポン4
-
-  S_BULLET_12: "s_bullet_5", // サブウェポン5
-  S_BULLET_13: "s_bullet_6", // サブウェポン5
-
+  S_BULLET_2: "s_bullet_2", // サブウェポン2
+  S_BULLET_3: "s_bullet_3", // サブウェポン3
+  S_BULLET_4: "s_bullet_4", // サブウェポン4
+  S_BULLET_5: "s_bullet_5", // サブウェポン5
+  S_BULLET_6: "s_bullet_6", // サブウェポン5
 });
 
 
@@ -102,7 +88,7 @@ export const  main_bulled_info_list = {
         // NONEの場合無視
 
     },
-    [MainBulletEnum.M_BULLET_1]:
+    [MainBulletEnum.M_BULLET_1]: // 3方向に扇形に発射
     {
         bullet_number :3, // バレットの数は3
         Bullet_Angle :30, // バレットの放射角度(R)
@@ -139,11 +125,17 @@ export const  main_bulled_info_list = {
         sine_axis: "x",             // "x" ならX軸方向に揺れる、"y"ならY軸方向に揺れる (オプション)
         sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
     },
-    [MainBulletEnum.M_BULLET_2]:
+    [MainBulletEnum.M_BULLET_2]: // 1方向に主砲が2つ
     {
-        start_x_pos:20,
-        start_y_pos:0,
-        ballet_name:"メインウエポン2",
+        bullet_number :2, // バレットの数は3
+        Bullet_Angle :0, // バレットの放射角度(R)
+        z_bullet_angle_mag: 0, // 低速モード時の集中率
+        // 半径と設置角度からバレットの放出点を計算することができる        
+        bullet_pointAngle: 0, //バレットの設置角度(R)
+        bullet_pointRadius: 200, // バレットの設置半径
+        z_bullet_pointRadius_mag: 0.5, // 低速モード時の集中率
+
+        ballet_name:"メインウエポン1",
         ball_image_key: "bulletTypeA",
         ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
         bullet_width: 15.0,
@@ -159,7 +151,8 @@ export const  main_bulled_info_list = {
         damage: 25,
         bulled_life: 5,
         bulled_maxSpeed: 10000,
-        rate:0.1,
+        rate:0.2,
+
         // --- サインカーブ専用パラメータ ---
         sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
         sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
@@ -172,9 +165,15 @@ export const  main_bulled_info_list = {
     },
     [MainBulletEnum.M_BULLET_3]:
     {
-        start_x_pos:-20,
-        start_y_pos:0,
-        ballet_name:"メインウエポン2R",
+                bullet_number :2, // バレットの数は3
+        Bullet_Angle :0, // バレットの放射角度(R)
+        z_bullet_angle_mag: 0, // 低速モード時の集中率
+        // 半径と設置角度からバレットの放出点を計算することができる        
+        bullet_pointAngle: 0, //バレットの設置角度(R)
+        bullet_pointRadius: 200, // バレットの設置半径
+        z_bullet_pointRadius_mag: 0.5, // 低速モード時の集中率
+
+        ballet_name:"メインウエポン1",
         ball_image_key: "bulletTypeA",
         ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
         bullet_width: 15.0,
@@ -190,7 +189,8 @@ export const  main_bulled_info_list = {
         damage: 25,
         bulled_life: 5,
         bulled_maxSpeed: 10000,
-        rate:0.1,
+        rate:0.2,
+
         // --- サインカーブ専用パラメータ ---
         sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
         sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
@@ -203,25 +203,32 @@ export const  main_bulled_info_list = {
     },
     [MainBulletEnum.M_BULLET_4]:
     {
-        start_x_pos:20,
-        start_y_pos:0,
-        ballet_name:"メインウエポン3",
+        bullet_number :2, // バレットの数は3
+        Bullet_Angle :0, // バレットの放射角度(R)
+        z_bullet_angle_mag: 0, // 低速モード時の集中率
+        // 半径と設置角度からバレットの放出点を計算することができる        
+        bullet_pointAngle: 0, //バレットの設置角度(R)
+        bullet_pointRadius: 200, // バレットの設置半径
+        z_bullet_pointRadius_mag: 0.5, // 低速モード時の集中率
+
+        ballet_name:"メインウエポン1",
         ball_image_key: "bulletTypeA",
         ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
         bullet_width: 15.0,
         bullet_height: 15.0,
         orientation: 0.0, // 回転数
         x_speed:0,
-        y_speed:1100,
+        y_speed:1500,
         accel_x:0,
-        accel_y:0,// -1100貫通弾の時はこれが使える
+        accel_y:0,
         jeak_x:0,
-        jeak_y: -2250,// 500,
+        jeak_y:0,
         color: 'rgb(255, 255, 255)',
         damage: 25,
         bulled_life: 5,
         bulled_maxSpeed: 10000,
-        rate:0.1,
+        rate:0.2,
+
         // --- サインカーブ専用パラメータ ---
         sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
         sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
@@ -231,97 +238,6 @@ export const  main_bulled_info_list = {
         sine_axis: "x",             // "x" ならX軸方向に揺れる、"y"ならY軸方向に揺れる (オプション)
         sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
     
-    },
-    [MainBulletEnum.M_BULLET_5]:
-    {
-        start_x_pos:-20,
-        start_y_pos:0,
-        ballet_name:"メインウエポン3R",
-        ball_image_key: "bulletTypeA",
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 15.0,
-        bullet_height: 15.0,
-        orientation: 0.0, // 回転数
-        x_speed:0,
-        y_speed:1100,
-        accel_x:0,
-        accel_y:0,
-        jeak_x:0,
-        jeak_y:-2250,
-        color: 'rgb(255, 255, 255)',
-        damage: 25,
-        bulled_life: 5,
-        bulled_maxSpeed: 10000,
-        rate:0.1,
-        // --- サインカーブ専用パラメータ ---
-        sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
-        sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
-        sine_angular_frequency: Math.PI * 4, // 角周波数 (ラジアン/秒)。値が大きいほど波が細かくなる。
-                                        // 例: Math.PI * 4 は1秒間に2周期の波
-        sine_phase_offset: 0,      // 位相オフセット (波の開始位置をずらす、ラジアン単位、オプション)
-        sine_axis: "x",             // "x" ならX軸方向に揺れる、"y"ならY軸方向に揺れる (オプション)
-        sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
-    
-    },
-    [MainBulletEnum.M_BULLET_6]:
-    {
-        start_x_pos:0,
-        start_y_pos:0,
-        ballet_name:"メインウエポン4",
-        ball_image_key: "bulletTypeA",
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 15.0,
-        bullet_height: 15.0,
-        orientation: 0.0, // 回転数
-        x_speed:0,
-        y_speed:1000,
-        accel_x:0,
-        accel_y:0,
-        jeak_x:0,
-        jeak_y:0,
-        color: 'rgb(255, 255, 255)',
-        damage: 25,
-        bulled_life: 5,
-        bulled_maxSpeed: 10000,
-        rate:0.1,
-        // --- サインカーブ専用パラメータ ---
-        sine_wave_enabled: true,       // この弾でサインカーブを有効にするか
-        sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
-        sine_angular_frequency: Math.PI * 8, // 角周波数 (ラジアン/秒)。値が大きいほど波が細かくなる。
-                                        // 例: Math.PI * 4 は1秒間に2周期の波
-        sine_phase_offset: 0,      // 位相オフセット (波の開始位置をずらす、ラジアン単位、オプション)
-        sine_axis: "x",             // "x" ならX軸方向に揺れる、"y"ならY軸方向に揺れる (オプション)
-        sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
-    },
-    [MainBulletEnum.M_BULLET_7]:
-    {
-        start_x_pos:0,
-        start_y_pos:0,
-        ballet_name:"メインウエポン4",
-        ball_image_key: "bulletTypeA",
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 15.0,
-        bullet_height: 15.0,
-        orientation: 0.0, // 回転数
-        x_speed:0,
-        y_speed:1000,
-        accel_x:0,
-        accel_y:0,
-        jeak_x:0,
-        jeak_y:0,
-        color: 'rgb(255, 255, 255)',
-        damage: 25,
-        bulled_life: 5,
-        bulled_maxSpeed: 10000,
-        rate:0.1,
-        // --- サインカーブ専用パラメータ ---
-        sine_wave_enabled: true,       // この弾でサインカーブを有効にするか
-        sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
-        sine_angular_frequency: Math.PI * 8, // 角周波数 (ラジアン/秒)。値が大きいほど波が細かくなる。
-                                        // 例: Math.PI * 4 は1秒間に2周期の波
-        sine_phase_offset: Math.PI,      // 位相オフセット (波の開始位置をずらす、ラジアン単位、オプション)
-        sine_axis: "x",             // "x" ならX軸方向に揺れる、"y"ならY軸方向に揺れる (オプション)
-        sine_decay_rate: 0,                // 減衰率。0なら減衰なし。
     }
 };
   
@@ -917,147 +833,6 @@ export const ImageAssetPaths = Object.freeze({
   ScoreBgImg: "../image/game/score_bg.jpg",
   ULTPointImageOn: "../image/game/ult_point_on.png",
   ULTPointImageOff: "../image/game/ult_point_off.png",
-
-});
-// AssetManagerで使う画像パスのリスト
-export const imageAssetPaths = Object.freeze({
-  AvatarTypeA: "../image/avatar/avator1.png",
-  HitImageTypeA: "../image/avatar/HitImage.svg",
-  BulletTypeA: "../image/canon/cirlce1.svg",
-  EnemyTypeA: "../image/enemy/Enemy1.png",
-  loadingFrame1: "../image/load/load_frame_0001.png",
-  loadingFrame2: "../image/load/load_frame_0002.png",
-  loadingFrame3: "../image/load/load_frame_0003.png",
-  loadingFrame4: "../image/load/load_frame_0004.png",
-  loadingFrame5: "../image/load/load_frame_0005.png",
-  loadingFrame6: "../image/load/load_frame_0006.png",
-  loadingFrame7: "../image/load/load_frame_0007.png",
-  loadingFrame8: "../image/load/load_frame_0008.png",
-  loadingFrame9: "../image/load/load_frame_0009.png",
-  loadingFrame10: "../image/load/load_frame_0010.png",
-  loadingFrame11: "../image/load/load_frame_0011.png",
-  loadingFrame12: "../image/load/load_frame_0012.png",
-  loadingFrame13: "../image/load/load_frame_0013.png",
-  loadingFrame14: "../image/load/load_frame_0014.png",
-  loadingFrame15: "../image/load/load_frame_0015.png",
-  loadingFrame16: "../image/load/load_frame_0016.png",
-  loadingFrame17: "../image/load/load_frame_0017.png",
-  loadingFrame18: "../image/load/load_frame_0018.png",
-  loadingFrame19: "../image/load/load_frame_0019.png",
-  loadingFrame20: "../image/load/load_frame_0020.png",
-  loadingFrame21: "../image/load/load_frame_0021.png",
-  loadingFrame22: "../image/load/load_frame_0022.png",
-  loadingFrame23: "../image/load/load_frame_0023.png",
-  loadingFrame24: "../image/load/load_frame_0024.png",
-  loadingFrame25: "../image/load/load_frame_0025.png",
-  loadingFrame26: "../image/load/load_frame_0026.png",
-  loadingFrame27: "../image/load/load_frame_0027.png",
-  loadingFrame28: "../image/load/load_frame_0028.png",
-  loadingFrame29: "../image/load/load_frame_0029.png",
-  loadingFrame30: "../image/load/load_frame_0030.png",
-  loadingFrame31: "../image/load/load_frame_0031.png",
-  loadingFrame32: "../image/load/load_frame_0032.png",
-  loadingFrame33: "../image/load/load_frame_0033.png",
-  loadingFrame34: "../image/load/load_frame_0034.png",
-  loadingFrame35: "../image/load/load_frame_0035.png",
-  loadingFrame36: "../image/load/load_frame_0036.png",
-  loadingFrame37: "../image/load/load_frame_0037.png",
-  loadingFrame38: "../image/load/load_frame_0038.png",
-  loadingFrame39: "../image/load/load_frame_0039.png",
-  loadingFrame40: "../image/load/load_frame_0040.png",
-  loadingFrame41: "../image/load/load_frame_0041.png",
-  loadingFrame42: "../image/load/load_frame_0042.png",
-  loadingFrame43: "../image/load/load_frame_0043.png",
-  loadingFrame44: "../image/load/load_frame_0044.png",
-  loadingFrame45: "../image/load/load_frame_0045.png",
-  loadingFrame46: "../image/load/load_frame_0046.png",
-  loadingFrame47: "../image/load/load_frame_0047.png",
-  loadingFrame48: "../image/load/load_frame_0048.png",
-  loadingFrame49: "../image/load/load_frame_0049.png",
-  loadingFrame50: "../image/load/load_frame_0050.png",
-  loadingFrame51: "../image/load/load_frame_0051.png",
-    logoFrame1: "../image/logo/logo_anime_0001.png",
-  logoFrame2: "../image/logo/logo_anime_0002.png",
-  logoFrame3: "../image/logo/logo_anime_0003.png",
-  logoFrame4: "../image/logo/logo_anime_0004.png",
-  logoFrame5: "../image/logo/logo_anime_0005.png",
-  logoFrame6: "../image/logo/logo_anime_0006.png",
-  logoFrame7: "../image/logo/logo_anime_0007.png",
-  logoFrame8: "../image/logo/logo_anime_0008.png",
-  logoFrame9: "../image/logo/logo_anime_0009.png",
-  logoFrame10: "../image/logo/logo_anime_0010.png",
-  logoFrame11: "../image/logo/logo_anime_0011.png",
-  logoFrame12: "../image/logo/logo_anime_0012.png",
-  logoFrame13: "../image/logo/logo_anime_0013.png",
-  logoFrame14: "../image/logo/logo_anime_0014.png",
-  logoFrame15: "../image/logo/logo_anime_0015.png",
-  logoFrame16: "../image/logo/logo_anime_0016.png",
-  logoFrame17: "../image/logo/logo_anime_0017.png",
-  logoFrame18: "../image/logo/logo_anime_0018.png",
-  logoFrame19: "../image/logo/logo_anime_0019.png",
-  logoFrame20: "../image/logo/logo_anime_0020.png",
-  logoFrame21: "../image/logo/logo_anime_0021.png",
-  logoFrame22: "../image/logo/logo_anime_0022.png",
-  logoFrame23: "../image/logo/logo_anime_0023.png",
-  logoFrame24: "../image/logo/logo_anime_0024.png",
-  logoFrame25: "../image/logo/logo_anime_0025.png",
-  logoFrame26: "../image/logo/logo_anime_0026.png",
-  logoFrame27: "../image/logo/logo_anime_0027.png",
-  logoFrame28: "../image/logo/logo_anime_0028.png",
-  logoFrame29: "../image/logo/logo_anime_0029.png",
-  logoFrame30: "../image/logo/logo_anime_0030.png",
-  logoFrame31: "../image/logo/logo_anime_0031.png",
-  logoFrame32: "../image/logo/logo_anime_0032.png",
-  logoFrame33: "../image/logo/logo_anime_0033.png",
-  logoFrame34: "../image/logo/logo_anime_0034.png",
-  logoFrame35: "../image/logo/logo_anime_0035.png",
-  logoFrame36: "../image/logo/logo_anime_0036.png",
-  logoFrame37: "../image/logo/logo_anime_0037.png",
-  logoFrame38: "../image/logo/logo_anime_0038.png",
-  logoFrame39: "../image/logo/logo_anime_0039.png",
-  logoFrame40: "../image/logo/logo_anime_0040.png",
-  logoFrame41: "../image/logo/logo_anime_0041.png",
-  logoFrame42: "../image/logo/logo_anime_0042.png",
-  logoFrame43: "../image/logo/logo_anime_0043.png",
-  logoFrame44: "../image/logo/logo_anime_0044.png",
-  logoFrame45: "../image/logo/logo_anime_0045.png",
-  logoFrame46: "../image/logo/logo_anime_0046.png",
-  logoFrame47: "../image/logo/logo_anime_0047.png",
-  logoFrame48: "../image/logo/logo_anime_0048.png",
-  logoFrame49: "../image/logo/logo_anime_0049.png",
-  logoFrame50: "../image/logo/logo_anime_0050.png",
-  logoFrame51: "../image/logo/logo_anime_0051.png",
-  logoFrame52: "../image/logo/logo_anime_0052.png",
-  logoFrame53: "../image/logo/logo_anime_0053.png",
-  logoFrame54: "../image/logo/logo_anime_0054.png",
-  logoFrame55: "../image/logo/logo_anime_0055.png",
-  logoFrame56: "../image/logo/logo_anime_0056.png",
-  logoFrame57: "../image/logo/logo_anime_0057.png",
-  logoFrame58: "../image/logo/logo_anime_0058.png",
-  logoFrame59: "../image/logo/logo_anime_0059.png",
-  logoFrame60: "../image/logo/logo_anime_0060.png",
-  logoFrame61: "../image/logo/logo_anime_0061.png",
-  logoFrame62: "../image/logo/logo_anime_0062.png",
-  logoFrame63: "../image/logo/logo_anime_0063.png",
-  logoFrame64: "../image/logo/logo_anime_0064.png",
-  logoFrame65: "../image/logo/logo_anime_0065.png",
-  logoFrame66: "../image/logo/logo_anime_0066.png",
-  logoFrame67: "../image/logo/logo_anime_0067.png",
-  logoFrame68: "../image/logo/logo_anime_0068.png",
-  logoFrame69: "../image/logo/logo_anime_0069.png",
-  logoFrame70: "../image/logo/logo_anime_0070.png",
-  logoFrame71: "../image/logo/logo_anime_0071.png",
-  logoFrame72: "../image/logo/logo_anime_0072.png",
-  logoFrame73: "../image/logo/logo_anime_0073.png",
-  logoFrame74: "../image/logo/logo_anime_0074.png",
-  logoFrame75: "../image/logo/logo_anime_0075.png",
-  logoFrame76: "../image/logo/logo_anime_0076.png",
-  logoFrame77: "../image/logo/logo_anime_0077.png",
-  logoFrame78: "../image/logo/logo_anime_0078.png",
-  logoFrame79: "../image/logo/logo_anime_0079.png",
-  logoFrame80: "../image/logo/logo_anime_0080.png",
-  logoFrame81: "../image/logo/logo_anime_0081.png",
-  titleImageBg: "../image/title/title_image_bg.png",
 });
 
 // 再生する音声ファイルのリスト
