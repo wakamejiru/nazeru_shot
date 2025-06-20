@@ -241,7 +241,7 @@ export const  main_bulled_info_list = {
     }
 };
   
-// この情報でインスタンスを作るときに左右対称に設置できるようにする(リバースモード)
+
 export const  sub_bulled_info_list = {
     [SubBulletEnum.NONE]:
     {
@@ -286,28 +286,34 @@ export const  sub_bulled_info_list = {
         sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
     
     },
-    [SubBulletEnum.S_BULLET_2]: // 斜め-15度に発射 // 加速無し
+    [SubBulletEnum.S_BULLET_2]: // 5方向から発射
     {
-        start_x_pos:-5,
-        start_y_pos:0,
-        ballet_name:"サブウエポン1R",
+        bullet_number :5, // バレットの数は5
+        Bullet_Angle :0, // バレットの放射角度(R)
+        z_bullet_angle_mag: 0, // 低速モード時の集中率
+        // 半径と設置角度からバレットの放出点を計算することができる        
+        bullet_pointAngle: 54, //バレットの設置角度(R)
+        bullet_pointRadius: 250, // バレットの設置半径
+        z_bullet_pointRadius_mag: 0.5, // 低速モード時の集中率
+
+        ballet_name:"メインウエポン1",
         ball_image_key: "bulletTypeA",
-        x_speed:-100,
-        y_speed:800,
+        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
+        bullet_width: 8.0,
+        bullet_height: 8.0,
+        orientation: 0.0, // 回転数
+        x_speed:0,
+        y_speed:1200,
         accel_x:0,
         accel_y:0,
         jeak_x:0,
         jeak_y:0,
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 5.0,
-        bullet_height: 5.0,
-        orientation: 0.0, // 回転数
         color: 'rgb(255, 255, 255)',
         damage: 5,
-        bulled_life: 1,
+        bulled_life: 3,
         bulled_maxSpeed: 10000,
-        bulled_size_mag: 0.5,
-        rate:0.2, 
+        rate:0.2,
+
         // --- サインカーブ専用パラメータ ---
         sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
         sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
@@ -318,29 +324,35 @@ export const  sub_bulled_info_list = {
         sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
     
     },    
-    [SubBulletEnum.S_BULLET_3]: // 斜め-15度に加速しながら発射
+    [SubBulletEnum.S_BULLET_3]: // 外側に向かって発射
     {
-        start_x_pos:5,
-        start_y_pos:0,
-        ballet_name:"サブウエポン2",
+        bullet_number :5, // バレットの数は5
+        Bullet_Angle :72, // バレットの放射角度(R)
+        z_bullet_angle_mag: 0, // 低速モード時の集中率
+        // 半径と設置角度からバレットの放出点を計算することができる        
+        bullet_pointAngle: 0, //バレットの設置角度(R)
+        bullet_pointRadius: 150, // バレットの設置半径
+        z_bullet_pointRadius_mag: 0.5, // 低速モード時の集中率
+
+        ballet_name:"メインウエポン1",
         ball_image_key: "bulletTypeA",
-        x_speed:10,
-        y_speed:0,
-        accel_x:3,
+        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
+        bullet_width: 8.0,
+        bullet_height: 8.0,
+        orientation: 0.0, // 回転数
+        x_speed:0,
+        y_speed:1200,
+        accel_x:0,
         accel_y:0,
         jeak_x:0,
-        jeak_y:130,
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 5.0,
-        bullet_height: 5.0,
-        orientation: 0.0, // 回転数
+        jeak_y:0,
         color: 'rgb(255, 255, 255)',
         damage: 5,
-        bulled_life: 1,
+        bulled_life: 3,
         bulled_maxSpeed: 10000,
-        bulled_size_mag: 0.5,
-        rate:0.3,
-         // --- サインカーブ専用パラメータ ---
+        rate:0.2,
+
+        // --- サインカーブ専用パラメータ ---
         sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
         sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
         sine_angular_frequency: Math.PI * 4, // 角周波数 (ラジアン/秒)。値が大きいほど波が細かくなる。
@@ -350,29 +362,35 @@ export const  sub_bulled_info_list = {
         sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
     
     },
-    [SubBulletEnum.S_BULLET_4]: // 斜め-15度に加速しながら発射
+    [SubBulletEnum.S_BULLET_4]: // 外側に向かって発射
     {
-        start_x_pos:-5,
-        start_y_pos:0,
-        ballet_name:"サブウエポン2R",
+        ullet_number :6, // バレットの数は5
+        Bullet_Angle :72, // バレットの放射角度(R)
+        z_bullet_angle_mag: 0, // 低速モード時の集中率
+        // 半径と設置角度からバレットの放出点を計算することができる        
+        bullet_pointAngle: 0, //バレットの設置角度(R)
+        bullet_pointRadius: 150, // バレットの設置半径
+        z_bullet_pointRadius_mag: 0.5, // 低速モード時の集中率
+
+        ballet_name:"メインウエポン1",
         ball_image_key: "bulletTypeA",
-        x_speed:-10,
-        y_speed:0,
-        accel_x:-3,
+        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
+        bullet_width: 8.0,
+        bullet_height: 8.0,
+        orientation: 0.0, // 回転数
+        x_speed:0,
+        y_speed:1200,
+        accel_x:0,
         accel_y:0,
         jeak_x:0,
-        jeak_y:130,
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 5.0,
-        bullet_height: 5.0,
-        orientation: 0.0, // 回転数
+        jeak_y:0,
         color: 'rgb(255, 255, 255)',
         damage: 5,
-        bulled_life: 1,
+        bulled_life: 3,
         bulled_maxSpeed: 10000,
-        bulled_size_mag: 0.5,
-        rate:0.3,
-         // --- サインカーブ専用パラメータ ---
+        rate:0.2,
+
+        // --- サインカーブ専用パラメータ ---
         sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
         sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
         sine_angular_frequency: Math.PI * 4, // 角周波数 (ラジアン/秒)。値が大きいほど波が細かくなる。
@@ -384,7 +402,7 @@ export const  sub_bulled_info_list = {
     },
     [SubBulletEnum.S_BULLET_5]: // 斜め30度に加速しながら発射
     {
-        start_x_pos:5,
+        start_x_pos:6,
         start_y_pos:0,
         ballet_name:"サブウエポン3",
         ball_image_key: "bulletTypeA",
