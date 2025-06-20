@@ -24,6 +24,18 @@ export const ScreenImages = [
   "ULTPointImageOff",
 ];
 
+
+
+
+
+
+
+
+
+
+
+
+
 // 実際のゲーム画面を設計する
 export class GameScreen extends BaseScreen{
 	/**
@@ -36,6 +48,10 @@ export class GameScreen extends BaseScreen{
 		this.ScreenTextures = [];
 		this.ScreenBackgroundImage = null;
 		this.buttons = [];
+
+		
+		// ゲーム中の必要なパラメータはここで宣言する
+		this.NowULTPoint = 3;
     }
 
 	/**
@@ -236,6 +252,10 @@ export class GameScreen extends BaseScreen{
 	   * @param {boolean} Visible - true:ON false:OFF
 	   */
 	  StartScreen(){
+			this.NowULTPoint = 3;
+			// ULTの表示を反映
+			this.UpdateULTPointVeiw();
+
 			super.StartScreen();
 	  }
 		
@@ -384,4 +404,21 @@ export class GameScreen extends BaseScreen{
             this.descriptionText.text = ButtonDescriptions[selectedButton.id] || '';
         }
     }
+
+	  /**
+     * 現在のULTPointの状態を表示に反映させる
+     */
+	UpdateULTPointVeiw(){
+		let nowUltPoint = this.NowULTPoint;
+		// いったんすべての表示を解除
+		for(let i = 0; i < 5; ++i){
+			this.UltPointOffs[i].visible = true;		
+		}
+
+		
+		for(let i = 0; i < nowUltPoint; ++i){
+			this.UltPointOffs[i].visible = false;		
+		}
+	}
+
 }
