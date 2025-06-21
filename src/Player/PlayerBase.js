@@ -15,6 +15,7 @@ import { Bullet } from '../bullet.js'; // Bulletクラスもインポート
 export class PlayerBase {    
     /**
  	 * コンストラクタ
+     * @param {CharacterConfig} CharacterConfig -キャラクターの情報
 	 * @param {PixiJS Container} GameScreenContainer - ゲーム操作画面のコンテナ
      * @param {number} StartShootingX シューティング画面の設置サイズのXポジション
      * @param {number} StartShootingY シューティング画面の設置サイズのYポジション
@@ -36,17 +37,17 @@ export class PlayerBase {
         // キャラクターの定義を行う
         this.CharacterName = CharacterConfig.charachter_name;
         this.AvatorImageKey = CharacterConfig.avatar_image_key;
-        
-        this.SpriteBaseDrawWidth = CharacterConfig.sprite_base_draw_width || 40;
-        this.SpriteBaseDrawHeight = CharacterConfig.sprite_base_draw_height || 40;
-        
-        this.SpriteDrawWidth = this.SpriteBaseDrawWidth;
-        this.SpriteDrawHeight = this.SpriteBaseDrawHeight;
+    
+        // PixeJSを使い画像を追加する
+        const CharacterTexture = PIXI.Texture.from(this.AvatorImageKey);
+		this.CharacterImage = new PIXI.Sprite(CharacterTexture);
+		// 画像のアンカーを設定
+      	this.CharacterImage.anchor.set(0.5);// 中心が座標
+      	this.ScreenBackgroundImage.scale.set(this.CurrentScaleFactor); // 初期スケールと画像サイズ調整
 
-
-        this.HitpointImageKey = CharacterConfig.hitpoint_image_key;
-        this.HitpointBaseRadius = CharacterConfig.hitpoint_radius;
-        this.HitpointRadius = this.HitpointBaseRadius;
+		// 画像の位置を調整
+      	this.ScreenBackgroundImage.x = this.x; // 画面の一番左上に合わせる
+      	this.ScreenBackgroundImage.y = this.y;
 
         this.BaseSpeed = CharacterConfig.character_speed;
         this.NowSpeed = this.BaseSpeed;
@@ -55,15 +56,13 @@ export class PlayerBase {
         this.MaxHP = CharacterConfig.character_maxhp;
         this.NowHP = this.MaxHP;
         
-        this.SpriteAvator = this.AvatorImageKey ? ImageAssetPaths[this.AvatorImageKey] : null;
-        this.SpriteHitpoint = this.HitpointImageKey ? ImageAssetPaths[this.HitpointImageKey] : null;
-
         // スキル/攻撃パターン管理
         this.BasetrackingStrengthPower = 0.0;
         this.trackingStrengthPower =  0.0; // 追尾性能 
         this.CharacterSkillType1 = CharacterConfig.character_skill1;
         this.CharacterSkillType2 = CharacterConfig.character_skill2;
         this.CharacterULTType = CharacterConfig.character_ULT;
+        this.PussivSkillKey = CharacterConfig.passiv_skill;
 
         // 移動用
         this.dx = 0;
@@ -74,16 +73,11 @@ export class PlayerBase {
         this.MoveLengthY = 1;
 
         // 現在のplaySizeもここに書く
-        this.NowPlayAreaWidth = NowPlayAreaWidth;
-        this.NowPlayAreaHeight = NowPlayAreaHeight;
+        this.NowPlayAreaWidth = StartShootingWidth;
+        this.NowPlayAreaHeight = StartShootingHeight;
+        this.StartAreaX = StartShootingX;
+        this.StartAreaY = StartShootingY;
 
-        // メインの弾とサブの弾のkey
-        this.MBulletKey = CharacterConfig.character_m_bullet;
-        this.SBulletKey = CharacterConfig.character_s_bullet;
-        this.Skill1Key = CharacterConfig.character_skill1;
-        this.Skill2Key = CharacterConfig.character_skill2;
-        this.PussivSkillKey = CharacterConfig.passiv_skill;
-        this.UltKey = CharacterConfig.character_ULT;
         // 弾のinfoを引き出す
 		this.MainBulletInfo = this.GetBulletInfo(this.MBulletKey, true);
 		this.SubBulletInfo = this.GetBulletInfo(this.SBulletKey, false);
@@ -93,8 +87,11 @@ export class PlayerBase {
         this.GameScreenContainer.addChild(this.CharacterContainer);
     }
 
-    //  Bulletのデータをもらい受ける
-    // IsMainSub ture:Main fa;se:Sub
+    /**
+ 	 * Bulletのデータをもらう
+     * @param {number} BulletKey -弾情報のキー
+	 * @param {boolean} IsMainSub - ture:Main false:Sub
+	 */
 	GetBulletInfo(BulletKey, IsMainSub)
 	{
 		const BulletDefinition = (IsMainSub) ? main_bulled_info_list[BulletKey] : sub_bulled_info_list[BulletKey];
@@ -103,50 +100,51 @@ export class PlayerBase {
         {
             return null;
         }
-
-        
 		return { ...BulletDefinition };
 	}
 
-    // 有効ならtrue
+    /**
+ 	 * 弾があるかどうかを判断する
+     * @return {boolean} true:情報アリ false情報なし
+	 */
 	isvalidbulled(bullet_info)
 	{
 		return bullet_info !== null;
 	}
 
-
-
-
-    // 大きさを変動する，(スキルや，弾の発射以外なら使える)
-    // ここで引数にしているのは実際に弾幕部分のゲーム画面のサイズでcanbvasではない
-    updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth) {
+    /**
+ 	 * 大きさを更新する
+     * @param {number} NewScaleFactor :新しい画面のスケール
+     * @param {number} NewShootingStartX :新しい画面の開始位置
+     * @param {number} NewShootingStartY :新しい画面のス開始位置
+     * @param {number} NewShootingWidth :新しい画面の幅
+     * @param {number} NewShootingHeight :新しい画面の縦の大きさ
+	 */
+    updateScale(NewScaleFactor, NewShootingStartX, NewShootingStartY, NewShootingWidth, NewShootingHeight) {
         // 古いゲーム画面のサイズをもらう
-        const oldEffectiveCanvasWidth =  this.Canvas.width;
-        const oldEffectiveCanvasHeight = this.Canvas.height;
+        const oldEffectiveCanvasWidth =   this.NowPlayAreaWidth;
+        const oldEffectiveCanvasHeight =  this.NowPlayAreaHeight;
         const relativeCenterX = this.x / oldEffectiveCanvasWidth;
         const relativeCenterY = this.y / oldEffectiveCanvasHeight;
 
         this.CurrentScaleFactor = NewScaleFactor;
-        this.Canvas = NewCanvas;
 
         // 画像のサイズを合わせる
-        this.SpriteDrawWidth = this.SpriteBaseDrawWidth * this.CurrentScaleFactor;
-        this.SpriteDrawHeight = this.SpriteBaseDrawHeight * this.CurrentScaleFactor;
-        this.hitpoint_radius = this.HitpointBaseRadius * this.CurrentScaleFactor;
-        this.NowSpeed = this.BaseSpeed * this.CurrentScaleFactor;
+        this.CharacterImage.scale.set( this.CurrentScaleFactor);
+
+
 
         // 新しいサイズの座標に合わせる
-        this.x = relativeCenterX * this.Canvas.width;
-        this.y = relativeCenterY * this.Canvas.height;
-        this.NowPlayAreaHeight = this.Canvas.height;
-        this.NowPlayAreaWidth = this.Canvas.width; 
+        
+        this.x = relativeCenterX * NewShootingWidth;
+        this.y = relativeCenterY * NewShootingHeight;
+        this.NowPlayAreaWidth = NewShootingWidth; 
+        this.NowPlayAreaHeight = NewShootingHeight;
+        this.StartAreaX = NewShootingStartX;
+        this.StartAreaY = NewShootingStartY;
 
-
-        // 範囲外になることを防止する
-        const HalfScaledWidth = this.SpriteDrawWidth / 2;
-        const HalfScaledHeight = this.SpriteDrawHeight / 2;
-        this.x = Math.max(HalfScaledWidth, Math.min(this.x, this.Canvas.width - HalfScaledWidth));
-        this.y = Math.max(HalfScaledHeight, Math.min(this.y, this.Canvas.height - HalfScaledHeight));
+        // キャラクターの描画位置が範囲外になることを防止する
+        this.IsAreaIn();
         
         // Bulletの情報もスケール変更する
         const scalebulletProperties = (BulletInfos, BaseBulletList, BulletKey) => {
@@ -182,8 +180,11 @@ export class PlayerBase {
         scalebulletProperties(this.SubBulletInfo, sub_bulled_info_list, this.SBulletKey);
     }
 
-    // 移動を行う
-    // 基本的にこの移動関数で行ってもらう．もしキャラ別に移動を書く場合は，派生クラス先で行ってもらう
+    /**
+ 	 * 移動を行う
+     * @param {number} Keys :入力情報
+     * @param {number} DeltaTime :経過時間
+	 */
     move(Keys, DeltaTime) {
         // 初期化
         this.dx = 0;
@@ -195,8 +196,8 @@ export class PlayerBase {
         }
         
         // 現在のキャラクターの上下左右の値を取得する
-        const HalfScaledWidth = this.SpriteDrawWidth / 2;
-        const HalfScaledHeight = this.SpriteDrawHeight / 2;
+        const HalfScaledWidth = this.CharacterImage.width / 2;
+        const HalfScaledHeight = this.CharacterImage.height / 2;
 
         // キーの入力により移動させる
         if (Keys.ArrowUp && this.y > HalfScaledHeight){
@@ -218,12 +219,20 @@ export class PlayerBase {
             this.y += (this.dy / magnitude) * CurrentAppliedSpeed * DeltaTime;
         }
 
-        // 範囲内であることを確認
-        this.x = Math.max(HalfScaledWidth, Math.min(this.x, this.NowPlayAreaWidth - HalfScaledWidth));
-        this.y = Math.max(HalfScaledHeight, Math.min(this.y, this.NowPlayAreaHeight - HalfScaledHeight));
+        // 範囲内に収める
+        this.IsAreaIn();
     }
 
-    // 球を作る．returnでクールタイムが帰ってくる
+    /**
+ 	 * 弾の作成を行う
+     * @param {number} Keys :現在のキーの入力情報
+     * @param {number} PlayerBulletsArray :プレイヤーの放出した弾の配列
+     * @param {number} TargetEnemy :敵エネミーの情報
+     * @param {number} BulletInfo :弾 の情報
+     * @param {number} DeltaTime :現在の経過時間
+     * @param {number} NowWaitTime :現在のクール時間タイマ
+     * @return {number} 現在のクールタイム時間
+	 */
     createBulletInstance(Keys, PlayerBulletsArray, TargetEnemy, BulletInfo, DeltaTime, NowWaitTime)
     {
 
@@ -233,8 +242,6 @@ export class PlayerBase {
             if (NowWaitTime < 0) NowWaitTime = 0;
             return NowWaitTime;
         }
-
-
 
         // 弾が出る基準点の中心を計算する
         const StartDrawX = this.x;
@@ -258,9 +265,6 @@ export class PlayerBase {
             }
             return { OneThingPointRadius, StartAngle};
         }
-        
-        
-
 
         // メインの弾から計算する
         const BulletNumber =  BulletInfo.bullet_number;
@@ -338,7 +342,14 @@ export class PlayerBase {
         return BulletInfo.rate; // クールダウン再セット
     }
     
-    // 攻撃実行のメインロジック
+    /**
+ 	 * 弾の発射を行う
+     * @param {number} Keys :現在のキーの入力情報
+     * @param {number} PlayerBulletsArray :プレイヤーの放出した弾の配列
+     * @param {number} TargetEnemy :敵エネミーの情報
+     * @param {number} BulletInfo :弾 の情報
+     * @param {number} DeltaTime :現在の経過時間
+	 */
     _shoot(Keys, PlayerBulletsArray, TargetEnemy, DeltaTime) {
         // 大体はこちらで設計可能
 
@@ -350,31 +361,41 @@ export class PlayerBase {
                 
     }
 
-    // skillの発動の確認を行う
+    /**
+ 	 * スキルの発動を行う
+	 */
     _skillrun()
     {
         // 中身は各クラスで作成する
     }
 
-    // skill1の発動を行う
+    /**
+ 	 * スキル1の発動を行う
+	 */
     _skillrun1()
     {
         // 中身は各クラスで作成する
     }
 
-    // skill2の発動を行う
+    /**
+ 	 * スキル2の発動を行う
+	 */
     _skillrun2()
     {
         // 中身は各クラスで作成する
     }
 
-    // パッシブスキルの発動
+    /**
+ 	 * パッシブスキルの発動
+	 */
     _passiveskillrun()
     {
 
     } 
 
-    // ULTを発動する
+    /**
+ 	 * ULTを発動する
+	 */
     _playULT(){
         
     }
@@ -412,20 +433,30 @@ export class PlayerBase {
 
     // HPバーを記載する
     drawHpBar(ctx, ScaledHpBarHeight, ScaledPlayerHpBarWidth) {
-        const barX = 10 * this.CurrentScaleFactor;
-        const barY = this.NowPlayAreaHeight - ScaledHpBarHeight - (10 * this.CurrentScaleFactor);
-        const CurrentHpWidth = this.MaxHP > 0 ? (this.NowHP / this.MaxHP) * ScaledPlayerHpBarWidth : 0;
+        // const barX = 10 * this.CurrentScaleFactor;
+        // const barY = this.NowPlayAreaHeight - ScaledHpBarHeight - (10 * this.CurrentScaleFactor);
+        // const CurrentHpWidth = this.MaxHP > 0 ? (this.NowHP / this.MaxHP) * ScaledPlayerHpBarWidth : 0;
 
-        ctx.fillStyle = 'grey';
-        ctx.fillRect(barX, barY, ScaledPlayerHpBarWidth, ScaledHpBarHeight);
-        ctx.fillStyle = (this.MaxHP > 0 && this.NowHP / this.MaxHP < 0.3) ? 'red' : 'green';
-        ctx.fillRect(barX, barY, CurrentHpWidth > 0 ? CurrentHpWidth : 0, ScaledHpBarHeight);
-        ctx.strokeStyle = 'white';
-        ctx.strokeRect(barX, barY, ScaledPlayerHpBarWidth, ScaledHpBarHeight);
+        // ctx.fillStyle = 'grey';
+        // ctx.fillRect(barX, barY, ScaledPlayerHpBarWidth, ScaledHpBarHeight);
+        // ctx.fillStyle = (this.MaxHP > 0 && this.NowHP / this.MaxHP < 0.3) ? 'red' : 'green';
+        // ctx.fillRect(barX, barY, CurrentHpWidth > 0 ? CurrentHpWidth : 0, ScaledHpBarHeight);
+        // ctx.strokeStyle = 'white';
+        // ctx.strokeRect(barX, barY, ScaledPlayerHpBarWidth, ScaledHpBarHeight);
     }
 
     // trueならスキルが有効
     isvalidskill(skilltypekey){
         return (skilltypekey !== SkillTypeEnum.NONE);
+    }
+
+	/**
+	 * キャラが描画範囲内にあるように調整をする
+	 */
+    IsAreaIn(){
+        const HalfScaledWidth = this.CharacterImage.width / 2;
+        const HalfScaledHeight = this.CharacterImage.height / 2;
+        this.x = Math.max(this.StartAreaX + HalfScaledWidth, Math.min(this.x + this.StartAreaX, this.StartAreaX + this.CharacterImage.width  - HalfScaledWidth));
+        this.y = Math.max(this.StartAreaY + HalfScaledHeight, Math.min(this.StartAreaY + this.y,  this.StartAreaY + this.NowPlayAreaHeight - HalfScaledHeight));
     }
 }
