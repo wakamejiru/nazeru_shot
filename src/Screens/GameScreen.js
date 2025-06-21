@@ -440,6 +440,7 @@ export class GameScreen extends BaseScreen{
 		switch(CharaIndex){
 			case 0:
 				this.PlayerInstance =  new PlayerType1(this.ShootingContainer,ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				this.PlayerInstance.Initialize();
 				break;
 			default:
 				this.PlayerInstance =  new PlayerType1(this.ShootingContainer,ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);

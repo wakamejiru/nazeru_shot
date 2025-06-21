@@ -38,16 +38,7 @@ export class PlayerBase {
         this.CharacterName = CharacterConfig.charachter_name;
         this.AvatorImageKey = CharacterConfig.avatar_image_key;
     
-        // PixeJSを使い画像を追加する
-        const CharacterTexture = PIXI.Texture.from(this.AvatorImageKey);
-		this.CharacterImage = new PIXI.Sprite(CharacterTexture);
-		// 画像のアンカーを設定
-      	this.CharacterImage.anchor.set(0.5);// 中心が座標
-      	this.CharacterImage.scale.set(this.CurrentScaleFactor); // 初期スケールと画像サイズ調整
-
-		// 画像の位置を調整
-      	this.CharacterImage.x = this.x; // 画面の一番左上に合わせる
-      	this.CharacterImage.y = this.y;
+        this.CharacterImage = null;
 
         this.BaseSpeed = CharacterConfig.character_speed;
         this.NowSpeed = this.BaseSpeed;
@@ -85,6 +76,27 @@ export class PlayerBase {
         this.SubBulletWaitTime = 0;
 
         this.GameScreenContainer.addChild(this.CharacterContainer);
+    }
+
+    /**
+ 	 * 非同期の初期化メソッドを追加
+	 */
+    async Initialize() {
+        // 1. 必要な画像を読み込む
+        await this.LoadScreenAssetsForPixi();
+       
+        // 2. 読み込み完了後、テクスチャを取得してSpriteを生成する
+        const CharacterTexture = PIXI.Texture.from(this.AvatorImageKey);
+        this.CharacterImage = new PIXI.Sprite(CharacterTexture);
+        
+        // 3. Spriteの各種設定を行う
+        this.CharacterImage.anchor.set(0.5);
+        this.CharacterImage.scale.set(this.CurrentScaleFactor);
+        this.CharacterImage.x = this.x;
+        this.CharacterImage.y = this.y;
+
+        // 4. コンテナに追加
+        this.CharacterContainer.addChild(this.CharacterImage);
     }
 
     /**
@@ -427,5 +439,26 @@ export class PlayerBase {
         const HalfScaledHeight = this.CharacterImage.height / 2;
         this.x = Math.max(this.StartAreaX + HalfScaledWidth, Math.min(this.x + this.StartAreaX, this.StartAreaX + this.CharacterImage.width  - HalfScaledWidth));
         this.y = Math.max(this.StartAreaY + HalfScaledHeight, Math.min(this.StartAreaY + this.y,  this.StartAreaY + this.NowPlayAreaHeight - HalfScaledHeight));
+    }
+
+    /**
+     * 画像を読み込み、PixiJSテクスチャを準備する関数
+     */
+    async LoadScreenAssetsForPixi() {
+        // この処理は非同期で行われる
+        this.ScreenImages = [];
+        this.ScreenImages.push(this.AvatorImageKey);
+        this.ScreenTextures=[];
+
+        const FrameKeysToLoad = this.ScreenImages.filter(key => ImageAssetPaths[key]);
+        const AssetsToLoadForPixi = FrameKeysToLoad.map(key => ({ alias: key, src: ImageAssetPaths[key] }));
+        if (AssetsToLoadForPixi.length > 0) {
+            await PIXI.Assets.load(AssetsToLoadForPixi);
+
+            FrameKeysToLoad.forEach(key => {
+            const texture = PIXI.Texture.from(key);
+            this.ScreenTextures.push(texture);
+            });
+        }
     }
 }

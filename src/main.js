@@ -30,6 +30,7 @@ import * as GameScreen from './Screens/GameScreen.js';
 
 import * as Utils from "./utils.js";
 import InputManager from './inputs/InputManager.js';
+import {ImageAssetPaths} from './game_status.js';
 
 
 // const AssetManagerInstance = new AssetManager(ImageAssetPaths);
@@ -44,7 +45,8 @@ const OVERALL_BASE_HEIGHT = 1080;
 const OverallAspectRatio = OVERALL_BASE_WIDTH / OVERALL_BASE_HEIGHT; // 画面比率
 
 
-    
+const AllAssetPaths = Object.values(ImageAssetPaths);
+await PIXI.Assets.load(AllAssetPaths);
 
 
 // HTMLファイルで定義されたCanvas要素を取得

@@ -43,6 +43,13 @@ export class PlayerType1 extends PlayerBase {
         
     }
 
+    /**
+ 	 * 非同期の初期化メソッドを追加
+	 */
+    async Initialize() {
+        super.Initialize();
+    }
+
     updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth)
     {
         // 規定クラスコンストラクタで呼び出し
