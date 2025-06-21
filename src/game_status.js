@@ -49,8 +49,8 @@ export const SubBulletEnum = Object.freeze({
   S_BULLET_2: "s_bullet_2", // サブウェポン2
   S_BULLET_3: "s_bullet_3", // サブウェポン3
   S_BULLET_4: "s_bullet_4", // サブウェポン4
-  S_BULLET_5: "s_bullet_5", // サブウェポン5
-  S_BULLET_6: "s_bullet_6", // サブウェポン5
+ // S_BULLET_5: "s_bullet_5", // サブウェポン5
+  //S_BULLET_6: "s_bullet_6", // サブウェポン5
 });
 
 
@@ -165,7 +165,7 @@ export const  main_bulled_info_list = {
     },
     [MainBulletEnum.M_BULLET_3]:
     {
-                bullet_number :2, // バレットの数は3
+        bullet_number :2, // バレットの数は3
         Bullet_Angle :0, // バレットの放射角度(R)
         z_bullet_angle_mag: 0, // 低速モード時の集中率
         // 半径と設置角度からバレットの放出点を計算することができる        
@@ -400,281 +400,6 @@ export const  sub_bulled_info_list = {
         sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
     
     },
-    [SubBulletEnum.S_BULLET_5]: // 斜め30度に加速しながら発射
-    {
-        start_x_pos:6,
-        start_y_pos:0,
-        ballet_name:"サブウエポン3",
-        ball_image_key: "bulletTypeA",
-        x_speed:500,
-        y_speed:500,
-        accel_x:-650,
-        accel_y:0,
-        jeak_x:0,
-        jeak_y:0,
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 5.0,
-        bullet_height: 5.0,
-        orientation: 0.0, // 回転数
-        color: 'rgb(255, 255, 255)',
-        damage: 1,
-        bulled_life: 1,
-        bulled_maxSpeed: 10000,
-        bulled_size_mag: 0.5,
-        rate:0.1,
-         // --- サインカーブ専用パラメータ ---
-        sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
-        sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
-        sine_angular_frequency: Math.PI * 4, // 角周波数 (ラジアン/秒)。値が大きいほど波が細かくなる。
-                                        // 例: Math.PI * 4 は1秒間に2周期の波
-        sine_phase_offset: 0,      // 位相オフセット (波の開始位置をずらす、ラジアン単位、オプション)
-        sine_axis: "x",             // "x" ならX軸方向に揺れる、"y"ならY軸方向に揺れる (オプション)
-        sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
-    
-    },
-    [SubBulletEnum.S_BULLET_6]: //戻ってくるやつ
-    {
-        start_x_pos:-5,
-        start_y_pos:0,
-        ballet_name:"サブウエポン3R",
-        ball_image_key: "bulletTypeA",
-        x_speed:-500,
-        y_speed:500,
-        accel_x:650,
-        accel_y:0,
-        jeak_x:0,
-        jeak_y:0,
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 5.0,
-        bullet_height: 5.0,
-        orientation: 0.0, // 回転数
-        color: 'rgb(255, 255, 255)',
-        damage: 1,
-        bulled_life: 1,
-        bulled_maxSpeed: 10000,
-        bulled_size_mag: 0.5,
-        rate:0.1,
-         // --- サインカーブ専用パラメータ ---
-        sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
-        sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
-        sine_angular_frequency: Math.PI * 4, // 角周波数 (ラジアン/秒)。値が大きいほど波が細かくなる。
-                                        // 例: Math.PI * 4 は1秒間に2周期の波
-        sine_phase_offset: 0,      // 位相オフセット (波の開始位置をずらす、ラジアン単位、オプション)
-        sine_axis: "x",             // "x" ならX軸方向に揺れる、"y"ならY軸方向に揺れる (オプション)
-        sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
-    },[SubBulletEnum.S_BULLET_7]: // 5角形
-    {
-        start_x_pos:0,
-        start_y_pos:50,
-        ballet_name:"サブウエポン4",
-        ball_image_key: "bulletTypeA",
-        x_speed:0,
-        y_speed:900,
-        accel_x:0,
-        accel_y:0,
-        jeak_x:0,
-        jeak_y:0,
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 3.0,
-        bullet_height: 3.0,
-        orientation: 0.0, // 回転数
-        color: 'rgb(255, 255, 255)',
-        damage: 1,
-        bulled_life: 1,
-        bulled_maxSpeed: 10000,
-        bulled_size_mag: 0.5,
-        rate:0.1,
-         // --- サインカーブ専用パラメータ ---
-        sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
-        sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
-        sine_angular_frequency: Math.PI * 4, // 角周波数 (ラジアン/秒)。値が大きいほど波が細かくなる。
-                                        // 例: Math.PI * 4 は1秒間に2周期の波
-        sine_phase_offset: 0,      // 位相オフセット (波の開始位置をずらす、ラジアン単位、オプション)
-        sine_axis: "x",             // "x" ならX軸方向に揺れる、"y"ならY軸方向に揺れる (オプション)
-        sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
-    },[SubBulletEnum.S_BULLET_8]: // 5角形
-    {
-        start_x_pos: 95.11,
-        start_y_pos:65.90,
-        ballet_name:"サブウエポン3R",
-        ball_image_key: "bulletTypeA",
-        x_speed:0,
-        y_speed:900,
-        accel_x:0,
-        accel_y:0,
-        jeak_x:0,
-        jeak_y:0,
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 3.0,
-        bullet_height: 3.0,
-        orientation: 0.0, // 回転数
-        color: 'rgb(255, 255, 255)',
-        damage: 1,
-        bulled_life: 1,
-        bulled_maxSpeed: 10000,
-        bulled_size_mag: 0.5,
-        rate:0.1,
-         // --- サインカーブ専用パラメータ ---
-        sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
-        sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
-        sine_angular_frequency: Math.PI * 4, // 角周波数 (ラジアン/秒)。値が大きいほど波が細かくなる。
-                                        // 例: Math.PI * 4 は1秒間に2周期の波
-        sine_phase_offset: 0,      // 位相オフセット (波の開始位置をずらす、ラジアン単位、オプション)
-        sine_axis: "x",             // "x" ならX軸方向に揺れる、"y"ならY軸方向に揺れる (オプション)
-        sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
-    
-    },[SubBulletEnum.S_BULLET_9]: // 5角形
-    {
-        start_x_pos:58.78,
-        start_y_pos:10.90,
-        ballet_name:"サブウエポン3R",
-        ball_image_key: "bulletTypeA",
-        x_speed:0,
-        y_speed:900,
-        accel_x:0,
-        accel_y:0,
-        jeak_x:0,
-        jeak_y:0,
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 3.0,
-        bullet_height: 3.0,
-        orientation: 0.0, // 回転数
-        color: 'rgb(255, 255, 255)',
-        damage: 1,
-        bulled_life: 1,
-        bulled_maxSpeed: 10000,
-        bulled_size_mag: 0.5,
-        rate:0.1,
-         // --- サインカーブ専用パラメータ ---
-        sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
-        sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
-        sine_angular_frequency: Math.PI * 4, // 角周波数 (ラジアン/秒)。値が大きいほど波が細かくなる。
-                                        // 例: Math.PI * 4 は1秒間に2周期の波
-        sine_phase_offset: 0,      // 位相オフセット (波の開始位置をずらす、ラジアン単位、オプション)
-        sine_axis: "x",             // "x" ならX軸方向に揺れる、"y"ならY軸方向に揺れる (オプション)
-        sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
-
-    },[SubBulletEnum.S_BULLET_10]: // 5角形
-    {
-        start_x_pos:-58.78,
-        start_y_pos:10.90,
-        ballet_name:"サブウエポン3R",
-        ball_image_key: "bulletTypeA",
-        x_speed:0,
-        y_speed:900,
-        accel_x:0,
-        accel_y:0,
-        jeak_x:0,
-        jeak_y:0,
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 3.0,
-        bullet_height: 3.0,
-        orientation: 0.0, // 回転数
-        color: 'rgb(255, 255, 255)',
-        damage: 1,
-        bulled_life: 1,
-        bulled_maxSpeed: 10000,
-        bulled_size_mag: 0.5,
-        rate:0.1,
-         // --- サインカーブ専用パラメータ ---
-        sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
-        sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
-        sine_angular_frequency: Math.PI * 4, // 角周波数 (ラジアン/秒)。値が大きいほど波が細かくなる。
-                                        // 例: Math.PI * 4 は1秒間に2周期の波
-        sine_phase_offset: 0,      // 位相オフセット (波の開始位置をずらす、ラジアン単位、オプション)
-        sine_axis: "x",             // "x" ならX軸方向に揺れる、"y"ならY軸方向に揺れる (オプション)
-        sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
-    },[SubBulletEnum.S_BULLET_11]: // 5角形
-    {
-        start_x_pos:-95.11,
-        start_y_pos:65.90,
-        ballet_name:"サブウエポン3R",
-        ball_image_key: "bulletTypeA",
-        x_speed:0,
-        y_speed:900,
-        accel_x:0,
-        accel_y:0,
-        jeak_x:0,
-        jeak_y:0,
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 3.0,
-        bullet_height: 3.0,
-        orientation: 0.0, // 回転数
-        color: 'rgb(255, 255, 255)',
-        damage: 1,
-        bulled_life: 1,
-        bulled_maxSpeed: 10000,
-        bulled_size_mag: 0.5,
-        rate:0.1,
-         // --- サインカーブ専用パラメータ ---
-        sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
-        sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
-        sine_angular_frequency: Math.PI * 4, // 角周波数 (ラジアン/秒)。値が大きいほど波が細かくなる。
-                                        // 例: Math.PI * 4 は1秒間に2周期の波
-        sine_phase_offset: 0,      // 位相オフセット (波の開始位置をずらす、ラジアン単位、オプション)
-        sine_axis: "x",             // "x" ならX軸方向に揺れる、"y"ならY軸方向に揺れる (オプション)
-        sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
-    },[SubBulletEnum.S_BULLET_12]: // 横から純粋な縦に発射
-    {
-        start_x_pos:100,
-        start_y_pos:0,
-        ballet_name:"サブウエポン3",
-        ball_image_key: "bulletTypeA",
-        x_speed:0,
-        y_speed:900,
-        accel_x:0,
-        accel_y:0,
-        jeak_x:0,
-        jeak_y:0,
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 3.0,
-        bullet_height: 3.0,
-        orientation: 0.0, // 回転数
-        color: 'rgb(255, 255, 255)',
-        damage: 1,
-        bulled_life: 1,
-        bulled_maxSpeed: 10000,
-        bulled_size_mag: 0.5,
-        rate:0.1,
-         // --- サインカーブ専用パラメータ ---
-        sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
-        sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
-        sine_angular_frequency: Math.PI * 4, // 角周波数 (ラジアン/秒)。値が大きいほど波が細かくなる。
-                                        // 例: Math.PI * 4 は1秒間に2周期の波
-        sine_phase_offset: 0,      // 位相オフセット (波の開始位置をずらす、ラジアン単位、オプション)
-        sine_axis: "x",             // "x" ならX軸方向に揺れる、"y"ならY軸方向に揺れる (オプション)
-        sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
-    },[SubBulletEnum.S_BULLET_13]: // 横から純粋な縦に発射
-    {
-        start_x_pos:-100,
-        start_y_pos:0,
-        ballet_name:"サブウエポン3R",
-        ball_image_key: "bulletTypeA",
-        x_speed:0,
-        y_speed:900,
-        accel_x:0,
-        accel_y:0,
-        jeak_x:0,
-        jeak_y:0,
-        ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
-        bullet_width: 3.0,
-        bullet_height: 3.0,
-        orientation: 0.0, // 回転数
-        color: 'rgb(255, 255, 255)',
-        damage: 1,
-        bulled_life: 1,
-        bulled_maxSpeed: 10000,
-        bulled_size_mag: 0.5,
-        rate:0.1,
-         // --- サインカーブ専用パラメータ ---
-        sine_wave_enabled: false,       // この弾でサインカーブを有効にするか
-        sine_amplitude: 60,          // 波の振幅 (中心線からの最大ズレ幅、ピクセル単位)
-        sine_angular_frequency: Math.PI * 4, // 角周波数 (ラジアン/秒)。値が大きいほど波が細かくなる。
-                                        // 例: Math.PI * 4 は1秒間に2周期の波
-        sine_phase_offset: 0,      // 位相オフセット (波の開始位置をずらす、ラジアン単位、オプション)
-        sine_axis: "x",             // "x" ならX軸方向に揺れる、"y"ならY軸方向に揺れる (オプション)
-        sine_decay_rate: 0,                // ★NEW: 減衰率。0なら減衰なし。
-    }
 
 
 };
@@ -897,7 +622,7 @@ export const  character_info_list = {
     [CharacterTypeEnum.TYPE_1]:
     {
         charachter_name:"タイプ1",
-        avatar_image_key:"avatarTypeA",
+        avatar_image_key:"AvatarTypeA",
         sprite_base_draw_width: 40,      // アバターの (ピクセル)
         sprite_base_draw_height: 40,     // アバターの (ピクセル)
         hitpoint_image_key: "HitImageTypeA", // ヒットポイントの画像
@@ -925,169 +650,16 @@ export const  character_info_list = {
         character_maxhp:100,
         character_mag:0.5,
         character_skill1: skill_info_list[SkillTypeEnum.skill_Type1],
+        character_skill2: skill_info_list[SkillTypeEnum.SKILL_2],
         character_ULT: ult_info_list[UltTypeEnum.ult_Type1],
         character_m_bullet1: MainBulletEnum.M_BULLET_1,
         character_m_bullet2: MainBulletEnum.NONE,
         character_s_bullet1: SubBulletEnum.S_BULLET_3,
         character_s_bullet2: SubBulletEnum.S_BULLET_4,
-        character_s_bullet3: SubBulletEnum.NONE,
-        character_s_bullet4: SubBulletEnum.NONE,
-        character_s_bullet5: SubBulletEnum.NONE
+        character_m_bullet: MainBulletEnum.M_BULLET_1,
+        character_s_bullet: SubBulletEnum.S_BULLET_1,
     },
-    [CharacterTypeEnum.TYPE_3]:
-    {
-        charachter_name:"タイプ3",
-        avatar_image_key:"avatarTypeA",
-        sprite_base_draw_width: 40,      // アバターの (ピクセル)
-        sprite_base_draw_height: 40,     // アバターの (ピクセル)
-        hitpoint_image_key: "HitImageTypeA", // ヒットポイントの画像
-        hitpoint_radius:8.0,
-
-        character_spped:50,
-        character_maxhp:100,
-        character_mag:0.5,
-        character_skill1: skill_info_list[SkillTypeEnum.skill_Type1],
-        character_ULT: ult_info_list[UltTypeEnum.ult_Type1],
-        character_m_bullet1: MainBulletEnum.M_BULLET_1,
-        character_m_bullet2: MainBulletEnum.NONE,
-        character_s_bullet1: SubBulletEnum.S_BULLET_5,
-        character_s_bullet2: SubBulletEnum.S_BULLET_6,
-        character_s_bullet3: SubBulletEnum.NONE,
-        character_s_bullet4: SubBulletEnum.NONE,
-        character_s_bullet5: SubBulletEnum.NONE
-    },
-    [CharacterTypeEnum.TYPE_4]:
-    {
-        charachter_name:"タイプ4",
-        avatar_image_key:"avatarTypeA",
-        sprite_base_draw_width: 40,      // アバターの (ピクセル)
-        sprite_base_draw_height: 40,     // アバターの (ピクセル)
-        hitpoint_image_key: "HitImageTypeA", // ヒットポイントの画像
-        hitpoint_radius:8.0,
-
-        character_spped:50,
-        character_maxhp:100,
-        character_mag:0.5,
-        character_skill1: skill_info_list[SkillTypeEnum.skill_Type1],
-        character_ULT: ult_info_list[UltTypeEnum.ult_Type1],
-        character_m_bullet1: MainBulletEnum.M_BULLET_2,
-        character_m_bullet2: MainBulletEnum.M_BULLET_3,
-        character_s_bullet1: SubBulletEnum.NONE,
-        character_s_bullet2: SubBulletEnum.NONE,
-        character_s_bullet3: SubBulletEnum.NONE,
-        character_s_bullet4: SubBulletEnum.NONE,
-        character_s_bullet5: SubBulletEnum.NONE
-    },
-    [CharacterTypeEnum.TYPE_5]:
-    {
-        charachter_name:"タイプ5",
-        avatar_image_key:"avatarTypeA",
-        sprite_base_draw_width: 40,      // アバターの (ピクセル)
-        sprite_base_draw_height: 40,     // アバターの (ピクセル)
-        hitpoint_image_key: "HitImageTypeA", // ヒットポイントの画像
-        hitpoint_radius:8.0,
-
-        character_spped:50,
-        character_maxhp:100,
-        character_mag:0.5,
-        character_skill1: skill_info_list[SkillTypeEnum.skill_Type1],
-        character_ULT: ult_info_list[UltTypeEnum.ult_Type1],
-        character_m_bullet1: MainBulletEnum.NONE,
-        character_m_bullet2: MainBulletEnum.NONE,
-        character_s_bullet1: SubBulletEnum.S_BULLET_7,
-        character_s_bullet2: SubBulletEnum.S_BULLET_8,
-        character_s_bullet3: SubBulletEnum.S_BULLET_9,
-        character_s_bullet4: SubBulletEnum.S_BULLET_10,
-        character_s_bullet5: SubBulletEnum.S_BULLET_11
-    },
-    [CharacterTypeEnum.TYPE_6]:
-    {
-        charachter_name:"タイプ6",
-        avatar_image_key:"avatarTypeA",
-        sprite_base_draw_width: 40,      // アバターの (ピクセル)
-        sprite_base_draw_height: 40,     // アバターの (ピクセル)
-        hitpoint_image_key: "HitImageTypeA", // ヒットポイントの画像
-        hitpoint_radius:8.0,
-
-        character_spped:50,
-        character_maxhp:100,
-        character_mag:0.5,
-        character_skill1: skill_info_list[SkillTypeEnum.skill_Type1],
-        character_ULT: ult_info_list[UltTypeEnum.ult_Type1],
-        character_m_bullet1: MainBulletEnum.M_BULLET_4,
-        character_m_bullet2: MainBulletEnum.M_BULLET_5,
-        character_s_bullet1: SubBulletEnum.S_BULLET_1,
-        character_s_bullet2: SubBulletEnum.S_BULLET_2,
-        character_s_bullet3: SubBulletEnum.NONE,
-        character_s_bullet4: SubBulletEnum.NONE,
-        character_s_bullet5: SubBulletEnum.NONE
-    },
-    [CharacterTypeEnum.TYPE_7]:
-    {
-        charachter_name:"タイプ7",
-        avatar_image_key:"avatarTypeA",
-        sprite_base_draw_width: 40,      // アバターの (ピクセル)
-        sprite_base_draw_height: 40,     // アバターの (ピクセル)
-        hitpoint_image_key: "HitImageTypeA", // ヒットポイントの画像
-        hitpoint_radius:8.0,
-
-        character_spped:50,
-        character_maxhp:100,
-        character_mag:0.5,
-        character_skill1: skill_info_list[SkillTypeEnum.skill_Type1],
-        character_ULT: ult_info_list[UltTypeEnum.ult_Type1],
-        character_m_bullet1: MainBulletEnum.M_BULLET_6,
-        character_m_bullet2: MainBulletEnum.M_BULLET_7,
-        character_s_bullet1: SubBulletEnum.S_BULLET_13,
-        character_s_bullet2: SubBulletEnum.S_BULLET_12,
-        character_s_bullet3: SubBulletEnum.NONE,
-        character_s_bullet4: SubBulletEnum.NONE,
-        character_s_bullet5: SubBulletEnum.NONE
-    },
-    [CharacterTypeEnum.TYPE_8]:
-    {
-        charachter_name:"タイプ8",
-        avatar_image_key:"avatarTypeA",
-        sprite_base_draw_width: 40,      // アバターの (ピクセル)
-        sprite_base_draw_height: 40,     // アバターの (ピクセル)
-        hitpoint_image_key: "HitImageTypeA", // ヒットポイントの画像
-        hitpoint_radius:8.0,
-
-        character_spped:50,
-        character_maxhp:100,
-        character_mag:0.5,
-        character_skill1: skill_info_list[SkillTypeEnum.skill_Type1],
-        character_ULT: ult_info_list[UltTypeEnum.ult_Type1],
-        character_m_bullet1: MainBulletEnum.NONE,
-        character_m_bullet2: MainBulletEnum.NONE,
-        character_s_bullet1: SubBulletEnum.S_BULLET_7,
-        character_s_bullet2: SubBulletEnum.S_BULLET_8,
-        character_s_bullet3: SubBulletEnum.S_BULLET_9,
-        character_s_bullet4: SubBulletEnum.S_BULLET_10,
-        character_s_bullet5: SubBulletEnum.S_BULLET_11
-    },
-    [CharacterTypeEnum.TYPE_9]:
-    {
-        charachter_name:"タイプ9",
-        avatar_image_key:"avatarTypeA",
-        sprite_base_draw_width: 40,      // アバターの (ピクセル)
-        sprite_base_draw_height: 40,     // アバターの (ピクセル)
-        hitpoint_image_key: "HitImageTypeA", // ヒットポイントの画像
-        hitpoint_radius:8.0,
-
-        character_spped:50,
-        character_maxhp:100,
-        character_mag:0.5,
-        character_skill1: skill_info_list[SkillTypeEnum.skill_Type1],
-        character_ULT: ult_info_list[UltTypeEnum.ult_Type1],
-        character_m_bullet1: MainBulletEnum.NONE,
-        character_m_bullet2: MainBulletEnum.NONE,
-        character_s_bullet1: SubBulletEnum.S_BULLET_7,
-        character_s_bullet2: SubBulletEnum.S_BULLET_8,
-        character_s_bullet3: SubBulletEnum.S_BULLET_9,
-        character_s_bullet4: SubBulletEnum.S_BULLET_10,
-        character_s_bullet5: SubBulletEnum.S_BULLET_11
-    }
+    
 };
 
 

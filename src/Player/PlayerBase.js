@@ -13,12 +13,21 @@ import {
 import { Bullet } from '../bullet.js'; // Bulletクラスもインポート
 
 export class PlayerBase {    
-    // コンストラクタ
-    constructor(InitialX, InitialY, Canvas, CharacterConfig, NowPlayAreaWidth, NowPlayAreaHeight) {
-        this.x = InitialX; //現在のぽじっしょん
-        this.y = InitialY;
+    /**
+ 	 * コンストラクタ
+	 * @param {PixiJS Container} GameScreenContainer - ゲーム操作画面のコンテナ
+     * @param {number} StartShootingX シューティング画面の設置サイズのXポジション
+     * @param {number} StartShootingY シューティング画面の設置サイズのYポジション
+     * @param {number} StartShootingWidth シューティング画面の設置サイズの幅
+     * @param {number} StartShootingHeight シューティング画面の設置サイズの高さ
+	 */
+    constructor(GameScreenContainer, StartShootingX, StartShootingY, StartShootingWidth, StartShootingHeight) {
+        this.x = StartShootingX + StartShootingWidth/2;
+        this.y = StartShootingY + StartShootingHeight*0.8;
+        this.GameScreenContainer = GameScreenContainer;
 
-        this.Canvas = Canvas;
+        // キャラクターは自分のコンテナを所有しており、そこに描画する
+        this.CharacterContainer = new PIXI.Container();
         this.CurrentScaleFactor = 1.0;
 
         // IDも所有しておく
@@ -80,6 +89,8 @@ export class PlayerBase {
 		this.SubBulletInfo = this.GetBulletInfo(this.SBulletKey, false);
         this.MainBulletWaitTime = 0;
         this.SubBulletWaitTime = 0;
+
+        this.GameScreenContainer.addChild(this.CharacterContainer);
     }
 
     //  Bulletのデータをもらい受ける
