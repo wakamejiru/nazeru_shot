@@ -5,28 +5,16 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
     main_bulled_info_list, sub_bulled_info_list } from '../game_status.js';
 
 export class PlayerType1 extends PlayerBase {
-    constructor(InitialX, InitialY, Canvas, NowPlayAreaWidth, NowPlayAreaHeight) {
+    constructor(GameScreenContainer, StartShootingX, StartShootingY, StartShootingWidth, StartShootingHeight) {
         const myCharacterConfig = character_info_list[CharacterTypeEnum.TYPE_1];
         // PlayerBaseのコンストラクタに渡すための共通情報を抽出・設定
         const baseConfig = {
             CharacterTypeID: CharacterTypeEnum.TYPE_1,
-            charachter_name: myCharacterConfig.charachter_name,
-            avatar_image_key: myCharacterConfig.avatar_image_key,
-            sprite_base_draw_width: myCharacterConfig.sprite_base_draw_width,
-            sprite_base_draw_height: myCharacterConfig.sprite_base_draw_height,
-            hitpoint_image_key: myCharacterConfig.hitpoint_image_key,
-            hitpoint_radius: myCharacterConfig.hitpoint_radius,
-            character_speed: myCharacterConfig.character_speed,
-            character_maxhp: myCharacterConfig.character_maxhp,
+            ...myCharacterConfig,
             slowMoveFactor: 0.5, // Type1固有の低速係数（またはmyCharacterConfigからロード）
-
-            character_skill1: myCharacterConfig.character_skill1,
-            character_skill2: myCharacterConfig.character_skill2,
-            character_ULT: myCharacterConfig.character_ULT,
-            character_m_bullet: myCharacterConfig.character_m_bullet,
-            character_s_bullet: myCharacterConfig.character_s_bullet,
         };
-        super(InitialX, InitialY, Canvas, baseConfig, NowPlayAreaWidth, NowPlayAreaHeight);
+
+        super(GameScreenContainer, StartShootingX, StartShootingY, StartShootingWidth, StartShootingHeight, baseConfig);
 
         this.main_bullet_list = [];
         this.sub_bullet_list = [];

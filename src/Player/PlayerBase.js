@@ -22,7 +22,7 @@ export class PlayerBase {
      * @param {number} StartShootingWidth シューティング画面の設置サイズの幅
      * @param {number} StartShootingHeight シューティング画面の設置サイズの高さ
 	 */
-    constructor(GameScreenContainer, StartShootingX, StartShootingY, StartShootingWidth, StartShootingHeight) {
+    constructor(GameScreenContainer, StartShootingX, StartShootingY, StartShootingWidth, StartShootingHeight, CharacterConfig) {
         this.x = StartShootingX + StartShootingWidth/2;
         this.y = StartShootingY + StartShootingHeight*0.8;
         this.GameScreenContainer = GameScreenContainer;
@@ -43,11 +43,11 @@ export class PlayerBase {
 		this.CharacterImage = new PIXI.Sprite(CharacterTexture);
 		// 画像のアンカーを設定
       	this.CharacterImage.anchor.set(0.5);// 中心が座標
-      	this.ScreenBackgroundImage.scale.set(this.CurrentScaleFactor); // 初期スケールと画像サイズ調整
+      	this.CharacterImage.scale.set(this.CurrentScaleFactor); // 初期スケールと画像サイズ調整
 
 		// 画像の位置を調整
-      	this.ScreenBackgroundImage.x = this.x; // 画面の一番左上に合わせる
-      	this.ScreenBackgroundImage.y = this.y;
+      	this.CharacterImage.x = this.x; // 画面の一番左上に合わせる
+      	this.CharacterImage.y = this.y;
 
         this.BaseSpeed = CharacterConfig.character_speed;
         this.NowSpeed = this.BaseSpeed;

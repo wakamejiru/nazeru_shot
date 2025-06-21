@@ -433,16 +433,16 @@ export class GameScreen extends BaseScreen{
      * 初期起動時のプレイヤーと敵のインスタンスを生成する
      */
 	CreateEnemyPlayerInstance(){
+		const ShootingStartX = this.ShootingBackgroundImage.x;
+		const ShootingStartY = this.ShootingBackgroundImage.y;
+		const ShootingWidht = this.ShootingBackgroundImage.width;
+		const ShootingHeight = this.ShootingBackgroundImage.height;
 		switch(CharaIndex){
 			case 0:
-				this.PlayerInstance =  new PlayerType1(this.ShootingBackgroundImage.width/2, 
-					this.ShootingBackgroundImage.y + this.ShootingBackgroundImage.height*0.8, this.ShootingContainer, 
-				this.ShootingBackgroundImage.width, this.ShootingBackgroundImage.height);
+				this.PlayerInstance =  new PlayerType1(this.ShootingContainer,ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
 				break;
 			default:
-				this.PlayerInstance =  new PlayerType1(this.ShootingBackgroundImage.width/2, 
-					this.ShootingBackgroundImage.y + this.ShootingBackgroundImage.height*0.8, this.ShootingContainer, 
-				this.ShootingBackgroundImage.width, this.ShootingBackgroundImage.height);
+				this.PlayerInstance =  new PlayerType1(this.ShootingContainer,ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
 				break;
 		}
 	}
