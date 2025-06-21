@@ -400,52 +400,21 @@ export class PlayerBase {
         
     }
 
-    // キャラクター情報を取得する
+    /**
+ 	 * キャラクター情報を取得する
+	 */
     _getplayerinfo()
     {
         // キャラクター情報を取得する
         // 中身は各クラスで作成する
     }
 
-
-    // キャラクターを描画する
-    draw(ctx, Keys) {
-        // 将来的に左右上下移動時に画像を変える
-        // キャラクターの下に魔法陣のような表記を付ける
-        const ScaledDrawWidth = this.SpriteDrawWidth;
-        const ScaledDrawHeight = this.SpriteDrawHeight;
-        const AvatorDrawX = this.x - ScaledDrawWidth / 2;
-        const AvatorDrawY = this.y - ScaledDrawHeight / 2;
-        if (this.SpriteAvator) {
-            ctx.drawImage(this.SpriteAvator, AvatorDrawX, AvatorDrawY, ScaledDrawWidth, ScaledDrawHeight);
-        }
-
-        const HitpointDrawRadius = this.HitpointRadius;
-        const HitpointDrawX = this.x - HitpointDrawRadius / 2;
-        const HitpointDrawY = this.y - HitpointDrawRadius / 2;
-        if (this.SpriteHitpoint) { // 低速移動中は表示
-             if(Keys['z']){ 
-                ctx.drawImage(this.SpriteHitpoint, HitpointDrawX, HitpointDrawY, 
-                    HitpointDrawRadius, HitpointDrawRadius);
-             }
-        }
-    }
-
-    // HPバーを記載する
-    drawHpBar(ctx, ScaledHpBarHeight, ScaledPlayerHpBarWidth) {
-        // const barX = 10 * this.CurrentScaleFactor;
-        // const barY = this.NowPlayAreaHeight - ScaledHpBarHeight - (10 * this.CurrentScaleFactor);
-        // const CurrentHpWidth = this.MaxHP > 0 ? (this.NowHP / this.MaxHP) * ScaledPlayerHpBarWidth : 0;
-
-        // ctx.fillStyle = 'grey';
-        // ctx.fillRect(barX, barY, ScaledPlayerHpBarWidth, ScaledHpBarHeight);
-        // ctx.fillStyle = (this.MaxHP > 0 && this.NowHP / this.MaxHP < 0.3) ? 'red' : 'green';
-        // ctx.fillRect(barX, barY, CurrentHpWidth > 0 ? CurrentHpWidth : 0, ScaledHpBarHeight);
-        // ctx.strokeStyle = 'white';
-        // ctx.strokeRect(barX, barY, ScaledPlayerHpBarWidth, ScaledHpBarHeight);
-    }
-
     // trueならスキルが有効
+    /**
+ 	 * キャラクター情報を取得する
+     * @param {SkillTypeEnum} skilltypekey-スキル情報
+     * @return true:あり，false:無し
+	 */
     isvalidskill(skilltypekey){
         return (skilltypekey !== SkillTypeEnum.NONE);
     }
