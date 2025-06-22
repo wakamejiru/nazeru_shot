@@ -90,8 +90,6 @@ export class EnemyBase {
         this.HpLimitMarker = null;   // HPの特定位置を示すマーカー
         this.HpBarBorders = null;    // HPバーの枠線
     
-        // HPバーの初期化メソッドを呼び出す
-        this.InitializeHpBar();
     }
     /**
  	 * 非同期の初期化メソッドを追加
@@ -114,6 +112,9 @@ export class EnemyBase {
 
         // 4. コンテナに追加
         this.EnemyContainer.addChild(this.EnemyImage);
+        
+        // HPバーの初期化メソッドを呼び出す
+        this.InitializeHpBar();
     }
 
 
@@ -274,7 +275,21 @@ export class EnemyBase {
             return;
         }
 
+        // --- 各グラフィックオブジェクトをクリアしてから再描画 ---
+        this.HpBarBackground.clear(); 
+        this.HpBarFill.clear();       
+        this.HpLimitMarker.clear();   
+        this.HpBarBorders.clear();    
+
+
         // --- 1. 描画に必要なパラメータを計算 (元のロジックと同じ) ---
+        console.log("--- DrawHpBar Debug Info ---");
+        console.log("this.x:", this.x, "this.y:", this.y);
+        console.log("this.EnemyWidth:", this.EnemyWidth, "this.EnemyHeight:", this.EnemyHeight);
+        console.log("this.CurrentScaleFactor:", this.CurrentScaleFactor);
+        console.log("this.NowHP:", this.NowHP, "this.MaxHP:", this.MaxHP);
+        console.log("this.ELimitBreakPoint:", this.ELimitBreakPoint);
+
         const HPRingLineWidth = 15;
         const CenterX = this.x;
         const CenterY = this.y;
@@ -284,6 +299,12 @@ export class EnemyBase {
         const CurrentHpPercentage = this.NowHP / this.MaxHP;
         const StartAngle = -Math.PI / 2; // 12時の方向
         const EndAngleCurrentHp = StartAngle + (CurrentHpPercentage * (Math.PI * 2));
+
+        console.log("HPWidth:", HPWidth);
+        console.log("LengthMaxSide:", LengthMaxSide);
+        console.log("HPRadius:", HPRadius);
+        console.log("CurrentHpPercentage:", CurrentHpPercentage);
+        console.log("----------------------------");
 
         // --- 2. 各パーツを再描画 ---
 
