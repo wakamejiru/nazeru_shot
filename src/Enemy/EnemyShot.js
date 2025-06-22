@@ -16,8 +16,19 @@ import { Bullet } from '../bullet.js'; // Bulletクラスもインポート
 
 // 停止した時に何秒か待機できるようにする
 
+/**
+ * 弾の打ち出しを行う関数
+ * @param {number} EnemyBulletList :弾の配列
+ * @param {number} CenterX :打ち出し中心位置
+ * @param {number} CenterY :打ち出し中心位置
+ * @param {number} BulletNumber :弾の数
+ * @param {number} StartAngle :開始角度
+ * @param {number} Opitons :弾の情報
+ * @param {number} EndAngle :終了角度
+ * @param {Pixi} ScrreenContainer :Pixiコンテナ
+ */
 export function RoundShotFunc(EnemyBulletList, CenterX, CenterY, BulletNumber, 
-    StartAngle,  Opitons, AssetManager, EndAngle){
+    StartAngle,  Opitons, EndAngle, ScrreenContainer){
     // 作ったインスタンスをpushする
     let StartPointX = CenterX;
     let StartPointY = CenterY;
@@ -30,9 +41,6 @@ export function RoundShotFunc(EnemyBulletList, CenterX, CenterY, BulletNumber,
     for(let i = 0; i < BulletNumber; i++){
         const RadiusAngle = (FirstAngle + (OneStepAngle * i))* Math.PI / 180;
         // 停止条件も変更する必要がある
-
-
-
         // 速度を触る
         const SpeedX = Opitons.x_speed * Math.cos(RadiusAngle);
         const SpeedY = Opitons.y_speed * Math.sin(RadiusAngle);
@@ -64,7 +72,8 @@ export function RoundShotFunc(EnemyBulletList, CenterX, CenterY, BulletNumber,
                 shape: Opitons.shape,
 
             };
-        EnemyBulletList.push(new Bullet(StartPointX, StartPointY, AssetManager, bulletOptions));
+
+        EnemyBulletList.push(new Bullet(ScrreenContainer, StartPointX, StartPointY, bulletOptions));
 
     }
 }
@@ -78,7 +87,7 @@ export function RoundShotFunc(EnemyBulletList, CenterX, CenterY, BulletNumber,
  * @param {number} fanSpreadAngleDegrees - 弾数最大値の時の1弾当たりの角度
  * @param {number} fanCenterAngleDegrees - 扇の中心線の角度 (度数法)
  * @param {object} baseBulletOptions - 弾の基本設定オブジェクト。
- * @param {AssetManager} assetManager - アセットマネージャーのインスタンス
+ * @param {Pixi} ScrreenContainer - Pixiコンテナ
  */
 export function FanShotFunc(
     bulletList, 
@@ -88,7 +97,7 @@ export function FanShotFunc(
     fanSpreadAngleDegrees, 
     fanCenterAngleDegrees, 
     baseBulletOptions, 
-    assetManager
+    ScrreenContainer
 ) {
     if (numberOfBullets <= 0) {
         console.warn("FanShotFunc: numberOfBullets must be greater than 0.");
@@ -148,7 +157,7 @@ export function FanShotFunc(
             BulletImageKey: baseBulletOptions.BulletImageKey,
             shape: baseBulletOptions.shape,
         };
-        bulletList.push(new Bullet(originX, originY, assetManager, finalBulletOptions));
+        bulletList.push(new Bullet(ScrreenContainer, originX, originY, finalBulletOptions));
     }
 }
 
@@ -165,13 +174,13 @@ export function FanShotFunc(
  * @param {number}  bulletAngleEnd 終了角度(度数法)
  * @param {number} numberOfBullets - 球の数
  * @param {object} baseBulletOptions - 弾の基本設定オブジェクト。
- * @param {AssetManager} assetManager - アセットマネージャーのインスタンス
- * @param {AssetManager} shotCnt - ここの数値をずらしていくことで、発射角度がshitし、風車方になる
- * @param {AssetManager} shotAngleSpeed - shotCntにつけるシフト量回転の速度を表す
+ * @param {Pixi} ScrreenContainer - アセットマネージャーのインスタンス
+ * @param {number} shotCnt - ここの数値をずらしていくことで、発射角度がshitし、風車方になる
+ * @param {number} shotAngleSpeed - shotCntにつけるシフト量回転の速度を表す
  */
 export function windmillshotfunc(EnemyBulletList, centerX, centerY, ccw, WindmillPointRadius,
     WindmillPointRadiusfunc, bulletAngleStart, bulletAngleEnd, numberOfBullets ,Opitons,
-    AssetManager, shotCnt, shotAngleSpeed
+    ScrreenContainer, shotCnt, shotAngleSpeed
 ){
      // 作ったインスタンスをpushする
     let StartPointX = centerX;
@@ -227,7 +236,7 @@ export function windmillshotfunc(EnemyBulletList, centerX, centerY, ccw, Windmil
                 shape: Opitons.shape,
 
             };
-        EnemyBulletList.push(new Bullet(StartPointX, StartPointY, AssetManager, bulletOptions));
+        EnemyBulletList.push(new Bullet(ScrreenContainer, StartPointX, StartPointY, bulletOptions));
 
     }
 }

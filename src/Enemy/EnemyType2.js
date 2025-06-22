@@ -105,7 +105,7 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                             bulletMaxSpeed: 250000,
                             playerInstance: TargetPlayer,
                             trackingStrength: 0,
-                            BulletImageKey: "bulletTypeA",
+                            BulletImageKey: "BulletTypeA",
                             shape: "rectangle"
                         };
                         //発射レート
@@ -185,7 +185,7 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                             bulletMaxSpeed: 250000,
                             playerInstance: TargetPlayer,
                             trackingStrength: 0,
-                            BulletImageKey: "bulletTypeA",
+                            BulletImageKey: "BulletTypeA",
                             shape: "rectangle"
                         };
                         //発射レート
@@ -283,7 +283,7 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                             bulletMaxSpeed: 250000,
                             playerInstance: TargetPlayer,
                             trackingStrength: 0,
-                            BulletImageKey: "bulletTypeA",
+                            BulletImageKey: "BulletTypeA",
                             shape: "rectangle"
                         };
                         //発射レート
@@ -348,7 +348,7 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                             bulletMaxSpeed: 250000,
                             playerInstance: TargetPlayer,
                             trackingStrength: 0,
-                            BulletImageKey: "bulletTypeA",
+                            BulletImageKey: "BulletTypeA",
                             shape: "rectangle"
                         };
                         //発射レート

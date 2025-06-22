@@ -42,152 +42,155 @@ export const ScreenImages = [
 
 // 実際のゲーム画面を設計する
 export class GameScreen extends BaseScreen{
-	/**
-     * コンストラクタ
-     * @param {PIXI.Application} App - メインPixiインスタンス
-     * @param {SCREEN_STATE} ScreenState - このインスタンスがどの画面を指すか
-     */
-    constructor(App, ScreenState){
-        super(App, ScreenState);
-		this.ScreenTextures = [];
-		this.ScreenBackgroundImage = null;
-		this.buttons = [];
+		/**
+		 * コンストラクタ
+		 * @param {PIXI.Application} App - メインPixiインスタンス
+		 * @param {SCREEN_STATE} ScreenState - このインスタンスがどの画面を指すか
+		 */
+		constructor(App, ScreenState){
+			super(App, ScreenState);
+			this.ScreenTextures = [];
+			this.ScreenBackgroundImage = null;
+			this.buttons = [];
 
-		
-		// ゲーム中の必要なパラメータはここで宣言する
-		this.NowULTPoint = 3;
-		// プレイヤーと敵のインスタンス	
-		this.PlayerInstance = null;
-		this.EnemyInstance = null;
-		this.PlayerBulletInstances = [];
-		this.EnemyBulletInstances = [];
-		
-    }
-
-	/**
-	 * 初期化を行う
-	 * @param {boolean} Visible - true:ON false:OFF
-	 */
-	async InitializeScreen(InitialScale){
-
-		// 画面を作成する
-		this.ScreenContainer = new PIXI.Container();
-
-
-		this.App.stage.addChild(this.ScreenContainer); // メインステージに追加
-
-		// 画像の読み込みを行う
-		await this.LoadcreenAssetsForPixi();
-
-		// 画像を作成
-		const ScreenBgTexture = PIXI.Texture.from("GameBgScreen");
-		this.ScreenBackgroundImage = new PIXI.Sprite(ScreenBgTexture);
-
-		// 画像のアンカーを設定
-      	this.ScreenBackgroundImage.anchor.set(0);// 左上が座標
-      	this.ScreenBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
-
-		// 画像の位置を調整
-      	this.ScreenBackgroundImage.x = 0; // 画面の一番左上に合わせる
-      	this.ScreenBackgroundImage.y = 0;
-		// 画像を追加
-		this.ScreenContainer.addChild(this.ScreenBackgroundImage);
-
-		// 背景に置くロゴを追加
-		this.LogoImage = new PIXI.Sprite(PIXI.Texture.from("LogoImage"));
-      	this.LogoImage.anchor.set(0.5);// 左上が座標
-      	this.LogoImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
-      	this.LogoImage.x = 0; // 画面の一番左上に合わせる
-      	this.LogoImage.y = 0;
-		// 画像を追加
-		this.ScreenContainer.addChild(this.LogoImage);
-
-
-		// シューティングゲームの操作画面を作成(コンテナでまとめる)
-		// キャラなどはStart時に追加
-		this.ShootingContainer = new PIXI.Container();
-		this.ShootingBackgroundImage = new PIXI.Sprite(PIXI.Texture.from("ShootingScreen"));
-      	this.ShootingBackgroundImage.anchor.set(0);// 左上が座標
-      	this.ShootingBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
-      	this.ShootingBackgroundImage.x = 0; // 画面の一番左上に合わせる
-      	this.ShootingBackgroundImage.y = 0;
-		this.ShootingContainer.addChild(this.ShootingBackgroundImage);
-
-		// スコアの背景を追加(コンテナにまとめる)
-		this.ScoreContainer = new PIXI.Container();
-		// スコア用の文字列と，背景画像
-		this.ScoreBackgroundImage = new PIXI.Sprite(PIXI.Texture.from("ScoreBgImg"));
-      	this.ScoreBackgroundImage.anchor.set(0);// 左上が座標
-      	this.ScoreBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
-      	this.ScoreBackgroundImage.x = 0; // 画面の一番左上に合わせる
-      	this.ScoreBackgroundImage.y = 0;
-		this.ScoreContainer.addChild(this.ScoreBackgroundImage);
-
-		// 文字列を追加する
-		this.ScoreTextStyle = new PIXI.TextStyle({
-			fontFamily: 'Arial',
-			fontSize: 36,
-			fill: '#000000',
-			align: 'right'
-		});
-		this.ScoreText = new PIXI.Text('Score: 0', this.ScoreTextStyle);
-		this.ScoreText.x = 0;
-		this.ScoreText.y = 0;
-		this.ScoreText.anchor.set(0, 0.5);
-		this.ScoreContainer.addChild(this.ScoreText); // スコアを表示するコンテナに追加
-
-		this.hpBarBackground = new PIXI.Graphics(); // HPバーの背景（枠）
-		this.hpBarFill = new PIXI.Graphics();       // HPバーの中身（ゲージ）
-		this.ScoreContainer.addChild(this.hpBarBackground);
-		this.ScoreContainer.addChild(this.hpBarFill);
-
-		
-		// ULTポイント画面を作成する
-		// ULTコンテナ内に，ULTONコンテナとULTOFFコンテナを作成，ULTを上にしておいて，非表示にすることでOFF状態を作成する
-		this.ULTContainer = new PIXI.Container();
-		this.ULTContainerOn = new PIXI.Container();
-		this.ULTContainerOff = new PIXI.Container();
-		this.UltPointOns=[];
-		this.UltPointOffs=[]
-		for (let i =0; i < 5; ++i){
-			this.UltPointOns[i] = new PIXI.Sprite(PIXI.Texture.from("ULTPointImageOn"));
-			this.UltPointOns[i].anchor.set(0, 0.5);
-			this.UltPointOns[i].scale.set(InitialScale); // 初期スケールと画像サイズ調整
-			this.UltPointOns[i].x = 0; // 画面の一番左上に合わせる
-			this.UltPointOns[i].y = 0;
-			this.ULTContainerOn.addChild(this.UltPointOns[i]);
-
-			this.UltPointOffs[i] = new PIXI.Sprite(PIXI.Texture.from("ULTPointImageOff"));
-			this.UltPointOffs[i].anchor.set(0, 0.5);
-			this.UltPointOffs[i].scale.set(InitialScale); // 初期スケールと画像サイズ調整
-			this.UltPointOffs[i].x = 0; // 画面の一番左上に合わせる
-			this.UltPointOffs[i].y = 0;
-			this.ULTContainerOff.addChild(this.UltPointOffs[i]);
+			
+			// ゲーム中の必要なパラメータはここで宣言する
+			this.NowULTPoint = 3;
+			// プレイヤーと敵のインスタンス	
+			this.PlayerInstance = null;
+			this.EnemyInstance = null;
+			this.PlayerBulletInstances = [];
+			this.EnemyBulletInstances = [];
+			
 		}
-		
-		// ULTの背景を追加
-		this.ULTBackgroundImage = new PIXI.Sprite(PIXI.Texture.from("ULTBgImg"));
-      	this.ULTBackgroundImage.anchor.set(0);// 左上が座標
-      	this.ULTBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
-      	this.ULTBackgroundImage.x = 0; // 画面の一番左上に合わせる
-      	this.ULTBackgroundImage.y = 0;
-		this.ULTContainer.addChild(this.ULTBackgroundImage);
-		this.ULTContainer.addChild(this.ULTContainerOn);
-		this.ULTContainer.addChild(this.ULTContainerOff);
 
-		this.ScreenContainer.addChild(this.ShootingContainer);
-		this.ScreenContainer.addChild(this.ScoreContainer);
-		this.ScreenContainer.addChild(this.ULTContainer);
-		super.SetScreenVisible(false); // 初期は非表示
-	}
+		/**
+		 * 初期化を行う
+		 * @param {boolean} Visible - true:ON false:OFF
+		 */
+		async InitializeScreen(InitialScale){
+
+			// 画面を作成する
+			this.ScreenContainer = new PIXI.Container();
+
+			this.NowScale = InitialScale;
+
+
+			this.App.stage.addChild(this.ScreenContainer); // メインステージに追加
+
+			// 画像の読み込みを行う
+			await this.LoadcreenAssetsForPixi();
+
+			// 画像を作成
+			const ScreenBgTexture = PIXI.Texture.from("GameBgScreen");
+			this.ScreenBackgroundImage = new PIXI.Sprite(ScreenBgTexture);
+
+			// 画像のアンカーを設定
+			this.ScreenBackgroundImage.anchor.set(0);// 左上が座標
+			this.ScreenBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+
+			// 画像の位置を調整
+			this.ScreenBackgroundImage.x = 0; // 画面の一番左上に合わせる
+			this.ScreenBackgroundImage.y = 0;
+			// 画像を追加
+			this.ScreenContainer.addChild(this.ScreenBackgroundImage);
+
+			// 背景に置くロゴを追加
+			this.LogoImage = new PIXI.Sprite(PIXI.Texture.from("LogoImage"));
+			this.LogoImage.anchor.set(0.5);// 左上が座標
+			this.LogoImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+			this.LogoImage.x = 0; // 画面の一番左上に合わせる
+			this.LogoImage.y = 0;
+			// 画像を追加
+			this.ScreenContainer.addChild(this.LogoImage);
+
+
+			// シューティングゲームの操作画面を作成(コンテナでまとめる)
+			// キャラなどはStart時に追加
+			this.ShootingContainer = new PIXI.Container();
+			this.ShootingBackgroundImage = new PIXI.Sprite(PIXI.Texture.from("ShootingScreen"));
+			this.ShootingBackgroundImage.anchor.set(0);// 左上が座標
+			this.ShootingBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+			this.ShootingBackgroundImage.x = 0; // 画面の一番左上に合わせる
+			this.ShootingBackgroundImage.y = 0;
+			this.ShootingContainer.addChild(this.ShootingBackgroundImage);
+
+			// スコアの背景を追加(コンテナにまとめる)
+			this.ScoreContainer = new PIXI.Container();
+			// スコア用の文字列と，背景画像
+			this.ScoreBackgroundImage = new PIXI.Sprite(PIXI.Texture.from("ScoreBgImg"));
+			this.ScoreBackgroundImage.anchor.set(0);// 左上が座標
+			this.ScoreBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+			this.ScoreBackgroundImage.x = 0; // 画面の一番左上に合わせる
+			this.ScoreBackgroundImage.y = 0;
+			this.ScoreContainer.addChild(this.ScoreBackgroundImage);
+
+			// 文字列を追加する
+			this.ScoreTextStyle = new PIXI.TextStyle({
+				fontFamily: 'Arial',
+				fontSize: 36,
+				fill: '#000000',
+				align: 'right'
+			});
+			this.ScoreText = new PIXI.Text('Score: 0', this.ScoreTextStyle);
+			this.ScoreText.x = 0;
+			this.ScoreText.y = 0;
+			this.ScoreText.anchor.set(0, 0.5);
+			this.ScoreContainer.addChild(this.ScoreText); // スコアを表示するコンテナに追加
+
+			this.hpBarBackground = new PIXI.Graphics(); // HPバーの背景（枠）
+			this.hpBarFill = new PIXI.Graphics();       // HPバーの中身（ゲージ）
+			this.ScoreContainer.addChild(this.hpBarBackground);
+			this.ScoreContainer.addChild(this.hpBarFill);
+
+			
+			// ULTポイント画面を作成する
+			// ULTコンテナ内に，ULTONコンテナとULTOFFコンテナを作成，ULTを上にしておいて，非表示にすることでOFF状態を作成する
+			this.ULTContainer = new PIXI.Container();
+			this.ULTContainerOn = new PIXI.Container();
+			this.ULTContainerOff = new PIXI.Container();
+			this.UltPointOns=[];
+			this.UltPointOffs=[]
+			for (let i =0; i < 5; ++i){
+				this.UltPointOns[i] = new PIXI.Sprite(PIXI.Texture.from("ULTPointImageOn"));
+				this.UltPointOns[i].anchor.set(0, 0.5);
+				this.UltPointOns[i].scale.set(InitialScale); // 初期スケールと画像サイズ調整
+				this.UltPointOns[i].x = 0; // 画面の一番左上に合わせる
+				this.UltPointOns[i].y = 0;
+				this.ULTContainerOn.addChild(this.UltPointOns[i]);
+
+				this.UltPointOffs[i] = new PIXI.Sprite(PIXI.Texture.from("ULTPointImageOff"));
+				this.UltPointOffs[i].anchor.set(0, 0.5);
+				this.UltPointOffs[i].scale.set(InitialScale); // 初期スケールと画像サイズ調整
+				this.UltPointOffs[i].x = 0; // 画面の一番左上に合わせる
+				this.UltPointOffs[i].y = 0;
+				this.ULTContainerOff.addChild(this.UltPointOffs[i]);
+			}
+			
+			// ULTの背景を追加
+			this.ULTBackgroundImage = new PIXI.Sprite(PIXI.Texture.from("ULTBgImg"));
+			this.ULTBackgroundImage.anchor.set(0);// 左上が座標
+			this.ULTBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
+			this.ULTBackgroundImage.x = 0; // 画面の一番左上に合わせる
+			this.ULTBackgroundImage.y = 0;
+			this.ULTContainer.addChild(this.ULTBackgroundImage);
+			this.ULTContainer.addChild(this.ULTContainerOn);
+			this.ULTContainer.addChild(this.ULTContainerOff);
+
+			this.ScreenContainer.addChild(this.ShootingContainer);
+			this.ScreenContainer.addChild(this.ScoreContainer);
+			this.ScreenContainer.addChild(this.ULTContainer);
+			super.SetScreenVisible(false); // 初期は非表示
+		}
 	
 		/**
-	   * リサイズ処理を行う
-	   * @param {PIXI.Application} App - メインPixiインスタンス
+	     * リサイズ処理を行う
+	     * @param {PIXI.Application} App - メインPixiインスタンス
 		 * @param {number} CurrentOverallScale 現在のメイン画面倍率
-	   */
+	     */
 		ResizeScreen(App, CurrentOverallScale){
 			if (!this.ScreenContainer) return;
+			this.NowScale = CurrentOverallScale;	
 			let BaseTextureWidth = this.ScreenBackgroundImage.texture.orig.width;
 			let BaseTextureHeight = this.ScreenBackgroundImage.texture.orig.height;
 			const DisplaySizeWidth = this.App.screen.width;
@@ -292,16 +295,16 @@ export class GameScreen extends BaseScreen{
 		}
 	
 		/**
-	   * 画面の開始を行う
-	   * @param {boolean} Visible - true:ON false:OFF
-	   */
-	  StartScreen(){
+		 * 画面の開始を行う
+		 * @param {boolean} Visible - true:ON false:OFF
+		 */
+	  	async StartScreen(){
 			this.NowULTPoint = 3;
 			// ULTの表示を反映
 			this.UpdateULTPointVeiw();
-			this.CreateEnemyPlayerInstance();
+			await this.CreateEnemyPlayerInstance();
 			super.StartScreen();
-	  }
+		}
 		
 		/**
 	   * 画面の開始を行う
@@ -350,7 +353,7 @@ export class GameScreen extends BaseScreen{
 			// 移動判定を行う
             this.EnemyInstance.move(InputCurrentState, DeltaTime);
 			// 弾の発射を行う
-			this.EnemyInstance._shoot(InputCurrentState, this.PlayerBulletInstances, this.EnemyInstance, DeltaTime);
+			this.EnemyInstance._shoot(this.EnemyBulletInstances, this.PlayerInstance,  DeltaTime);
         }
 
 		if (this.PlayerInstance && this.EnemyBulletInstances) {
@@ -361,7 +364,7 @@ export class GameScreen extends BaseScreen{
 
 				// 簡易的な矩形での当たり判定
 				const playerBounds = this.PlayerInstance.CharacterImage.getBounds();
-				const bulletBounds = enemyBullet.sprite.getBounds();
+				const bulletBounds = enemyBullet.BulletImage.getBounds();
 
 				if (playerBounds.x < bulletBounds.x + bulletBounds.width &&
 					playerBounds.x + playerBounds.width > bulletBounds.x &&
@@ -541,7 +544,7 @@ export class GameScreen extends BaseScreen{
 	/**
      * 初期起動時のプレイヤーと敵のインスタンスを生成する
      */
-	CreateEnemyPlayerInstance(){
+	async CreateEnemyPlayerInstance(){
 		const ShootingStartX = this.ShootingBackgroundImage.x;
 		const ShootingStartY = this.ShootingBackgroundImage.y;
 		const ShootingWidht = this.ShootingBackgroundImage.width;
@@ -549,7 +552,8 @@ export class GameScreen extends BaseScreen{
 		switch(CharaIndex){
 			case 0:
 				this.PlayerInstance =  new PlayerType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
-				this.PlayerInstance.Initialize();
+				await this.PlayerInstance.Initialize();
+				this.PlayerInstance.updateScale(this.NowScale, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
 				break;
 			default:
 				this.PlayerInstance =  new PlayerType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
@@ -560,7 +564,8 @@ export class GameScreen extends BaseScreen{
 		switch(MapIndex){
 			case 0:
 				this.EnemyInstance = new EnemyType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
-				this.EnemyInstance.Initialize();
+				await this.EnemyInstance.Initialize();
+				this.EnemyInstance.updateScale(this.NowScale, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
 				break;
 			default:
 				this.EnemyInstance = new EnemyType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);

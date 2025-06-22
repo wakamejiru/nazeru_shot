@@ -1,6 +1,6 @@
 // EnemyBase.js
 import { Bullet } from '../bullet.js'; 
-import { main_bulled_info_list, sub_bulled_info_list, EnemyTypeEnum, EnemySkillTypeEnum } from '../game_status.js';
+import { ImageAssetPaths, main_bulled_info_list, sub_bulled_info_list, EnemyTypeEnum, EnemySkillTypeEnum } from '../game_status.js';
 
 export class EnemyBase {
     /**
@@ -19,8 +19,6 @@ export class EnemyBase {
         // 移動先を宣言
         this.MoveingTargetX = this.x;
         this.MoveingTargetY = this.y;
-
-        this.GameScreenContainer = GameScreenContainer;
 
         this.CurrentScaleFactor = 1.0;
 
@@ -51,7 +49,7 @@ export class EnemyBase {
         this.AttackCounter = 0; // 通常攻撃汎用カウンタ
 
         this.EnemyContainer = new PIXI.Container();
-        this.GameScreenContainer.addChild(this.EnemyContainer);
+        GameScreenContainer.addChild(this.EnemyContainer);
 
         // 現在のplaySizeもここに書く
         this.NowPlayAreaWidth = StartShootingWidth;
@@ -115,7 +113,7 @@ export class EnemyBase {
         this.EnemyImage.height = this.EnemyConfigBase.enemy_height * this.CurrentScaleFactor;
 
         // 4. コンテナに追加
-        this.CharacterContainer.addChild(this.CharacterImage);
+        this.EnemyContainer.addChild(this.EnemyImage);
     }
 
 
@@ -123,7 +121,7 @@ export class EnemyBase {
  	 * 大きさを更新する
      * @param {number} NewScaleFactor :新しい画面のスケール
      * @param {number} NewShootingStartX :新しい画面の開始位置
-     * @param {number} NewShootingStartY :新しい画面のス開始位置
+     * @param {number} NewShootingStartY :新しい画面の開始位置
      * @param {number} NewShootingWidth :新しい画面の幅
      * @param {number} NewShootingHeight :新しい画面の縦の大きさ
 	 */
@@ -175,14 +173,14 @@ export class EnemyBase {
 	 */
     setNewTarget() {
         const RandomXRange = this.MoveAreaRightX - this.MoveAreaLeftX;
-        this.TargetX = (RandomXRange <= 0) ? (this.MoveAreaLeftX + this.MoveAreaRightX) / 2 : this.MoveAreaLeftX + Math.random() * RandomXRange;
+        this.MoveingTargetX = (RandomXRange <= 0) ? (this.MoveAreaLeftX + this.MoveAreaRightX) / 2 : this.MoveAreaLeftX + Math.random() * RandomXRange;
         
         const RandomYRange = this.MoveAreaBottomY - this.MoveAreaTopY;
-        this.TargetY = (RandomYRange <= 0) ? (this.MoveAreaTopY + this.MoveAreaBottomY) / 2 : this.MoveAreaTopY + Math.random() * RandomYRange;
+        this.MoveingTargetY = (RandomYRange <= 0) ? (this.MoveAreaTopY + this.MoveAreaBottomY) / 2 : this.MoveAreaTopY + Math.random() * RandomYRange;
         // 範囲内の確認を行う
         const PositionXY = this.IsAreaIn(this.TargetX, this.TargetY);
-        this.TargetX = PositionXY.AreaXPos; 
-        this.TargetY = PositionXY.AreaYPos;     
+        this.MoveingTargetX = PositionXY.AreaXPos; 
+        this.MoveingTargetY = PositionXY.AreaYPos;     
     }
 
     /**
@@ -208,13 +206,13 @@ export class EnemyBase {
                 return;
             }
 
-            const Dx = this.TargetX - this.x;
-            const Dy = this.TargetY - this.y;
+            const Dx = this.MoveingTargetX - this.x;
+            const Dy = this.MoveingTargetY - this.y;
             const Distance = Math.sqrt(Dx * Dx + Dy * Dy);
 
             if (Distance < (this.EnemySpeed * DeltaTime) || Distance < 1.0) { // ほぼ到達
-                this.x = this.TargetX;
-                this.y = this.TargetY;
+                this.x = this.MoveingTargetX;
+                this.y = this.MoveingTargetY;
                 this.MoveWaitTimer = this.MoveWaitDuration;
                 return;
             }
@@ -259,7 +257,7 @@ export class EnemyBase {
         if (this.NowHP <= 0 || !this.EnemyImage) return;
         this.EnemyImage.x = this.x;
         this.EnemyImage.y = this.y;
-        DrawHpBar();
+        this.DrawHpBar();
     }
 
     /**
@@ -288,18 +286,13 @@ export class EnemyBase {
         const EndAngleCurrentHp = StartAngle + (CurrentHpPercentage * (Math.PI * 2));
 
         // --- 2. 各パーツを再描画 ---
-        // 描画前に一度クリア
-        this.HpBarBackground.clear();
-        this.HpBarFill.clear();
-        this.HpLimitMarker.clear();
-        this.HpBarBorders.clear();
 
         // 2-1. HPバーの背景 (常に全周を描画)
         this.HpBarBackground.lineStyle({
             width: HPWidth,
             color: 0x251A1A, // 'rgba(37, 26, 26, 0.6)'
             alpha: 0.6,
-            cap: PIXI.LINE_CAP.ROUND
+            cap: 'round'
         });
 
 
@@ -313,7 +306,7 @@ export class EnemyBase {
                 width: HPWidth,
                 color: fillColor, // 色を動的に変更
                 alpha: 0.8,
-                cap: PIXI.LINE_CAP.ROUND
+                cap: 'round'
             });
             this.HpBarFill.arc(CenterX, CenterY, HPRadius, StartAngle, EndAngleCurrentHp);
         }
@@ -329,7 +322,7 @@ export class EnemyBase {
                 width: HPWidth,
                 color: 0x00FF00, // 緑色
                 alpha: 0.6,
-                cap: PIXI.LINE_CAP.ROUND
+                cap: 'round'
             });
             this.HpLimitMarker.arc(CenterX, CenterY, HPRadius, MarkerStartAngle, MarkerEndAngle);
         }
@@ -403,21 +396,27 @@ export class EnemyBase {
 	 * キャラが描画範囲内にあるように調整をする
 	 */
    IsAreaIn(XPos, YPos) {
-        const halfWidth = this.EnemyImage.width / 2;
-        const halfHeight = this.EnemyImage.height / 2;
+        if(this.EnemyImage){
+            const halfWidth = this.EnemyImage.width / 2;
+            const halfHeight = this.EnemyImage.height / 2;
 
-        // 正しいX座標の境界（左端と右端）を計算
-        const minX = this.StartAreaX + halfWidth;
-        const maxX = this.StartAreaX + this.NowPlayAreaWidth - halfWidth;
+            // 正しいX座標の境界（左端と右端）を計算
+            const minX = this.StartAreaX + halfWidth;
+            const maxX = this.StartAreaX + this.NowPlayAreaWidth - halfWidth;
 
-        // 正しいY座標の境界（上端と下端）を計算
-        const minY = this.StartAreaY + halfHeight;
-        const maxY = this.StartAreaY + this.NowPlayAreaHeight - halfHeight;
+            // 正しいY座標の境界（上端と下端）を計算
+            const minY = this.StartAreaY + halfHeight;
+            const maxY = this.StartAreaY + this.NowPlayAreaHeight - halfHeight;
 
-        // プレイヤーの座標(XPos, YPos)を、計算した境界内に収める
-        const AreaXPos = Math.max(minX, Math.min(XPos, maxX));
-        const AreaYPos = Math.max(minY, Math.min(YPos, maxY));
-        return {AreaXPos, AreaYPos};
+            // プレイヤーの座標(XPos, YPos)を、計算した境界内に収める
+            const AreaXPos = Math.max(minX, Math.min(XPos, maxX));
+            const AreaYPos = Math.max(minY, Math.min(YPos, maxY));
+            return {AreaXPos, AreaYPos};
+        }else{
+            const AreaXPos = XPos;
+            const AreaYPos = YPos;
+            return {AreaXPos, AreaYPos};
+        }
     }
 
     /**
@@ -428,7 +427,7 @@ export class EnemyBase {
         this.HpBarBackground = new PIXI.Graphics();
         this.HpBarFill = new PIXI.Graphics();
         this.HpLimitMarker = new PIXI.Graphics();
-        this.HhpBarBorders = new PIXI.Graphics();
+        this.HpBarBorders = new PIXI.Graphics();
 
         // 描画順序を考慮してコンテナに追加（後に追加したものが手前に表示される）
         this.EnemyContainer.addChild(this.HpBarBackground);
