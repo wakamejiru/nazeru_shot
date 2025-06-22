@@ -27,6 +27,7 @@ export class PlayerBase {
         this.y = StartShootingY + StartShootingHeight*0.8;
         this.GameScreenContainer = GameScreenContainer;
 
+        this.CharacterConfigBase = CharacterConfig;
         // キャラクターは自分のコンテナを所有しており、そこに描画する
         this.CharacterContainer = new PIXI.Container();
         this.CurrentScaleFactor = 1.0;
@@ -70,6 +71,8 @@ export class PlayerBase {
         this.StartAreaY = StartShootingY;
 
         // 弾のinfoを引き出す
+        this.MBulletKey = this.CharacterConfigBase.character_m_bullet;
+        this.SBulletKey = this.CharacterConfigBase.character_s_bullet;
 		this.MainBulletInfo = this.GetBulletInfo(this.MBulletKey, true);
 		this.SubBulletInfo = this.GetBulletInfo(this.SBulletKey, false);
         this.MainBulletWaitTime = 0;
@@ -94,6 +97,8 @@ export class PlayerBase {
         this.CharacterImage.scale.set(this.CurrentScaleFactor);
         this.CharacterImage.x = this.x;
         this.CharacterImage.y = this.y;
+        this.CharacterImage.width = this.CharacterConfigBase.sprite_base_draw_width * this.CurrentScaleFactor;
+        this.CharacterImage.height = this.CharacterConfigBase.sprite_base_draw_height * this.CurrentScaleFactor;
 
         // 4. コンテナに追加
         this.CharacterContainer.addChild(this.CharacterImage);
@@ -143,8 +148,8 @@ export class PlayerBase {
 
         // 画像のサイズを合わせる
         // もともと画像が大きいので仮の倍率をかけておく
-        this.CharacterImage.scale.set( this.CurrentScaleFactor * 0.2);
-
+        this.CharacterImage.width = this.CharacterConfigBase.sprite_base_draw_width * this.CurrentScaleFactor;
+        this.CharacterImage.height = this.CharacterConfigBase.sprite_base_draw_height * this.CurrentScaleFactor;
 
 
         // 新しいサイズの座標に合わせる
@@ -276,15 +281,15 @@ export class PlayerBase {
 
     /**
  	 * 弾の作成を行う
-     * @param {number} Keys :現在のキーの入力情報
-     * @param {number} PlayerBulletsArray :プレイヤーの放出した弾の配列
-     * @param {number} TargetEnemy :敵エネミーの情報
+     * @param {number} InputCurrentState :現在のキーの入力情報
+     * @param {number} PlayerBulletInstances :プレイヤーの放出した弾の配列
+     * @param {number} EnemyInstance :敵エネミーの情報
      * @param {number} BulletInfo :弾 の情報
      * @param {number} DeltaTime :現在の経過時間
      * @param {number} NowWaitTime :現在のクール時間タイマ
      * @return {number} 現在のクールタイム時間
 	 */
-    createBulletInstance(Keys, PlayerBulletsArray, TargetEnemy, BulletInfo, DeltaTime, NowWaitTime)
+    createBulletInstance(InputCurrentState, PlayerBulletInstances, EnemyInstance, BulletInfo, DeltaTime, NowWaitTime)
     {
 
         // 球のクールタイム計算
@@ -320,7 +325,8 @@ export class PlayerBase {
         // メインの弾から計算する
         const BulletNumber =  BulletInfo.bullet_number;
         // 半径(低速モード時は倍率をかける)
-        const BulletPointRadius =  BulletInfo.bullet_pointRadius * ((Keys['z'] == true) ? BulletInfo.z_bullet_pointRadius_mag : 1.0);
+        const IsSlowMoveKeyboard = (InputCurrentState) ? InputCurrentState.keys.has('KeyZ') : false;
+        const BulletPointRadius =  BulletInfo.bullet_pointRadius * ((IsSlowMoveKeyboard == true) ? BulletInfo.z_bullet_pointRadius_mag : 1.0);
         // 一射の角度を計算(ここ再確認)
         const BulletPointAngleFull = BulletInfo.bullet_pointAngle;
         const ResultPointAngle = getonethingangle(BulletNumber, BulletPointAngleFull);
@@ -332,7 +338,7 @@ export class PlayerBase {
         // 打ち出し角度により，横方向の速度を変更する必要がある
         // 基本位置と計算は同じ
         // 一射の角度を計算(ここ再確認)(低速モード時は倍率をかける)
-        const ShotBulletAngleFull = BulletInfo.Bullet_Angle * ((Keys["z"] == true) ? BulletInfo.z_bullet_angle_mag : 1.0);
+        const ShotBulletAngleFull = BulletInfo.Bullet_Angle * ((IsSlowMoveKeyboard == true) ? BulletInfo.z_bullet_angle_mag : 1.0);
         const ResultShotAngle = getonethingangle(BulletNumber, ShotBulletAngleFull);
 
 
@@ -359,35 +365,49 @@ export class PlayerBase {
             
             // 上記処理を加速度，加加速度にも行う
             
-             const bulletOptions = {
-                    vx: ShiftShotXspped,
-                    vy: -BulletInfo.y_speed, 
-                    ax: ShiftShotXaccelX,
-                    ay: -BulletInfo.accel_y,
-                    jx: ShiftShotXjeakX,
-                    jy: -BulletInfo.jeak_y,
-                    BulletImageKey: BulletInfo.ball_image_key,
-                    shape: BulletInfo.ball_shape,
-                    width: BulletInfo.bullet_width, 
-                    height: BulletInfo.bullet_height,
-                    orientation: BulletInfo.orientation,
-                    color: BulletInfo.color, 
-                    damage: BulletInfo.damage, 
-                    life: BulletInfo.bulled_life,
-                    maxSpeed: BulletInfo.bulled_maxSpeed,
-                    target: TargetEnemy, // 追尾する場合
-                    trackingStrength: this.trackingStrengthPower, // 0なら追尾しない。追尾させる場合は0より大きい値
-                    globalAlpha: 0.9,
-                    sine_wave_enabled: BulletInfo.sine_wave_enabled,
-                    sine_amplitude: BulletInfo.sine_amplitude,
-                    sine_angular_frequency: BulletInfo.sine_angular_frequency,
-                    sine_phase_offset: BulletInfo.sine_phase_offset,
-                    sine_axis: BulletInfo.sine_axis || "x",
-                    sine_decay_rate: BulletInfo.sine_decay_rate,
-                };
+             // 1. 分割代入を使い、BulletInfoからプロパティを抽出・リネームする
+            const {
+                ball_image_key: BulletImageKey, // ball_image_key を BulletImageKey にリネーム
+                ball_shape: shape,               // ball_shape を shape にリネーム
+                bullet_width: width,             // ...以下同様
+                bullet_height: height,
+                bulled_life: life,
+                bulled_maxSpeed: maxSpeed,
+                // リネーム不要なプロパティや、後で計算に使うプロパティも抽出
+                orientation,
+                color,
+                damage,
+                y_speed,
+                accel_y,
+                jeak_y,
+                sine_wave_enabled,
+                sine_amplitude,
+                sine_angular_frequency,
+                sine_phase_offset,
+                sine_axis = "x", // デフォルト値もここで設定可能
+                sine_decay_rate,
+            } = BulletInfo;
+
+            // 2. 抽出したプロパティと計算結果を結合してbulletOptionsを生成する
+            const bulletOptions = {
+                // 抽出・リネームしたプロパティをまとめる
+                ...{ BulletImageKey, shape, width, height, life, maxSpeed, orientation, color, damage, sine_wave_enabled, sine_amplitude, sine_angular_frequency, sine_phase_offset, sine_axis, sine_decay_rate },
+                
+                // 動的に計算される値や、外部から設定する値を設定
+                vx: ShiftShotXspped,
+                vy: -y_speed,  // 抽出したy_speedを使用
+                ax: ShiftShotXaccelX,
+                ay: -accel_y,  // 抽出したaccel_yを使用
+                jx: ShiftShotXjeakX,
+                jy: -jeak_y,   // 抽出したjeak_yを使用
+                
+                target: EnemyInstance,
+                trackingStrength: this.trackingStrengthPower,
+                globalAlpha: 0.9,
+            };
 
             // 作ったインスタンスをpushする
-            PlayerBulletsArray.push(new Bullet(StartPointX, StartPointY, bulletOptions));
+            PlayerBulletInstances.push(new Bullet( this.CharacterContainer, StartPointX, StartPointY, bulletOptions));
         }
 
         return BulletInfo.rate; // クールダウン再セット
@@ -395,20 +415,19 @@ export class PlayerBase {
     
     /**
  	 * 弾の発射を行う
-     * @param {number} Keys :現在のキーの入力情報
-     * @param {number} PlayerBulletsArray :プレイヤーの放出した弾の配列
-     * @param {number} TargetEnemy :敵エネミーの情報
-     * @param {number} BulletInfo :弾 の情報
+     * @param {number} InputCurrentState :現在のキーの入力情報
+     * @param {number} PlayerBulletInstances :プレイヤーの放出した弾の配列
+     * @param {number} EnemyInstance :敵エネミーの情報
      * @param {number} DeltaTime :現在の経過時間
 	 */
-    _shoot(Keys, PlayerBulletsArray, TargetEnemy, DeltaTime) {
+    _shoot(InputCurrentState, PlayerBulletInstances, EnemyInstance, DeltaTime) {
         // 大体はこちらで設計可能
 
        
-        this.MainBulletWaitTime = this.createBulletInstance(Keys, PlayerBulletsArray, TargetEnemy, this.MainBulletInfo, DeltaTime, this.MainBulletWaitTime);
+        this.MainBulletWaitTime = this.createBulletInstance(InputCurrentState, PlayerBulletInstances, EnemyInstance, this.MainBulletInfo, DeltaTime, this.MainBulletWaitTime);
             
         // サブに対して処理を行う
-        this.SubBulletWaitTime = this.createBulletInstance(Keys, PlayerBulletsArray, TargetEnemy, this.SubBulletInfo, DeltaTime, this.SubBulletWaitTime);
+        this.SubBulletWaitTime = this.createBulletInstance(InputCurrentState, PlayerBulletInstances, EnemyInstance, this.SubBulletInfo, DeltaTime, this.SubBulletWaitTime);
                 
     }
 

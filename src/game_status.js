@@ -99,7 +99,7 @@ export const  main_bulled_info_list = {
         z_bullet_pointRadius_mag: 0.5, // 低速モード時の集中率
 
         ballet_name:"メインウエポン1",
-        ball_image_key: "bulletTypeA",
+        ball_image_key: "BulletTypeA",
         ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
         bullet_width: 15.0,
         bullet_height: 15.0,
@@ -136,7 +136,7 @@ export const  main_bulled_info_list = {
         z_bullet_pointRadius_mag: 0.5, // 低速モード時の集中率
 
         ballet_name:"メインウエポン1",
-        ball_image_key: "bulletTypeA",
+        ball_image_key: "BulletTypeA",
         ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
         bullet_width: 15.0,
         bullet_height: 15.0,
@@ -174,7 +174,7 @@ export const  main_bulled_info_list = {
         z_bullet_pointRadius_mag: 0.5, // 低速モード時の集中率
 
         ballet_name:"メインウエポン1",
-        ball_image_key: "bulletTypeA",
+        ball_image_key: "BulletTypeA",
         ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
         bullet_width: 15.0,
         bullet_height: 15.0,
@@ -212,7 +212,7 @@ export const  main_bulled_info_list = {
         z_bullet_pointRadius_mag: 0.5, // 低速モード時の集中率
 
         ballet_name:"メインウエポン1",
-        ball_image_key: "bulletTypeA",
+        ball_image_key: "BulletTypeA",
         ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
         bullet_width: 15.0,
         bullet_height: 15.0,
@@ -259,7 +259,7 @@ export const  sub_bulled_info_list = {
         z_bullet_pointRadius_mag: 0.3, // 低速モード時の集中率
 
         ballet_name:"メインウエポン1",
-        ball_image_key: "bulletTypeA",
+        ball_image_key: "BulletTypeA",
         ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
         bullet_width: 8.0,
         bullet_height: 8.0,
@@ -297,7 +297,7 @@ export const  sub_bulled_info_list = {
         z_bullet_pointRadius_mag: 0.5, // 低速モード時の集中率
 
         ballet_name:"メインウエポン1",
-        ball_image_key: "bulletTypeA",
+        ball_image_key: "BulletTypeA",
         ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
         bullet_width: 8.0,
         bullet_height: 8.0,
@@ -335,7 +335,7 @@ export const  sub_bulled_info_list = {
         z_bullet_pointRadius_mag: 0.5, // 低速モード時の集中率
 
         ballet_name:"メインウエポン1",
-        ball_image_key: "bulletTypeA",
+        ball_image_key: "BulletTypeA",
         ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
         bullet_width: 8.0,
         bullet_height: 8.0,
@@ -373,7 +373,7 @@ export const  sub_bulled_info_list = {
         z_bullet_pointRadius_mag: 0.5, // 低速モード時の集中率
 
         ballet_name:"メインウエポン1",
-        ball_image_key: "bulletTypeA",
+        ball_image_key: "BulletTypeA",
         ball_shape: "circle", // ★形状タイプ: 'rectangle', 'circle', 'ellipse', 'rhombus', 'cone'(当たり判定)
         bullet_width: 8.0,
         bullet_height: 8.0,

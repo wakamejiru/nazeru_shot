@@ -60,11 +60,13 @@ export class PlayerType1 extends PlayerBase {
 
     }
 
-    // 弾を打つ
-    _shoot(Keys, PlayerBulletsArray, TargetEnemy, DeltaTime){
+    /**
+ 	 * 弾の発射処理を追加
+	 */
+    _shoot(InputCurrentState, PlayerBulletInstances, EnemyInstance, DeltaTime){
         
         // Type1は既定クラスのshotをそのまま使える
-        super._shoot(Keys, PlayerBulletsArray, TargetEnemy, DeltaTime);
+        super._shoot(InputCurrentState, PlayerBulletInstances, EnemyInstance, DeltaTime);
 
     }
 

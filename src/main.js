@@ -24,13 +24,13 @@ import * as DifficultyScreen from './Screens/DifficultySelectScreen.js';
 import * as MapScreen from './Screens/MapScreen.js';
 import * as CharaSelectScreen from './Screens/CharaSelectScreen.js';
 import * as GameScreen from './Screens/GameScreen.js';
-
+import * as Bullet from './bullet.js';
 
 
 
 import * as Utils from "./utils.js";
 import InputManager from './inputs/InputManager.js';
-import {ImageAssetPaths} from './game_status.js';
+import {ImageAssetPaths, main_bulled_info_list, sub_bulled_info_list} from './game_status.js';
 
 
 // const AssetManagerInstance = new AssetManager(ImageAssetPaths);
@@ -45,8 +45,8 @@ const OVERALL_BASE_HEIGHT = 1080;
 const OverallAspectRatio = OVERALL_BASE_WIDTH / OVERALL_BASE_HEIGHT; // 画面比率
 
 
-const AllAssetPaths = Object.values(ImageAssetPaths);
-await PIXI.Assets.load(AllAssetPaths);
+// 弾の画像群はすでに読み込んでおく、いちいち読み込めないので
+await Bullet.Bullet.loadAssets([main_bulled_info_list, sub_bulled_info_list]);
 
 
 // HTMLファイルで定義されたCanvas要素を取得

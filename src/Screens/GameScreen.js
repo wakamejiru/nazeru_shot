@@ -59,6 +59,8 @@ export class GameScreen extends BaseScreen{
 		// プレイヤーと敵のインスタンス	
 		this.PlayerInstance = null;
 		this.EnemyInstance = null;
+		this.PlayerBulletInstances = [];
+		this.EnemyBulletInstances = [];
 		
     }
 
@@ -310,9 +312,20 @@ export class GameScreen extends BaseScreen{
         }
 
 		if(this.PlayerInstance){
+			// 移動判定を行う
             this.PlayerInstance.move(InputCurrentState, DeltaTime);
+			// 弾の発射を行う
+			this.PlayerInstance._shoot(InputCurrentState, this.PlayerBulletInstances, this.EnemyInstance, DeltaTime);
         }
 
+
+		// 味方の放った弾の情報を更新する
+		this.PlayerBulletInstances.forEach((bullet, index) => {
+            if(bullet){
+				bullet.update(DeltaTime);
+				bullet.DrwaUpdate();
+			}
+        });
 
 
 		// Keyの入力が何かあったかを判断する

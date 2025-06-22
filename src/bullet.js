@@ -8,8 +8,14 @@ import { CharacterTypeEnum, SkillTypeEnum, UltTypeEnum, MainBulletEnum, SubBulle
 // 打ち出した，設置した弾自体を制御するクラス
 // 打ち出し，設置は各クラスで制御する
 export class Bullet {
-    // ひし形や三角，楕円の弾も扱えるようにする
-    constructor(startX, startY, options = {}) {
+    /**
+ 	 * コンストラクタ
+     * @arapm {PixiJS} ScreenContainer : PxiiJSコンテナ
+     * @param {number} startX :発射スタート位置X
+     * @param {number} startY :発射スタート位置Y
+     * @param {number} options :弾の情報
+	 */
+    constructor(ScreenContainer, startX, startY, options = {}) {
         this.x = startX - options.width/2;
         this.y = startY;
 
@@ -30,6 +36,23 @@ export class Bullet {
 			console.warn(`Player sprite for key "${this.avatar_image_key}" not loaded. Fallback color will be used.`);
 		}
         
+        this.BulletImageKey = options.BulletImageKey;
+        this.ScreenContainer = ScreenContainer;
+
+        // 1. 画像キーが存在する場合、テクスチャからスプライトを生成
+        if (this.BulletImageKey) {
+            const texture = PIXI.Texture.from(this.BulletImageKey);
+            
+            // テクスチャが存在することを確認（事前にPIXI.Assets.loadしている必要があります）
+            if (texture && texture !== PIXI.Texture.EMPTY) {
+                this.BulletImage = new PIXI.Sprite(texture);
+                this.BulletImage.anchor.set(0.5); // スプライトの中心を基準点に設定
+                this.BulletImage.width = options.width || 10;
+                this.BulletImage.height = options.height || 10;
+                this.ScreenContainer.addChild(this.BulletImage);
+            }
+        }
+
         this.globalAlpha = options.globalAlpha !== undefined ? options.globalAlpha : 1; // 弾の透明度
 
         // 形状というより当たり判定
@@ -69,7 +92,7 @@ export class Bullet {
 
     }
 
-    update(deltaTime, targetPlayer) {
+    update(deltaTime) {
         if (this.isHit) return;
         this.bulletLifeTimer += deltaTime;
         // 1. 追尾処理 (将来的に実装)
@@ -164,15 +187,53 @@ export class Bullet {
         this.y = finalDrawY;
     }
 
-    draw(ctx) {
+    /**
+ 	 * 現在の弾の位置情報から、弾の画像場所を更新する
+	 */
+    DrwaUpdate() {
         
         if (this.isHit) return;
-        ctx.save(); // 現在の描画コンテキストの状態を保存する (globalAlphaなどの設定も含む)
+        this.BulletImage.x = this.x;
+        this.BulletImage.y = this.y;
+    }
 
-        ctx.globalAlpha = this.globalAlpha;
-        ctx.fillStyle = this.color;
-        ctx.drawImage(this.spritebullet, this.x, this.y, this.width, this.height);
+     /**
+     * 弾のアセット（画像）をまとめて読み込むための静的メソッド
+     * @param {Array<object>} bulletInfoLists - 弾情報のリストが入った配列 (例: [main_bulled_info_list, sub_bulled_info_list])
+     */
+    static async loadAssets(bulletInfoLists) {
+        const assetKeysToLoad = new Set();
 
-        ctx.restore();// 設定復活
+        // 渡された弾情報リストをすべてループ
+        for (const infoList of bulletInfoLists) {
+            // 各リストの中の弾情報をループ
+            for (const key in infoList) {
+                const bulletInfo = infoList[key];
+                if (bulletInfo && bulletInfo.ball_image_key) {
+                    assetKeysToLoad.add(bulletInfo.ball_image_key);
+                }
+            }
+        }
+
+        if (assetKeysToLoad.size === 0) {
+            console.log("No bullet assets to load.");
+            return;
+        }
+
+        // PixiJSが要求する形式に変換
+        const assetsForPixi = [];
+        for (const key of assetKeysToLoad) {
+            if (ImageAssetPaths[key]) {
+                assetsForPixi.push({ alias: key, src: ImageAssetPaths[key] });
+            } else {
+                console.warn(`Asset key "${key}" not found in ImageAssetPaths.`);
+            }
+        }
+
+        // アセットをまとめて読み込む
+        if (assetsForPixi.length > 0) {
+            await PIXI.Assets.load(assetsForPixi);
+            console.log('Bullet assets loaded:', assetKeysToLoad);
+        }
     }
 }
