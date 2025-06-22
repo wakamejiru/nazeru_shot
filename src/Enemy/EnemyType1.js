@@ -10,50 +10,53 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
 
     export class EnemyType1 extends EnemyBase
     {
-        constructor(InitialX, InitialY, AssetManager, ShootingCanvas) {
+        constructor(GameScreenContainer, StartShootingX, StartShootingY, StartShootingWidth, StartShootingHeight) {
             
-            const myEnemyTypeID = enemy_info_list[EnemyTypeEnum.E_TYPE_1];
+            // 1. 元となる敵の情報を取得
+            const enemyInfo = enemy_info_list[EnemyTypeEnum.E_TYPE_1];
 
-            // 一覧になっている情報をここでもらう
+            // 2. スプレッド構文(...)を使い、enemyInfoの全プロパティをコピーしつつ、
+            //    新しいプロパティを追加する
             const BaseConfig = {
-                ETypeTypeID: EnemyTypeEnum.E_TYPE_1,
-                enemy_name: myEnemyTypeID.enemy_name,
-                enemy_image_key: myEnemyTypeID.enemy_image_key,
-                enemy_width: myEnemyTypeID.enemy_width,
-                enemy_height: myEnemyTypeID.enemy_height,
-                enemy_speed: myEnemyTypeID.enemy_speed,
-                enemy_maxhp: myEnemyTypeID.enemy_maxhp,
-                move_wait_duration: myEnemyTypeID.move_wait_duration,
-                next_move_interval: myEnemyTypeID.next_move_interval,
-                enemy_hp_guage: myEnemyTypeID.enemy_hp_guage,
-                enemy_play_ult: myEnemyTypeID.enemy_play_ult,
-                attack_variation: myEnemyTypeID.myEnemyTypeID,
-                attack_watingtime: myEnemyTypeID.attack_watingtime,
-                e_limit_break_point: myEnemyTypeID.e_limit_break_point
+                ...enemyInfo, // enemyInfoオブジェクトの全プロパティをここに展開
+                ETypeTypeID: EnemyTypeEnum.E_TYPE_1 // プロパティを追加
             };
-            super(InitialX, InitialY, AssetManager, ShootingCanvas, BaseConfig);
+
+            // 3. 親クラスのコンストラクタを呼び出す
+            super(GameScreenContainer, StartShootingX, StartShootingY, StartShootingWidth, StartShootingHeight, BaseConfig);
+
             // スキル内容の初期化を行う
             // InitializeSkillSetting();
         }
+        
     
 
-    // 大きさを調整する
-    updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth)
-    {
-        // スキルのアップスケールはここで行う
-        // 規定クラスコンストラクタで呼び出し
-        super.updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth);
+        /**
+         * 大きさを更新する
+         * @param {number} NewScaleFactor :新しい画面のスケール
+         * @param {number} NewShootingStartX :新しい画面の開始位置
+         * @param {number} NewShootingStartY :新しい画面のス開始位置
+         * @param {number} NewShootingWidth :新しい画面の幅
+         * @param {number} NewShootingHeight :新しい画面の縦の大きさ
+         */
+        updateScale(NewScaleFactor, NewShootingStartX, NewShootingStartY, NewShootingWidth, NewShootingHeight)
+        {
+            // スキルのアップスケールはここで行う
+            // 規定クラスコンストラクタで呼び出し
+            super.updateScale(NewScaleFactor, NewShootingStartX, NewShootingStartY, NewShootingWidth, NewShootingHeight);
 
-        // このクラス内でサイズを使っている部分を変更
+            // このクラス内でサイズを使っている部分を変更
 
 
-    }
+        }
 
-    // 移動を行う
-    move(DeltaTime){
-        super.move(DeltaTime);
+        /**
+         * 移動を行う
+         */
+        move(DeltaTime){
+            super.move(DeltaTime);
 
-    }
+        }
 
     // 通常攻撃を放つ
     _shoot(EnemyBulletArray, TargetPlayer, DeltaTime){

@@ -346,6 +346,13 @@ export class GameScreen extends BaseScreen{
 			this.PlayerInstance._shoot(InputCurrentState, this.PlayerBulletInstances, this.EnemyInstance, DeltaTime);
         }
 
+		if(this.EnemyInstance){
+			// 移動判定を行う
+            this.EnemyInstance.move(InputCurrentState, DeltaTime);
+			// 弾の発射を行う
+			this.EnemyInstance._shoot(InputCurrentState, this.PlayerBulletInstances, this.EnemyInstance, DeltaTime);
+        }
+
 		if (this.PlayerInstance && this.EnemyBulletInstances) {
 			// 敵の弾の配列を逆順でループ（途中で削除してもインデックスがずれないようにするため）
 			for (let i = this.EnemyBulletInstances.length - 1; i >= 0; i--) {
@@ -383,6 +390,16 @@ export class GameScreen extends BaseScreen{
 				}
 			}
 		}
+
+		// 両方の描画を行う
+		if(this.PlayerInstance){
+			this.PlayerInstance.DrawPlayerImage();
+        }
+
+		if(this.EnemyInstance){
+            this.EnemyInstance.DrawEnemyImage();
+        }
+
 
 
 		// 味方の放った弾の情報を更新する
@@ -531,11 +548,23 @@ export class GameScreen extends BaseScreen{
 		const ShootingHeight = this.ShootingBackgroundImage.height;
 		switch(CharaIndex){
 			case 0:
-				this.PlayerInstance =  new PlayerType1(this.ShootingContainer,ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				this.PlayerInstance =  new PlayerType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
 				this.PlayerInstance.Initialize();
 				break;
 			default:
-				this.PlayerInstance =  new PlayerType1(this.ShootingContainer,ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				this.PlayerInstance =  new PlayerType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				break;
+		}
+
+
+		switch(MapIndex){
+			case 0:
+				this.EnemyInstance = new EnemyType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				this.EnemyInstance.Initialize();
+				break;
+			default:
+				this.EnemyInstance = new EnemyType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				this.EnemyInstance.Initialize();
 				break;
 		}
 	}

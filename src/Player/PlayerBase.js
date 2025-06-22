@@ -272,10 +272,6 @@ export class PlayerBase {
 
             // --- 5. 座標をプレイエリア内に収める ---
             this.IsAreaIn();
-
-            // 描画を反映
-            this.CharacterImage.x = this.x;
-            this.CharacterImage.y = this.y;
         }
     }
 
@@ -507,7 +503,7 @@ export class PlayerBase {
     // プレイヤーの座標(this.x, this.y)を、計算した境界内に収める
     this.x = Math.max(minX, Math.min(this.x, maxX));
     this.y = Math.max(minY, Math.min(this.y, maxY));
-}
+    }
 
     /**
      * 画像を読み込み、PixiJSテクスチャを準備する関数
@@ -528,5 +524,14 @@ export class PlayerBase {
             this.ScreenTextures.push(texture);
             });
         }
+    }
+    /**
+ 	 * キャラクターの画像を当たり判定の座標軸と一致させる
+	 */
+    DrawPlayerImage() {
+        if (this.NowHP <= 0 || !this.CharacterImage) return;
+        // 描画を反映
+        this.CharacterImage.x = this.x;
+        this.CharacterImage.y = this.y;
     }
 }
