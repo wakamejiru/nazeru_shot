@@ -136,6 +136,11 @@ export class GameScreen extends BaseScreen{
 		this.ScoreText.anchor.set(0, 0.5);
 		this.ScoreContainer.addChild(this.ScoreText); // スコアを表示するコンテナに追加
 
+		this.hpBarBackground = new PIXI.Graphics(); // HPバーの背景（枠）
+		this.hpBarFill = new PIXI.Graphics();       // HPバーの中身（ゲージ）
+		this.ScoreContainer.addChild(this.hpBarBackground);
+		this.ScoreContainer.addChild(this.hpBarFill);
+
 		
 		// ULTポイント画面を作成する
 		// ULTコンテナ内に，ULTONコンテナとULTOFFコンテナを作成，ULTを上にしておいて，非表示にすることでOFF状態を作成する
@@ -229,6 +234,29 @@ export class GameScreen extends BaseScreen{
 			this.ScoreText.style.fontSize = this.ScoreTextStyle.fontSize * CurrentOverallScale;
 			this.ScoreText.x = this.ScoreBackgroundImage.x + this.ScoreBackgroundImage.width*0.05;
 			this.ScoreText.y = this.ScoreBackgroundImage.y + this.ScoreBackgroundImage.height*0.5;
+			// スコア背景の幅を基準に、左右に5%ずつのマージンを設ける（合計90%の幅）
+			const hpBarMaxWidth = this.ScoreBackgroundImage.width * 0.9;
+			const hpBarMarginX = this.ScoreBackgroundImage.width * 0.05;
+			const hpBarHeight = 20 * CurrentOverallScale; // HPバーの高さ
+			
+			// HPバーの座標を計算 (スコア背景の下に配置、Y方向に少し間隔をあける)
+			const hpBarX = this.ScoreBackgroundImage.x + hpBarMarginX;
+			const hpBarY = this.ScoreBackgroundImage.y + this.ScoreBackgroundImage.height + (10 * CurrentOverallScale);
+
+			// HPバーの背景を描画（暗い色）
+			this.hpBarBackground.clear();
+			this.hpBarBackground.beginFill(0x333333, 0.8); // 色:ダークグレー, 透明度:80%
+			this.hpBarBackground.drawRoundedRect(hpBarX, hpBarY, hpBarMaxWidth, hpBarHeight, 5 * CurrentOverallScale);
+			this.hpBarBackground.endFill();
+
+			// HPバーの中身を描画（緑色） - 初期状態は満タン
+			this.hpBarFill.clear();
+			this.hpBarFill.beginFill(0x00FF00); // 色:緑
+			this.hpBarFill.drawRoundedRect(hpBarX, hpBarY, hpBarMaxWidth, hpBarHeight, 5 * CurrentOverallScale);
+			this.hpBarFill.endFill();
+			
+			// 後で更新に使うため、HPバーの寸法を保存しておく
+			this.hpBarRect = { x: hpBarX, y: hpBarY, width: hpBarMaxWidth, height: hpBarHeight, cornerRadius: 5 * CurrentOverallScale };
 
 
 			// ULT用の背景を作成
@@ -317,6 +345,44 @@ export class GameScreen extends BaseScreen{
 			// 弾の発射を行う
 			this.PlayerInstance._shoot(InputCurrentState, this.PlayerBulletInstances, this.EnemyInstance, DeltaTime);
         }
+
+		if (this.PlayerInstance && this.EnemyBulletInstances) {
+			// 敵の弾の配列を逆順でループ（途中で削除してもインデックスがずれないようにするため）
+			for (let i = this.EnemyBulletInstances.length - 1; i >= 0; i--) {
+				const enemyBullet = this.EnemyBulletInstances[i];
+				if (!enemyBullet) continue;
+
+				// 簡易的な矩形での当たり判定
+				const playerBounds = this.PlayerInstance.CharacterImage.getBounds();
+				const bulletBounds = enemyBullet.sprite.getBounds();
+
+				if (playerBounds.x < bulletBounds.x + bulletBounds.width &&
+					playerBounds.x + playerBounds.width > bulletBounds.x &&
+					playerBounds.y < bulletBounds.y + bulletBounds.height &&
+					playerBounds.y + playerBounds.height > bulletBounds.y) 
+				{
+					// --- ヒットした時の処理 ---
+					this.PlayerInstance.NowHP -= enemyBullet.damage || 10; // 弾のダメージ分HPを減らす（ダメージがなければ10）
+					
+					// HPバーの表示を更新する
+					this.updateHpBarView();
+
+					// ヒットした弾を消去する
+					enemyBullet.destroy();
+					this.EnemyBulletInstances.splice(i, 1);
+					
+					console.log(`Player Hit! HP: ${this.PlayerInstance.NowHP}`);
+					
+					// ゲームオーバー判定
+					if(this.PlayerInstance.NowHP <= 0){
+						console.log("GAME OVER");
+						// TODO: ゲームオーバー処理をここに追加
+					}
+
+					// 無敵時間などを設けたい場合はここから処理を追加
+				}
+			}
+		}
 
 
 		// 味方の放った弾の情報を更新する
@@ -471,6 +537,31 @@ export class GameScreen extends BaseScreen{
 			default:
 				this.PlayerInstance =  new PlayerType1(this.ShootingContainer,ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
 				break;
+		}
+	}
+
+	/**
+     * プレイヤーの現在HPに応じてHPバーの表示を更新する
+     */
+	updateHpBarView() {
+		if (!this.PlayerInstance || !this.hpBarRect) {
+			return; // プレイヤーかHPバーの寸法が未定義なら何もしない
+		}
+
+		// HPの割合を計算 (0.0 ～ 1.0)
+		const hpRatio = Math.max(0, this.PlayerInstance.NowHP / this.PlayerInstance.MaxHP);
+		
+		// 割合に応じて中身の幅を計算
+		const currentFillWidth = this.hpBarRect.width * hpRatio;
+
+		// HPバーの中身を再描画
+		this.hpBarFill.clear();
+		if (currentFillWidth > 0) {
+			// HP残量に応じた色を選択（例：50%以上で緑、30%以上で黄色、それ未満で赤）
+			const fillColor = hpRatio > 0.5 ? 0x00FF00 : hpRatio > 0.3 ? 0xFFFF00 : 0xFF0000;
+			this.hpBarFill.beginFill(fillColor);
+			this.hpBarFill.drawRoundedRect(this.hpBarRect.x, this.hpBarRect.y, currentFillWidth, this.hpBarRect.height, this.hpBarRect.cornerRadius);
+			this.hpBarFill.endFill();
 		}
 	}
 
