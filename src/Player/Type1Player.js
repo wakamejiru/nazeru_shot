@@ -47,13 +47,14 @@ export class PlayerType1 extends PlayerBase {
  	 * 非同期の初期化メソッドを追加
 	 */
     async Initialize() {
-        super.Initialize();
+        await super.Initialize();
+        this.updateScale(this.CurrentScaleFactor, this.StartAreaX, this.StartAreaY, this.NowPlayAreaWidth, this.NowPlayAreaHeight);
     }
 
-    updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth)
+   async  updateScale(NewScaleFactor, NewShootingStartX, NewShootingStartY, NewShootingWidth, NewShootingHeight)
     {
         // 規定クラスコンストラクタで呼び出し
-        super.updateScale(NewScaleFactor, NewCanvas, OldGamePlayerSizeHeight, OldGamePlayerSizeWidth);
+        super.updateScale(NewScaleFactor, NewShootingStartX, NewShootingStartY, NewShootingWidth, NewShootingHeight);
 
         // このクラス内でサイズを使っている部分を変更
 

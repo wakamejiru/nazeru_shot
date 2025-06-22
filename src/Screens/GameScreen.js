@@ -253,6 +253,12 @@ export class GameScreen extends BaseScreen{
 				this.UltPointOffs[i].y = this.ULTBackgroundImage.y + this.ULTBackgroundImage.height / 2;
 				this.ULTContainerOff.addChild(this.UltPointOffs[i]);
 			}
+
+			// キャラの更新を行う
+			if(this.PlayerInstance){
+				this.PlayerInstance.updateScale(CurrentOverallScale, this.ShootingBackgroundImage.x, this.ShootingBackgroundImage.y,
+					this.ShootingBackgroundImage.width, this.ShootingBackgroundImage.height)
+			}
 		}
 	
 		/**
@@ -303,7 +309,14 @@ export class GameScreen extends BaseScreen{
             this.InputCooldown -= DeltaTime;
         }
 
+		if(this.PlayerInstance){
+            this.PlayerInstance.move(InputCurrentState, DeltaTime);
+        }
+
+
+
 		// Keyの入力が何かあったかを判断する
+		// ポーズボタンのみ反応
         if (!InputCurrentState || this.InputCooldown > 0) {
             return this.ScreenState;
         }

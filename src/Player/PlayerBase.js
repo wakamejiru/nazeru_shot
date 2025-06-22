@@ -132,7 +132,7 @@ export class PlayerBase {
      * @param {number} NewShootingWidth :新しい画面の幅
      * @param {number} NewShootingHeight :新しい画面の縦の大きさ
 	 */
-    updateScale(NewScaleFactor, NewShootingStartX, NewShootingStartY, NewShootingWidth, NewShootingHeight) {
+    async updateScale(NewScaleFactor, NewShootingStartX, NewShootingStartY, NewShootingWidth, NewShootingHeight) {
         // 古いゲーム画面のサイズをもらう
         const oldEffectiveCanvasWidth =   this.NowPlayAreaWidth;
         const oldEffectiveCanvasHeight =  this.NowPlayAreaHeight;
@@ -142,7 +142,8 @@ export class PlayerBase {
         this.CurrentScaleFactor = NewScaleFactor;
 
         // 画像のサイズを合わせる
-        this.CharacterImage.scale.set( this.CurrentScaleFactor);
+        // もともと画像が大きいので仮の倍率をかけておく
+        this.CharacterImage.scale.set( this.CurrentScaleFactor * 0.2);
 
 
 
@@ -197,42 +198,80 @@ export class PlayerBase {
      * @param {number} Keys :入力情報
      * @param {number} DeltaTime :経過時間
 	 */
-    move(Keys, DeltaTime) {
-        // 初期化
-        this.dx = 0;
-        this.dy = 0;
-        let CurrentAppliedSpeed = this.NowSpeed;
-        // Zキーが押されている時は低速モードで処理を行う
-        if (Keys['z']) {
-            CurrentAppliedSpeed = this.NowSpeed * this.SlowMoveFactor;
-        }
-        
-        // 現在のキャラクターの上下左右の値を取得する
-        const HalfScaledWidth = this.CharacterImage.width / 2;
-        const HalfScaledHeight = this.CharacterImage.height / 2;
+    move(InputState, DeltaTime) {
+        // 入力が何かあったときのみ動作する
+        if(InputState){
+            this.dx = 0;
+            this.dy = 0;
+            let isAnalogStick = false; // アナログスティックによる移動かどうかのフラグ
 
-        // キーの入力により移動させる
-        if (Keys.ArrowUp && this.y > HalfScaledHeight){
-            this.dy = -this.MoveLengthY;
-        }
-        else if (Keys.ArrowDown && this.y < this.NowPlayAreaHeight - HalfScaledHeight){
-            this.dy = this.MoveLengthY;  
-        } 
-        if (Keys.ArrowLeft && this.x > HalfScaledWidth){
-            this.dx = -this.MoveLengthX;
-        }
-        else if (Keys.ArrowRight && this.x < this.NowPlayAreaWidth - HalfScaledWidth) {
-            this.dx = this.MoveLengthX;
-        }
-        // 移動距離を計算
-        const magnitude = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
-        if (magnitude > 0) {
-            this.x += (this.dx / magnitude) * CurrentAppliedSpeed * DeltaTime;
-            this.y += (this.dy / magnitude) * CurrentAppliedSpeed * DeltaTime;
-        }
+            // --- 2. 入力ソースから移動ベクトル(dx, dy)を決定 (ゲームパッド優先) ---
+            if (InputState.gamepad) {
+                const pad = InputState.gamepad;
+                const DEAD_ZONE = 0.25; // アナログスティックの遊び（デッドゾーン）
 
-        // 範囲内に収める
-        this.IsAreaIn();
+                // 左アナログスティックの入力を確認
+                const stickX = pad.axes[0] || 0;
+                const stickY = pad.axes[1] || 0;
+
+                // デッドゾーンを超えた入力があるかチェック
+                if (Math.abs(stickX) > DEAD_ZONE || Math.abs(stickY) > DEAD_ZONE) {
+                    this.dx = stickX;
+                    this.dy = stickY;
+                    isAnalogStick = true;
+                } else {
+                    // スティック入力がない場合はD-Pad(十字キー)を確認
+                    if (pad.dpad.up) this.dy = -1;
+                    else if (pad.dpad.down) this.dy = 1;
+                    
+                    if (pad.dpad.left) this.dx = -1;
+                    else if (pad.dpad.right) this.dx = 1;
+                }
+            }
+            
+            // ゲームパッドの入力がなければキーボードを確認
+            // (this.dxとthis.dyが両方0の場合のみ)
+            if (this.dx === 0 && this.dy === 0) {
+                const keys = InputState.keys;
+                if (keys.has('ArrowUp')) this.dy = -this.MoveLengthY;
+                else if (keys.has('ArrowDown')) this.dy = this.MoveLengthY;
+
+                if (keys.has('ArrowLeft')) this.dx = -this.MoveLengthX;
+                else if (keys.has('ArrowRight')) this.dx = this.MoveLengthX;
+            }
+
+            // --- 3. 低速移動の判定 ---
+            let currentSpeed = this.NowSpeed;
+            // InputManagerはevent.codeを格納するため、'KeyZ'で判定
+            const isSlowMoveKeyboard = InputState.keys.has('KeyZ');
+            // ゲームパッドのボタン（例：左トリガー B6）でも低速移動を可能にする
+            const isSlowMoveGamepad = InputState.gamepad?.buttons[6]?.pressed; 
+
+            if (isSlowMoveKeyboard || isSlowMoveGamepad) {
+                currentSpeed = this.NowSpeed * this.SlowMoveFactor;
+            }
+
+            // --- 4. 移動量の計算と座標の更新 ---
+            const magnitude = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
+            if (magnitude > 0) {
+                let moveFactor = 1.0;
+                // アナログスティックの場合、傾きの大きさを移動量に反映させる（最大1.0）
+                if (isAnalogStick) {
+                    moveFactor = Math.min(magnitude, 1.0);
+                }
+                
+                // 移動ベクトルを正規化し、移動係数と速度を乗算して座標を更新
+                this.x += (this.dx / magnitude) * moveFactor * currentSpeed * DeltaTime;
+                this.y += (this.dy / magnitude) * moveFactor * currentSpeed * DeltaTime;
+            }
+
+            // --- 5. 座標をプレイエリア内に収める ---
+            this.IsAreaIn();
+
+            // 描画を反映
+            this.CharacterImage.x = this.x;
+            this.CharacterImage.y = this.y;
+        }
     }
 
     /**
@@ -434,12 +473,22 @@ export class PlayerBase {
 	/**
 	 * キャラが描画範囲内にあるように調整をする
 	 */
-    IsAreaIn(){
-        const HalfScaledWidth = this.CharacterImage.width / 2;
-        const HalfScaledHeight = this.CharacterImage.height / 2;
-        this.x = Math.max(this.StartAreaX + HalfScaledWidth, Math.min(this.x + this.StartAreaX, this.StartAreaX + this.CharacterImage.width  - HalfScaledWidth));
-        this.y = Math.max(this.StartAreaY + HalfScaledHeight, Math.min(this.StartAreaY + this.y,  this.StartAreaY + this.NowPlayAreaHeight - HalfScaledHeight));
-    }
+   IsAreaIn() {
+    const halfWidth = this.CharacterImage.width / 2;
+    const halfHeight = this.CharacterImage.height / 2;
+
+    // 正しいX座標の境界（左端と右端）を計算
+    const minX = this.StartAreaX + halfWidth;
+    const maxX = this.StartAreaX + this.NowPlayAreaWidth - halfWidth;
+
+    // 正しいY座標の境界（上端と下端）を計算
+    const minY = this.StartAreaY + halfHeight;
+    const maxY = this.StartAreaY + this.NowPlayAreaHeight - halfHeight;
+
+    // プレイヤーの座標(this.x, this.y)を、計算した境界内に収める
+    this.x = Math.max(minX, Math.min(this.x, maxX));
+    this.y = Math.max(minY, Math.min(this.y, maxY));
+}
 
     /**
      * 画像を読み込み、PixiJSテクスチャを準備する関数
