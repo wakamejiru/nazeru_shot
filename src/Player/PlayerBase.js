@@ -41,6 +41,11 @@ export class PlayerBase {
     
         this.CharacterImage = null;
 
+        this.HitPointRadius = CharacterConfig.hitpoint_radius;
+        // 画像で追加
+        this.HitPointImageKey = CharacterConfig.hitpoint_image_key;
+        this.HitPointImage = null;
+
         this.BaseSpeed = CharacterConfig.character_speed;
         this.NowSpeed = this.BaseSpeed;
         this.SlowMoveFactor = CharacterConfig.slowMoveFactor; // 一律で半分
@@ -102,6 +107,20 @@ export class PlayerBase {
 
         // 4. コンテナに追加
         this.CharacterContainer.addChild(this.CharacterImage);
+
+        // 当たり判定の画像を作成
+        const HitpointTexture = PIXI.Texture.from(this.HitPointImageKey);
+        this.HitPointImage = new PIXI.Sprite(HitpointTexture);
+
+        // 画像の各種設定を行う
+        this.HitPointImage.anchor.set(0.5);
+        this.HitPointImage.x = this.x;
+        this.HitPointImage.y = this.y;
+        this.HitPointImage.width = this.HitPointRadius;
+        this.HitPointImage.height = this.HitPointRadius;
+        this.HitPointImage.visible = false;
+        this.CharacterContainer.addChild(this.HitPointImage);
+
     }
 
     /**
@@ -147,19 +166,24 @@ export class PlayerBase {
         this.CurrentScaleFactor = NewScaleFactor;
 
         // 画像のサイズを合わせる
-        // もともと画像が大きいので仮の倍率をかけておく
         this.CharacterImage.width = this.CharacterConfigBase.sprite_base_draw_width * this.CurrentScaleFactor;
         this.CharacterImage.height = this.CharacterConfigBase.sprite_base_draw_height * this.CurrentScaleFactor;
 
 
         // 新しいサイズの座標に合わせる
-        
         this.x = relativeCenterX * NewShootingWidth;
         this.y = relativeCenterY * NewShootingHeight;
         this.NowPlayAreaWidth = NewShootingWidth; 
         this.NowPlayAreaHeight = NewShootingHeight;
         this.StartAreaX = NewShootingStartX;
         this.StartAreaY = NewShootingStartY;
+        // 当たり判定の描画を変更
+        this.HitPointImage.x = this.x;
+        this.HitPointImage.y = this.y;
+        this.HitPointRadius = this.CharacterConfigBase.hitpoint_radius * this.CurrentScaleFactor;
+        this.HitPointImage.width = this.HitPointRadius;
+        this.HitPointImage.height = this.HitPointRadius;
+
 
         // キャラクターの描画位置が範囲外になることを防止する
         this.IsAreaIn();
@@ -209,7 +233,7 @@ export class PlayerBase {
             this.dx = 0;
             this.dy = 0;
             let isAnalogStick = false; // アナログスティックによる移動かどうかのフラグ
-
+            this.HitPointImage.visible = false;
             // --- 2. 入力ソースから移動ベクトル(dx, dy)を決定 (ゲームパッド優先) ---
             if (InputState.gamepad) {
                 const pad = InputState.gamepad;
@@ -254,6 +278,7 @@ export class PlayerBase {
 
             if (isSlowMoveKeyboard || isSlowMoveGamepad) {
                 currentSpeed = this.NowSpeed * this.SlowMoveFactor;
+                this.HitPointImage.visible = true; // 見えるようになる 
             }
 
             // --- 4. 移動量の計算と座標の更新 ---
@@ -512,6 +537,7 @@ export class PlayerBase {
         // この処理は非同期で行われる
         this.ScreenImages = [];
         this.ScreenImages.push(this.AvatorImageKey);
+        this.ScreenImages.push(this.HitPointImageKey);
         this.ScreenTextures=[];
 
         const FrameKeysToLoad = this.ScreenImages.filter(key => ImageAssetPaths[key]);
@@ -533,5 +559,7 @@ export class PlayerBase {
         // 描画を反映
         this.CharacterImage.x = this.x;
         this.CharacterImage.y = this.y;
+        this.HitPointImage.x = this.x;
+        this.HitPointImage.y = this.y;
     }
 }

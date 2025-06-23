@@ -177,7 +177,7 @@ export class GameScreen extends BaseScreen{
 			this.ULTContainer.addChild(this.ULTContainerOn);
 			this.ULTContainer.addChild(this.ULTContainerOff);
 
-			this.ScreenContainer.addChild(this.ShootingContainer);
+			this.ScreenContainer.addChild(this.ShootingContainer); // TODO マスクが必要
 			this.ScreenContainer.addChild(this.ScoreContainer);
 			this.ScreenContainer.addChild(this.ULTContainer);
 			super.SetScreenVisible(false); // 初期は非表示
@@ -356,44 +356,6 @@ export class GameScreen extends BaseScreen{
 			this.EnemyInstance._shoot(this.EnemyBulletInstances, this.PlayerInstance,  DeltaTime);
         }
 
-		if (this.PlayerInstance && this.EnemyBulletInstances) {
-			// 敵の弾の配列を逆順でループ（途中で削除してもインデックスがずれないようにするため）
-			for (let i = this.EnemyBulletInstances.length - 1; i >= 0; i--) {
-				const enemyBullet = this.EnemyBulletInstances[i];
-				if (!enemyBullet) continue;
-
-				// 簡易的な矩形での当たり判定
-				const playerBounds = this.PlayerInstance.CharacterImage.getBounds();
-				const bulletBounds = enemyBullet.BulletImage.getBounds();
-
-				if (playerBounds.x < bulletBounds.x + bulletBounds.width &&
-					playerBounds.x + playerBounds.width > bulletBounds.x &&
-					playerBounds.y < bulletBounds.y + bulletBounds.height &&
-					playerBounds.y + playerBounds.height > bulletBounds.y) 
-				{
-					// --- ヒットした時の処理 ---
-					this.PlayerInstance.NowHP -= enemyBullet.damage || 10; // 弾のダメージ分HPを減らす（ダメージがなければ10）
-					
-					// HPバーの表示を更新する
-					this.updateHpBarView();
-
-					// ヒットした弾を消去する
-					enemyBullet.destroy();
-					this.EnemyBulletInstances.splice(i, 1);
-					
-					console.log(`Player Hit! HP: ${this.PlayerInstance.NowHP}`);
-					
-					// ゲームオーバー判定
-					if(this.PlayerInstance.NowHP <= 0){
-						console.log("GAME OVER");
-						// TODO: ゲームオーバー処理をここに追加
-					}
-
-					// 無敵時間などを設けたい場合はここから処理を追加
-				}
-			}
-		}
-
 		// 両方の描画を行う
 		if(this.PlayerInstance){
 			this.PlayerInstance.DrawPlayerImage();
@@ -403,8 +365,6 @@ export class GameScreen extends BaseScreen{
             this.EnemyInstance.DrawEnemyImage();
         }
 
-
-
 		// 味方の放った弾の情報を更新する
 		this.PlayerBulletInstances.forEach((bullet, index) => {
             if(bullet){
@@ -412,6 +372,34 @@ export class GameScreen extends BaseScreen{
 				bullet.DrwaUpdate();
 			}
         });
+
+		// 敵の放った弾の情報を更新する
+		this.EnemyBulletInstances.forEach((bullet, index) => {
+            if(bullet){
+				bullet.update(DeltaTime);
+				bullet.DrwaUpdate();
+			}
+        });
+		
+		// 敵の放った弾の情報を更新する（同様に新しい配列に詰め込む）
+        const activeEnemyBullets = [];
+		this.EnemyBulletInstances.forEach(bullet => {
+            if (bullet) {
+				bullet.update(DeltaTime);
+				bullet.DrwaUpdate();
+                if (!bullet.isHit) { // isHitしていない弾だけを次のフレームに持ち越す
+                    activeEnemyBullets.push(bullet);
+                } else {
+                    // isHitがtrueになった弾はここで実際にdestroyを呼び出す
+                    bullet.destroy();
+                }
+			}
+        });
+        this.EnemyBulletInstances = activeEnemyBullets; // 新しいアクティブな弾のリストに置き換え
+
+
+		this.HitJudgment();
+
 
 
 		// Keyの入力が何かあったかを判断する
@@ -598,5 +586,201 @@ export class GameScreen extends BaseScreen{
 			this.hpBarFill.endFill();
 		}
 	}
+
+	/**
+     * 当たり判定を行う
+     */
+	HitJudgment(){
+		if (this.PlayerInstance && this.EnemyBulletInstances) {
+			// プレイヤーの中心座標と半径を取得 (プレイヤーは常に円形と仮定)
+			const playerCenterX = this.PlayerInstance.x;
+			const playerCenterY = this.PlayerInstance.y;
+			const playerRadius = this.PlayerInstance.HitPointRadius;
+
+			// 敵の弾の配列を逆順でループ
+			for (let i = this.EnemyBulletInstances.length - 1; i >= 0; i--) {
+				const enemyBullet = this.EnemyBulletInstances[i];
+				if (!enemyBullet || !enemyBullet.BulletImage) continue;
+
+				let isHit = false;
+
+				// 弾の形状に応じて当たり判定を分岐
+				switch (enemyBullet.shape) {
+					case 'circle': // 円形
+						isHit = this.checkCircleCircleCollision(
+							playerCenterX, playerCenterY, playerRadius,
+							enemyBullet.x, enemyBullet.y, enemyBullet.HitPointRadius || (enemyBullet.BulletImage.width / 2)
+						);
+						break;
+					case 'rectangle': // 矩形
+						isHit = this.checkCircleRectCollision(
+							playerCenterX, playerCenterY, playerRadius,
+							enemyBullet.x, enemyBullet.y, enemyBullet.width, enemyBullet.height, enemyBullet.orientation
+						);
+						break;
+					case 'ellipse': // 楕円 (円形との当たり判定は少し複雑になる)
+						isHit = this.checkCircleEllipseCollision(
+							playerCenterX, playerCenterY, playerRadius,
+							enemyBullet.x, enemyBullet.y, enemyBullet.width / 2, enemyBullet.height / 2, enemyBullet.orientation
+						);
+						break;
+					case 'line': // 棒状 (線分と円の当たり判定)
+						// 棒状の始点と終点を計算する必要がある
+						// 今回はシンプル化のため、棒状の当たり判定は例示のみで、具体的な実装は要検討
+						// 例: this.checkCircleLineCollision(...)
+						// 現在は、とりあえず矩形として扱うか、最も近い点との距離で判定することも可能
+						isHit = this.checkCircleRectCollision(
+							playerCenterX, playerCenterY, playerRadius,
+							enemyBullet.x, enemyBullet.y, enemyBullet.width, enemyBullet.height, enemyBullet.orientation
+						);
+						break;
+					default: // 定義されていない形状の場合、デフォルトで矩形として扱うか、エラーを出す
+						console.warn(`Unknown bullet shape: ${enemyBullet.shape}. Defaulting to rectangle collision.`);
+						isHit = this.checkCircleRectCollision(
+							playerCenterX, playerCenterY, playerRadius,
+							enemyBullet.x, enemyBullet.y, enemyBullet.width, enemyBullet.height, enemyBullet.orientation
+						);
+						break;
+				}
+
+				if (isHit) {
+					// --- ヒットした時の共通処理 ---
+					this.PlayerInstance.NowHP -= enemyBullet.damage || 10;
+					this.updateHpBarView();
+
+					enemyBullet.destroy();
+					this.EnemyBulletInstances.splice(i, 1);
+					
+					console.log(`Player Hit! HP: ${this.PlayerInstance.NowHP}`);
+					
+					if(this.PlayerInstance.NowHP <= 0){
+						console.log("GAME OVER");
+						// TODO: ゲームオーバー処理
+					}
+					// 無敵時間など
+				}
+			}
+		}
+	}
+
+    // --- 当たり判定ヘルパー関数 ---
+
+    /**
+     * 円と円の当たり判定
+     * @returns {boolean} 衝突しているか
+     */
+    checkCircleCircleCollision(c1x, c1y, r1, c2x, c2y, r2) {
+        const dx = c1x - c2x;
+        const dy = c1y - c2y;
+        const distanceSq = dx * dx + dy * dy;
+        const radiiSum = r1 + r2;
+        const radiiSumSq = radiiSum * radiiSum;
+        return distanceSq <= radiiSumSq;
+    }
+
+    /**
+     * 円と矩形（回転なし）の当たり判定
+     * @param {number} circleX 円の中心X
+     * @param {number} circleY 円の中心Y
+     * @param {number} circleRadius 円の半径
+     * @param {number} rectX 矩形の左上X
+     * @param {number} rectY 矩形の左上Y
+     * @param {number} rectWidth 矩形の幅
+     * @param {number} rectHeight 矩形の高さ
+     * @returns {boolean} 衝突しているか
+     */
+    checkCircleRectCollision(circleX, circleY, circleRadius, rectX, rectY, rectWidth, rectHeight, rectOrientation = 0) {
+        // 回転がある場合は、円の中心を矩形のローカル座標系に変換し、回転なし矩形との当たり判定を行う
+        // ここでは単純化のため、回転なしの矩形として扱います。
+        // もし回転矩形が必要な場合、SAT (Separating Axis Theorem) などが必要になります。
+        // 今の弾の描画がSpriteのrotationで回転しているだけなら、当たり判定も回転させる必要があります。
+        // 複雑なため、今回は未回転の矩形として扱います。
+        // 弾のx,yは中心座標のはずなので、矩形の左上座標に変換
+        const rectLeft = rectX - rectWidth / 2;
+        const rectTop = rectY - rectHeight / 2;
+        const rectRight = rectX + rectWidth / 2;
+        const rectBottom = rectY + rectHeight / 2;
+
+        // 矩形に最も近い円の中心の点を求める
+        const closestX = Math.max(rectLeft, Math.min(circleX, rectRight));
+        const closestY = Math.max(rectTop, Math.min(circleY, rectBottom));
+
+        // 最も近い点と円の中心の距離を計算
+        const dx = circleX - closestX;
+        const dy = circleY - closestY;
+        const distanceSq = (dx * dx) + (dy * dy);
+
+        return distanceSq < (circleRadius * circleRadius);
+    }
+
+    /**
+     * 円と楕円の当たり判定 (概略)
+     * 楕円を円で近似するか、より複雑な数学が必要になります。
+     * ここでは、最も近い点を見つける方法を適用します。
+     * 楕円が回転している場合はさらに複雑になります。
+     * @param {number} circleX 円の中心X
+     * @param {number} circleY 円の中心Y
+     * @param {number} circleRadius 円の半径
+     * @param {number} ellipseX 楕円の中心X
+     * @param {number} ellipseY 楕円の中心Y
+     * @param {number} ellipseRadiusX 楕円の横半径
+     * @param {number} ellipseRadiusY 楕円の縦半径
+     * @param {number} ellipseOrientation 楕円の回転 (ラジアン)
+     * @returns {boolean} 衝突しているか
+     */
+    checkCircleEllipseCollision(circleX, circleY, circleRadius, ellipseX, ellipseY, ellipseRadiusX, ellipseRadiusY, ellipseOrientation = 0) {
+        // 楕円を回転させている場合、円の中心点を逆回転させて、回転していない楕円との衝突判定に持ち込む
+        // 簡易的な実装のため、回転を考慮しない場合は orientation = 0 として扱う
+        let testX = circleX;
+        let testY = circleY;
+
+        // 楕円の中心を原点(0,0)に移動
+        testX -= ellipseX;
+        testY -= ellipseY;
+
+        // 楕円の回転を逆回転させて、円の相対座標を回転後の楕円座標系に変換
+        if (ellipseOrientation !== 0) {
+            const cos = Math.cos(-ellipseOrientation);
+            const sin = Math.sin(-ellipseOrientation);
+            const rotatedX = testX * cos - testY * sin;
+            const rotatedY = testX * sin + testY * cos;
+            testX = rotatedX;
+            testY = rotatedY;
+        }
+
+        // 楕円の正規化された座標に変換
+        const normalizedX = testX / ellipseRadiusX;
+        const normalizedY = testY / ellipseRadiusY;
+
+        // 正規化された円の中心が、半径1の円（楕円を正規化したもの）の内部にあるかチェック
+        // これは「最も近い点」を探すアルゴリズムよりも簡易的です
+        const distanceToNormalizedEllipseCenterSq = (normalizedX * normalizedX) + (normalizedY * normalizedY);
+        // 一旦、ここでは楕円の形状を考慮せず、円の中心が楕円の領域に近づいたらヒットとみなす簡易的なロジックとします。
+        // 円の半径を考慮して楕円を「拡大」したような形での判定
+        const scaledEllipseRadiusX = ellipseRadiusX + circleRadius;
+        const scaledEllipseRadiusY = ellipseRadiusY + circleRadius;
+        
+        // 拡大された楕円との当たり判定
+        return (testX * testX) / (scaledEllipseRadiusX * scaledEllipseRadiusX) +
+               (testY * testY) / (scaledEllipseRadiusY * scaledEllipseRadiusY) <= 1;
+    }
+
+    /**
+     * 円と線分の当たり判定 (今回は実装しませんが、概念として記載)
+     * @param {number} circleX 円の中心X
+     * @param {number} circleY 円の中心Y
+     * @param {number} circleRadius 円の半径
+     * @param {number} p1x 線分始点X
+     * @param {number} p1y 線分始点Y
+     * @param {number} p2x 線分終点X
+     * @param {number} p2y 線分終点Y
+     * @returns {boolean} 衝突しているか
+     */
+    // checkCircleLineCollision(circleX, circleY, circleRadius, p1x, p1y, p2x, p2y) {
+    //     // 線分に最も近い円の中心の点を求める
+    //     // その点と円の中心の距離が半径以下であれば衝突
+    //     // 詳細は幾何学的な計算が必要
+    //     return false;
+    // }
 
 }

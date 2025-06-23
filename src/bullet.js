@@ -56,9 +56,9 @@ export class Bullet {
         this.globalAlpha = options.globalAlpha !== undefined ? options.globalAlpha : 1; // 弾の透明度
 
         // 形状というより当たり判定
-        this.shape = options.shape || 'rectangle'; // デフォルトは長方形
-        this.width = options.width || 10;         // 形状に応じた幅 (例: 長方形の幅、楕円の横直径)
-        this.height = options.height || 10;        // 形状に応じた高さ (例: 長方形の高さ、楕円の縦直径)
+        this.shape = options.shape || 'circle'; // デフォルトは円形
+        this.width = options.width || 10;         // 形状に応じた幅 (例: 円形の幅、楕円の横直径)
+        this.height = options.height || 10;        // 形状に応じた高さ (例: 円形の高さ、楕円の縦直径)
         this.orientation = options.orientation || 0; // 形状の向き (ラジアン)
 
 
@@ -235,5 +235,28 @@ export class Bullet {
             await PIXI.Assets.load(assetsForPixi);
             console.log('Bullet assets loaded:', assetKeysToLoad);
         }
+    }
+
+    /**
+     * 弾を破棄し、関連するリソースを解放する
+     */
+    destroy() {
+        if (this.BulletImage) {
+            // 親コンテナからスプライトを削除
+            if (this.BulletImage.parent) {
+                this.BulletImage.parent.removeChild(this.BulletImage);
+            }
+            // スプライトを破棄し、関連するテクスチャも解放（必要に応じて）
+            // true を渡すと、ベーステクスチャも破棄されるため、他のスプライトで同じテクスチャを使用している場合は注意が必要です。
+            // 弾ごとの専用テクスチャであれば true で問題ありません。
+            // 共有テクスチャの場合は false に設定します。
+            this.BulletImage.destroy({ children: true, texture: false, baseTexture: false }); 
+            this.BulletImage = null; // 参照をクリア
+        }
+
+        // その他のプロパティもクリアしてガベージコレクションを助ける
+        this.ScreenContainer = null;
+        this.target = null;
+        this.isHit = true; // 既にヒット済みとしてマーク
     }
 }
