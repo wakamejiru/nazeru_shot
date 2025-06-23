@@ -275,8 +275,10 @@ export class EnemyBase {
         // グラフィックの描画は、HPバーオブジェクト自体の中心(0,0)を基準に行う
         const Radius = Math.max(this.EnemyWidth, this.EnemyHeight) * 0.65 / this.CurrentScaleFactor; // スケールを考慮しない半径
         const HPPercent = 0.7;//this.NowHP / this.MaxHP;
-        const StartAngle = Math.PI / 2;
-        const EndAngle = StartAngle + Math.PI * 2 * HPPercent;
+        const StandardAngle = 0; //-Math.PI / 2;
+        const EndAngle = -Math.PI / 2;
+
+        const StartAngle = (EndAngle) - Math.PI * 2 * HPPercent;
 
         // --- クリア ---
         this.HpBarBackground.clear();
@@ -290,7 +292,10 @@ export class EnemyBase {
 
         // --- HPゲージ（全円） ---
         this.HpBarFill.beginFill(0x00FF00, 1);
-        this.HpBarFill.arc(StartPointX, StartPointY, Radius, StartAngle, EndAngle);
+        // 残りHPを描画する
+        this.HpBarFill.arc(StartPointX, StartPointY, Radius, StartAngle, EndAngle, false);
+        this.HpBarFill.lineTo(StartPointX, StartPointY);
+
         // this.HpBarFill.drawCircle(StartPointX, StartPointY, Radius); // オブジェクトの中心(0,0)に描画
         this.HpBarFill.endFill();
 
