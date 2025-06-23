@@ -85,10 +85,9 @@ export class EnemyBase {
             
         this.NowAttackLimitCnt = 0; // 攻撃の継続時間の情報 
 
-        this.HpBarBackground = null; // HPバーの背景
-        this.HpBarFill = null;       // HPバーの中身（ゲージ）
-        this.HpLimitMarker = null;   // HPの特定位置を示すマーカー
-        this.HpBarBorders = null;    // HPバーの枠線
+        this.HpBarBackground = null;
+        this.HpBarFill = null;
+        this.HpMask = null;
     
     }
     /**
@@ -265,97 +264,55 @@ export class EnemyBase {
  	 * キャラクターのHPバーを表示する
 	 */
     DrawHpBar() {
-        // 必要なオブジェクトがなければ処理を中断
-        if (!this.HpBarBackground || this.NowHP <= 0 || !this.MaxHP || this.MaxHP <= 0) {
-            // HPが0以下なら、すべての表示をクリア
-            this.HpBarBackground?.clear();
-            this.HpBarFill?.clear();
-            this.HpLimitMarker?.clear();
-            this.HpBarBorders?.clear();
+        if (!this.EnemyContainer || !this.HpBarBackground || !this.HpBarFill || !this.HpMask || this.NowHP <= 0 || !this.MaxHP || this.MaxHP <= 0) {
             return;
         }
 
-        // --- 各グラフィックオブジェクトをクリアしてから再描画 ---
-        this.HpBarBackground.clear(); 
-        this.HpBarFill.clear();       
-        this.HpLimitMarker.clear();   
-        this.HpBarBorders.clear();    
+        // HPバーの位置を敵の画像の位置に合わせる
+        const StartPointX = this.x;
+        const StartPointY = this.y;
 
+        // グラフィックの描画は、HPバーオブジェクト自体の中心(0,0)を基準に行う
+        const Radius = Math.max(this.EnemyWidth, this.EnemyHeight) * 0.65 / this.CurrentScaleFactor; // スケールを考慮しない半径
+        const HPPercent = 0.7;//this.NowHP / this.MaxHP;
+        const StartAngle = Math.PI / 2;
+        const EndAngle = StartAngle + Math.PI * 2 * HPPercent;
 
-        // --- 1. 描画に必要なパラメータを計算 (元のロジックと同じ) ---
-        console.log("--- DrawHpBar Debug Info ---");
-        console.log("this.x:", this.x, "this.y:", this.y);
-        console.log("this.EnemyWidth:", this.EnemyWidth, "this.EnemyHeight:", this.EnemyHeight);
-        console.log("this.CurrentScaleFactor:", this.CurrentScaleFactor);
-        console.log("this.NowHP:", this.NowHP, "this.MaxHP:", this.MaxHP);
-        console.log("this.ELimitBreakPoint:", this.ELimitBreakPoint);
+        // --- クリア ---
+        this.HpBarBackground.clear();
+        this.HpBarFill.clear();
+        this.HpMask.clear();
 
-        const HPRingLineWidth = 15;
-        const CenterX = this.x;
-        const CenterY = this.y;
-        const HPWidth = HPRingLineWidth * this.CurrentScaleFactor;
-        const LengthMaxSide = (this.EnemyWidth > this.EnemyHeight) ? this.EnemyWidth : this.EnemyHeight;
-        const HPRadius = LengthMaxSide * 0.7;
-        const CurrentHpPercentage = this.NowHP / this.MaxHP;
-        const StartAngle = -Math.PI / 2; // 12時の方向
-        const EndAngleCurrentHp = StartAngle + (CurrentHpPercentage * (Math.PI * 2));
+        // --- 背景リング ---
+        this.HpBarBackground.beginFill(0x444444, 0.4);
+        this.HpBarBackground.drawCircle(StartPointX, StartPointY, Radius); // オブジェクトの中心(0,0)に描画
+        this.HpBarBackground.endFill();
 
-        console.log("HPWidth:", HPWidth);
-        console.log("LengthMaxSide:", LengthMaxSide);
-        console.log("HPRadius:", HPRadius);
-        console.log("CurrentHpPercentage:", CurrentHpPercentage);
-        console.log("----------------------------");
+        // --- HPゲージ（全円） ---
+        this.HpBarFill.beginFill(0x00FF00, 1);
+        this.HpBarFill.arc(StartPointX, StartPointY, Radius, StartAngle, EndAngle);
+        // this.HpBarFill.drawCircle(StartPointX, StartPointY, Radius); // オブジェクトの中心(0,0)に描画
+        this.HpBarFill.endFill();
 
-        // --- 2. 各パーツを再描画 ---
+        this.HpMask.beginFill(0xFFFFFF);
+        this.HpMask.moveTo(StartPointX, StartPointY); // オブジェクトの中心(0,0)に移動
+        this.HpBarFill.drawCircle(StartPointX, StartPointY, Radius * 0.8); // オブジェクトの中心(0,0)に描画
 
-        // 2-1. HPバーの背景 (常に全周を描画)
-        this.HpBarBackground.lineStyle({
-            width: HPWidth,
-            color: 0x251A1A, // 'rgba(37, 26, 26, 0.6)'
-            alpha: 0.6,
-            cap: 'round'
-        });
+        // for (let i = 0; i <= steps * HPPercent; i++) {
+        //     const angle = StartAngle + (i / steps) * (EndAngle - StartAngle);
+        //     const x = Math.cos(angle) * Radius;
+        //     const y = Math.sin(angle) * Radius;
+        //     this.HpMask.lineTo(x, y);
+        // }
+        this.HpMask.endFill();
 
-
-        this.HpBarBackground.arc(CenterX, CenterY, HPRadius, 0, Math.PI * 2);
-
-        // 2-2. 現在のHPゲージ
-        if (CurrentHpPercentage > 0) {
-            // HP割合に応じて色を決定
-            const fillColor = CurrentHpPercentage > 0.5 ? 0x00FF00 : CurrentHpPercentage > 0.25 ? 0xFFFF00 : 0xFF0000;
-            this.HpBarFill.lineStyle({
-                width: HPWidth,
-                color: fillColor, // 色を動的に変更
-                alpha: 0.8,
-                cap: 'round'
-            });
-            this.HpBarFill.arc(CenterX, CenterY, HPRadius, StartAngle, EndAngleCurrentHp);
-        }
-    
-        // 2-3. リミットブレイク位置のマーカー
-        if (this.ELimitBreakPoint < CurrentHpPercentage) {
-            const LimitBreakAngle = StartAngle + (this.ELimitBreakPoint * (Math.PI * 2));
-            const HpLimitBreakMarkerAngularWidthRad = 1 * (Math.PI / 180);
-            const MarkerStartAngle = LimitBreakAngle - (HpLimitBreakMarkerAngularWidthRad / 2);
-            const MarkerEndAngle = LimitBreakAngle + (HpLimitBreakMarkerAngularWidthRad / 2);
-
-            this.HpLimitMarker.lineStyle({
-                width: HPWidth,
-                color: 0x00FF00, // 緑色
-                alpha: 0.6,
-                cap: 'round'
-            });
-            this.HpLimitMarker.arc(CenterX, CenterY, HPRadius, MarkerStartAngle, MarkerEndAngle);
-        }
-
-        // 2-4. 内側と外側の枠線
-        this.HpBarBorders.lineStyle({
-            width: 1 * this.CurrentScaleFactor,
-            color: 0x2C2B2B, // 'rgba(44, 43, 43, 0.6)'
-            alpha: 0.6
-        });
-        this.HpBarBorders.arc(CenterX, CenterY, HPRadius - HPWidth / 2, 0, Math.PI * 2); // 内側の枠
-        this.HpBarBorders.arc(CenterX, CenterY, HPRadius + HPWidth / 2, 0, Math.PI * 2); // 外側の枠
+        // --- マスク再設定を強制する ---
+        // これは既に正しく行われています
+        this.HpBarFill.mask = null;
+        // 
+        // 
+        // 
+        // this.HpBarFill.mask = this.HpMask;
     }
 
     /**
@@ -445,15 +402,16 @@ export class EnemyBase {
      * このメソッドはインスタンス生成時に一度だけ呼び出す
      */
     InitializeHpBar() {
+        this.HpBarContainer = new PIXI.Container();
         this.HpBarBackground = new PIXI.Graphics();
         this.HpBarFill = new PIXI.Graphics();
-        this.HpLimitMarker = new PIXI.Graphics();
-        this.HpBarBorders = new PIXI.Graphics();
+        this.HpMask = new PIXI.Graphics();
 
-        // 描画順序を考慮してコンテナに追加（後に追加したものが手前に表示される）
-        this.EnemyContainer.addChild(this.HpBarBackground);
-        this.EnemyContainer.addChild(this.HpBarFill);
-        this.EnemyContainer.addChild(this.HpLimitMarker);
-        this.EnemyContainer.addChild(this.HpBarBorders);
+        this.HpBarContainer.addChild(this.HpBarBackground);
+        this.HpBarContainer.addChild(this.HpBarFill);
+        this.HpBarContainer.addChild(this.HpMask);
+
+        this.EnemyContainer.addChild(this.HpBarContainer);
+        this.HpBarFill.mask = this.HpMask;
     }
 }
