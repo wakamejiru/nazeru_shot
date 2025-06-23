@@ -277,6 +277,7 @@ export class EnemyBase {
         const HPPercent = 0.7;//this.NowHP / this.MaxHP;
         const StandardAngle = 0; //-Math.PI / 2;
         const EndAngle = -Math.PI / 2;
+        const HPLength = Radius*0.3;
 
         const StartAngle = (EndAngle) - Math.PI * 2 * HPPercent;
 
@@ -286,27 +287,26 @@ export class EnemyBase {
         this.HpMask.clear();
 
         // --- 背景リング ---
-        this.HpBarBackground.beginFill(0x444444, 0.4);
-        this.HpBarBackground.drawCircle(StartPointX, StartPointY, Radius); // オブジェクトの中心(0,0)に描画
-        this.HpBarBackground.endFill();
+        // this.HpBarBackground.beginFill(0x444444, 0.4);
+        // this.HpBarBackground.drawCircle(StartPointX, StartPointY, Radius); // オブジェクトの中心(0,0)に描画
+        // this.HpBarBackground.endFill();
 
         // --- HPゲージ（全円） ---
-        this.HpBarFill.beginFill(0x00FF00, 1);
-        // 残りHPを描画する
-        this.HpBarFill.lineStyle(Radius*0.1, 0x444444, 0.4);
-        this.HpBarFill.arc(StartPointX, StartPointY, Radius, StartAngle, EndAngle, false);
-        this.HpBarFill.lineTo(StartPointX, StartPointY);
 
-        // this.HpBarFill.drawCircle(StartPointX, StartPointY, Radius); // オブジェクトの中心(0,0)に描画
+        // 残りHPを描画する
+        // this.HpBarFill.lineStyle(200, 0x9acd32, 1);
+        this.HpBarFill.arc(StartPointX, StartPointY, Radius, StartAngle, EndAngle);
+        this.HpBarFill.lineTo(StartPointX, StartPointY);
+        
         this.HpBarFill.endFill();
 
         // this.HpMask.beginFill(0xFFFFFF);
         // this.HpMask.moveTo(StartPointX, StartPointY); // オブジェクトの中心(0,0)に移動
         // this.HpBarFill.drawCircle(StartPointX, StartPointY, Radius * 0.8); // オブジェクトの中心(0,0)に描画
 
-        this.HpMask.beginFill(0xFFFFFF); // マスクの色は通常白（透明度1）
+        // this.HpMask.beginFill(0xFFFFFF); // マスクの色は通常白（透明度1）
     
-        this.HpMask.endFill();
+        // this.HpMask.endFill();
     }
 
     /**
