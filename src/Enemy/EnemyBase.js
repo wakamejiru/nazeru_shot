@@ -163,6 +163,7 @@ export class EnemyBase {
         this.MoveAreaBottomY = this.MoveAreaTopY + this.NowPlayAreaHeight / 3 - this.EnemyHeight / 2;
         this.MoveAreaLeftX = this.StartAreaX + this.EnemyWidth / 2;
         this.MoveAreaRightX = this.MoveAreaLeftX +  this.NowPlayAreaWidth - this.EnemyWidth / 2;
+        this.DrawHpBar();
 
         // この後に弾のスケーリングも多分必要
     }
@@ -178,7 +179,7 @@ export class EnemyBase {
         const RandomYRange = this.MoveAreaBottomY - this.MoveAreaTopY;
         this.MoveingTargetY = (RandomYRange <= 0) ? (this.MoveAreaTopY + this.MoveAreaBottomY) / 2 : this.MoveAreaTopY + Math.random() * RandomYRange;
         // 範囲内の確認を行う
-        const PositionXY = this.IsAreaIn(this.TargetX, this.TargetY);
+        const PositionXY = this.IsAreaIn(this.MoveingTargetX, this.MoveingTargetY);
         this.MoveingTargetX = PositionXY.AreaXPos; 
         this.MoveingTargetY = PositionXY.AreaYPos;     
     }
@@ -188,6 +189,7 @@ export class EnemyBase {
 	 */
     move(DeltaTime) {
         if (this.NowHP <= 0) return;
+        if(!DeltaTime) return;
 
         // 移動不可中は停止
         if(this.CanMoveFlag == false){
@@ -273,7 +275,7 @@ export class EnemyBase {
         const StartPointY = this.y;
 
         // グラフィックの描画は、HPバーオブジェクト自体の中心(0,0)を基準に行う
-        const Radius = Math.max(this.EnemyWidth, this.EnemyHeight) * 1.1; // スケールを考慮しない半径
+        const Radius = Math.max(this.EnemyWidth, this.EnemyHeight) * 1.0; // スケールを考慮しない半径
         const HPPercent = this.NowHP / this.MaxHP;
         const StandardAngle = 0; //-Math.PI / 2;
         const EndAngle = -Math.PI / 2;

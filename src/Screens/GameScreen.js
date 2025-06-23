@@ -177,6 +177,11 @@ export class GameScreen extends BaseScreen{
 			this.ULTContainer.addChild(this.ULTContainerOn);
 			this.ULTContainer.addChild(this.ULTContainerOff);
 
+			// シューティング画面用のマスク
+			this.ClippingMask = new PIXI.Graphics();
+			this.ScreenContainer.addChild(this.ClippingMask);
+			this.ShootingContainer.mask = this.ClippingMask;
+
 			this.ScreenContainer.addChild(this.ShootingContainer); // TODO マスクが必要
 			this.ScreenContainer.addChild(this.ScoreContainer);
 			this.ScreenContainer.addChild(this.ULTContainer);
@@ -225,6 +230,12 @@ export class GameScreen extends BaseScreen{
 			this.ShootingBackgroundImage.height = NowImageSizeHeight*0.9;
 			this.ShootingBackgroundImage.x = NowStartPointX + NowImageSizeWidth*0.1;
 			this.ShootingBackgroundImage.y = NowStartPointY + NowImageSizeHeight*0.05;
+
+			this.ClippingMask.clear();
+			this.ClippingMask.beginFill(0xFFFFFF);
+			// マスクの位置とサイズを前景コンテナと完全に一致させる
+			this.ClippingMask.drawRect(this.ShootingBackgroundImage.x, this.ShootingBackgroundImage.y, this.ShootingBackgroundImage.width, this.ShootingBackgroundImage.height);
+			this.ClippingMask.endFill();
 
 
 			// スコアの表示個所を作る
@@ -351,7 +362,7 @@ export class GameScreen extends BaseScreen{
 
 		if(this.EnemyInstance){
 			// 移動判定を行う
-            this.EnemyInstance.move(InputCurrentState, DeltaTime);
+            this.EnemyInstance.move(DeltaTime);
 			// 弾の発射を行う
 			this.EnemyInstance._shoot(this.EnemyBulletInstances, this.PlayerInstance,  DeltaTime);
         }

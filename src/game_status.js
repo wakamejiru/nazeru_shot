@@ -629,7 +629,7 @@ export const  character_info_list = {
         hitpoint_radius:8.0,
 
         character_speed:200,
-        character_maxhp:100,
+        character_maxhp:1000000,
         character_mag:0.5,
         character_skill1: skill_info_list[SkillTypeEnum.SKILL_1],
         character_skill2: skill_info_list[SkillTypeEnum.SKILL_2],
