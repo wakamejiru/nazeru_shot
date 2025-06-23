@@ -293,31 +293,20 @@ export class EnemyBase {
         // --- HPゲージ（全円） ---
         this.HpBarFill.beginFill(0x00FF00, 1);
         // 残りHPを描画する
+        this.HpBarFill.lineStyle(Radius*0.1, 0x444444, 0.4);
         this.HpBarFill.arc(StartPointX, StartPointY, Radius, StartAngle, EndAngle, false);
         this.HpBarFill.lineTo(StartPointX, StartPointY);
 
         // this.HpBarFill.drawCircle(StartPointX, StartPointY, Radius); // オブジェクトの中心(0,0)に描画
         this.HpBarFill.endFill();
 
-        this.HpMask.beginFill(0xFFFFFF);
-        this.HpMask.moveTo(StartPointX, StartPointY); // オブジェクトの中心(0,0)に移動
-        this.HpBarFill.drawCircle(StartPointX, StartPointY, Radius * 0.8); // オブジェクトの中心(0,0)に描画
+        // this.HpMask.beginFill(0xFFFFFF);
+        // this.HpMask.moveTo(StartPointX, StartPointY); // オブジェクトの中心(0,0)に移動
+        // this.HpBarFill.drawCircle(StartPointX, StartPointY, Radius * 0.8); // オブジェクトの中心(0,0)に描画
 
-        // for (let i = 0; i <= steps * HPPercent; i++) {
-        //     const angle = StartAngle + (i / steps) * (EndAngle - StartAngle);
-        //     const x = Math.cos(angle) * Radius;
-        //     const y = Math.sin(angle) * Radius;
-        //     this.HpMask.lineTo(x, y);
-        // }
+        this.HpMask.beginFill(0xFFFFFF); // マスクの色は通常白（透明度1）
+    
         this.HpMask.endFill();
-
-        // --- マスク再設定を強制する ---
-        // これは既に正しく行われています
-        this.HpBarFill.mask = null;
-        // 
-        // 
-        // 
-        // this.HpBarFill.mask = this.HpMask;
     }
 
     /**
