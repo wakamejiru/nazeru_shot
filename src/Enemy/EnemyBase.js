@@ -87,7 +87,7 @@ export class EnemyBase {
 
         this.HpBarBackground = null;
         this.HpBarFill = null;
-        this.HpMask = null;
+        this.HpBarLimit = null;
     
     }
     /**
@@ -264,7 +264,7 @@ export class EnemyBase {
  	 * キャラクターのHPバーを表示する
 	 */
     DrawHpBar() {
-        if (!this.EnemyContainer || !this.HpBarBackground || !this.HpBarFill || !this.HpMask || this.NowHP <= 0 || !this.MaxHP || this.MaxHP <= 0) {
+        if (this.NowHP <= 0 || !this.MaxHP || this.MaxHP <= 0) {
             return;
         }
 
@@ -273,40 +273,44 @@ export class EnemyBase {
         const StartPointY = this.y;
 
         // グラフィックの描画は、HPバーオブジェクト自体の中心(0,0)を基準に行う
-        const Radius = Math.max(this.EnemyWidth, this.EnemyHeight) * 0.65 / this.CurrentScaleFactor; // スケールを考慮しない半径
-        const HPPercent = 0.7;//this.NowHP / this.MaxHP;
+        const Radius = Math.max(this.EnemyWidth, this.EnemyHeight) * 1.1; // スケールを考慮しない半径
+        const HPPercent = this.NowHP / this.MaxHP;
         const StandardAngle = 0; //-Math.PI / 2;
         const EndAngle = -Math.PI / 2;
-        const HPLength = Radius*0.3;
+        const HPLength = Radius*0.05;
 
         const StartAngle = (EndAngle) - Math.PI * 2 * HPPercent;
 
         // --- クリア ---
         this.HpBarBackground.clear();
         this.HpBarFill.clear();
-        this.HpMask.clear();
-
+        this.HpBarLimit.clear();
         // --- 背景リング ---
-        // this.HpBarBackground.beginFill(0x444444, 0.4);
-        // this.HpBarBackground.drawCircle(StartPointX, StartPointY, Radius); // オブジェクトの中心(0,0)に描画
-        // this.HpBarBackground.endFill();
+        this.HpBarBackground.beginFill(0x444444, 0); // 塗りつぶしは0
+        this.HpBarBackground.lineStyle(HPLength, 0x444444, 0.4);
+        this.HpBarBackground.arc(StartPointX, StartPointY, Radius, 0, Math.PI * 2);
+        this.HpBarBackground.endFill();
 
         // --- HPゲージ（全円） ---
 
         // 残りHPを描画する
-        // this.HpBarFill.lineStyle(200, 0x9acd32, 1);
+        this.HpBarFill.beginFill(0xbf1e33, 0); // 塗りつぶしは0
+        this.HpBarFill.lineStyle(HPLength, 0xbf1e33, 0.8);
         this.HpBarFill.arc(StartPointX, StartPointY, Radius, StartAngle, EndAngle);
-        this.HpBarFill.lineTo(StartPointX, StartPointY);
-        
         this.HpBarFill.endFill();
 
-        // this.HpMask.beginFill(0xFFFFFF);
-        // this.HpMask.moveTo(StartPointX, StartPointY); // オブジェクトの中心(0,0)に移動
-        // this.HpBarFill.drawCircle(StartPointX, StartPointY, Radius * 0.8); // オブジェクトの中心(0,0)に描画
-
-        // this.HpMask.beginFill(0xFFFFFF); // マスクの色は通常白（透明度1）
-    
-        // this.HpMask.endFill();
+        // スキル使用範囲を記載
+        // スキル条件がまだの場合に書く
+        if(this.ELimitBreakPoint < HPPercent){
+            const SkillAngle = (EndAngle) - Math.PI * 2 * this.ELimitBreakPoint;
+            const MarkerLengthRad = Math.PI / 60; // 例えば、円周の1/60 (3度) の長さ
+            this.HpBarLimit.beginFill(0x00B16B, 0); // 塗りつぶしは0
+            this.HpBarLimit.lineStyle(HPLength, 0x00B16B, 0.8);
+            // 3度開けて書く
+            this.HpBarLimit.arc(StartPointX, StartPointY, Radius, SkillAngle - MarkerLengthRad, SkillAngle + MarkerLengthRad);
+            this.HpBarLimit.endFill();
+        }
+        
     }
 
     /**
@@ -399,13 +403,12 @@ export class EnemyBase {
         this.HpBarContainer = new PIXI.Container();
         this.HpBarBackground = new PIXI.Graphics();
         this.HpBarFill = new PIXI.Graphics();
-        this.HpMask = new PIXI.Graphics();
+        this.HpBarLimit = new PIXI.Graphics();
 
         this.HpBarContainer.addChild(this.HpBarBackground);
         this.HpBarContainer.addChild(this.HpBarFill);
-        this.HpBarContainer.addChild(this.HpMask);
+        this.HpBarContainer.addChild(this.HpBarLimit);
 
         this.EnemyContainer.addChild(this.HpBarContainer);
-        this.HpBarFill.mask = this.HpMask;
     }
 }
