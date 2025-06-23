@@ -354,6 +354,8 @@ export class GameScreen extends BaseScreen{
         }
 
 		if(this.PlayerInstance){
+			// スキルの判定を行う
+			this.PlayerInstance._skillrun(DeltaTime);
 			// 移動判定を行う
             this.PlayerInstance.move(InputCurrentState, DeltaTime);
 			// 弾の発射を行う
@@ -394,6 +396,7 @@ export class GameScreen extends BaseScreen{
 
 		// 敵の放った弾の情報を更新する（同様に新しい配列に詰め込む）
         const activeEnemyBullets = [];
+        const activePlayerBullets = [];
 
 
 		// X座標が弾がエリアを越していないことを判定 true:超えていない false:超えている
@@ -412,7 +415,7 @@ export class GameScreen extends BaseScreen{
 			return (MinXArea < (BulletYPos - BulletHeightHalf) && MaxXArea > (BulletYPos + BulletHeightHalf));
         };
 
-
+		// 当たったり画面外になった弾は弾く
 		this.EnemyBulletInstances.forEach(bullet => {
             if (bullet) {
 				bullet.update(DeltaTime);
@@ -426,8 +429,24 @@ export class GameScreen extends BaseScreen{
                 }
 			}
         });
-        this.EnemyBulletInstances = activeEnemyBullets; // 新しいアクティブな弾のリストに置き換え
 
+		this.PlayerBulletInstances.forEach(bullet => {
+            if (bullet) {
+				bullet.update(DeltaTime);
+				bullet.DrwaUpdate();
+                if (!bullet.isHit && IsBulletXArea(bullet.BulletImage.x, bullet.BulletImage.width) && 
+				IsBulletYArea(bullet.BulletImage.y, bullet.BulletImage.height)) { // isHitしていないかつ、範囲外を出ていない弾をリストに加える
+                    activePlayerBullets.push(bullet);
+                } else {
+                    // isHitがtrueになった弾はここで実際にdestroyを呼び出す
+                    bullet.destroy();
+                }
+			}
+        });
+
+
+        this.EnemyBulletInstances = activeEnemyBullets; // 新しいアクティブな弾のリストに置き換え
+		this.PlayerBulletInstances = activePlayerBullets;
 
 		this.HitJudgment();
 
@@ -689,6 +708,46 @@ export class GameScreen extends BaseScreen{
 						// TODO: ゲームオーバー処理
 					}
 					// 無敵時間など
+				}
+			}
+		}
+
+		if (this.EnemyInstance && this.PlayerBulletInstances) { //
+			// 敵の中心座標と半径を取得 (敵も円形と仮定)
+			const enemyCenterX = this.EnemyInstance.x; //
+			const enemyCenterY = this.EnemyInstance.y; //
+			const enemyRadius = this.EnemyInstance.EnemyHitPointRadius; // 敵インスタンスが持つ当たり判定半径
+
+			// 味方弾の配列をループ
+			for (let i = 0; i < this.PlayerBulletInstances.length; i++) { //
+				const playerBullet = this.PlayerBulletInstances[i]; //
+				// 弾が存在し、画像があり、まだヒットしていない弾のみを対象
+				if (!playerBullet || !playerBullet.BulletImage || playerBullet.isHit) continue; //
+
+				// 弾の中心座標と半径を取得 (弾も円形と仮定)
+				// BulletクラスのHitPointRadiusプロパティを使用、なければ画像幅の半分を半径とする
+				const bulletCenterX = playerBullet.x; //
+				const bulletCenterY = playerBullet.y; //
+				const bulletRadius = playerBullet.HitPointRadius || (playerBullet.BulletImage.width / 2); //
+
+				// 円と円の当たり判定
+				if (this.checkCircleCircleCollision( //
+					enemyCenterX, enemyCenterY, enemyRadius, //
+					bulletCenterX, bulletCenterY, bulletRadius //
+				)) {
+					// ヒットした時の処理
+					this.EnemyInstance.NowHP -= playerBullet.damage || 10; // 弾のダメージ分HPを減らす
+					// TODO: 敵のHPバー更新処理があれば呼び出す
+					
+					playerBullet.isHit = true; // 弾をヒット済みにする
+					
+					console.log(`Enemy Hit! HP: ${this.EnemyInstance.NowHP}`); //
+					
+					if(this.EnemyInstance.NowHP <= 0){ //
+						console.log("Enemy Defeated!"); //
+						// TODO: 敵撃破処理（スコア加算、次の敵の生成、ゲームクリアなど）
+					}
+					// TODO: 敵の無敵時間や被弾アニメーションなどの処理があれば追加
 				}
 			}
 		}

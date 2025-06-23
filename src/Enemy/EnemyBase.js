@@ -33,6 +33,7 @@ export class EnemyBase {
         this.EnemyWidth = this.EnemyConfigBase.enemy_width;
         this.EnemyHeight =  this.EnemyConfigBase.enemy_height;
         this.EnemySpeed = this.EnemyConfigBase.enemy_speed;
+        this.EnemyHitPointRadius = this.EnemyConfigBase.enemy_hitpoint_radius;
         
         this.MaxHP = EnemyConfig.enemy_maxhp;
         this.NowHP = this.MaxHP;
@@ -138,7 +139,7 @@ export class EnemyBase {
         this.EnemyWidth = this.EnemyConfigBase.enemy_width * NewScaleFactor;
         this.EnemyHeight = this.EnemyConfigBase.enemy_height * NewScaleFactor;
         this.EnemySpeed = this.EnemyConfigBase.enemy_speed * NewScaleFactor;
-        this.EnemyHitpointRadius = (Math.max(this.EnemyWidth, this.EnemyHeight) /2) * 1.1;
+        this.EnemyHitpointRadius = this.EnemyConfigBase.enemy_hitpoint_radius * NewScaleFactor;
 
 
         // キャラクターが指定の範囲内に収まるようにチェック
