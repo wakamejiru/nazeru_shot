@@ -380,14 +380,34 @@ export class GameScreen extends BaseScreen{
 				bullet.DrwaUpdate();
 			}
         });
-		
+
 		// 敵の放った弾の情報を更新する（同様に新しい配列に詰め込む）
         const activeEnemyBullets = [];
+
+
+		// X座標が弾がエリアを越していないことを判定 true:超えていない false:超えている
+		const IsBulletXArea = (BulletXPos, BulletWidth) => {
+            const BulletWidhtHalf = BulletWidth/2;
+			const MinXArea = this.ScreenBackgroundImage.x;
+			const MaxXArea = this.ScreenBackgroundImage.x + this.ScreenBackgroundImage.width;
+			return (MinXArea < (BulletXPos - BulletWidhtHalf) && MaxXArea > (BulletXPos + BulletWidhtHalf));
+        };
+
+		// Y座標が弾がエリアを越していないことを判定 true:超えていない false:超えている
+		const IsBulletYArea = (BulletYPos, BulletHeight) => {
+            const BulletHeightHalf = BulletHeight/2;
+			const MinXArea = this.ScreenBackgroundImage.y;
+			const MaxXArea = this.ScreenBackgroundImage.y + this.ScreenBackgroundImage.height;
+			return (MinXArea < (BulletYPos - BulletHeightHalf) && MaxXArea > (BulletYPos + BulletHeightHalf));
+        };
+
+
 		this.EnemyBulletInstances.forEach(bullet => {
             if (bullet) {
 				bullet.update(DeltaTime);
 				bullet.DrwaUpdate();
-                if (!bullet.isHit) { // isHitしていない弾だけを次のフレームに持ち越す
+                if (!bullet.isHit && IsBulletXArea(bullet.BulletImage.x, bullet.BulletImage.width) && 
+				IsBulletYArea(bullet.BulletImage.y, bullet.BulletImage.height)) { // isHitしていないかつ、範囲外を出ていない弾をリストに加える
                     activeEnemyBullets.push(bullet);
                 } else {
                     // isHitがtrueになった弾はここで実際にdestroyを呼び出す
