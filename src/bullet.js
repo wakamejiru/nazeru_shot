@@ -103,8 +103,7 @@ export class Bullet {
     update(deltaTime) {
         if (this.isHit) return;
         this.bulletLifeTimer += deltaTime;
-        // 1. 追尾処理 (将来的に実装)
-        if (this.target && this.trackingStrength > 0) { // targetPlayerの代わりにthis.targetを使う
+       if (this.target && this.trackingStrength > 0) { // targetPlayerの代わりにthis.targetを使う
             const targetCenterX = this.target.x + (this.target.width ? this.target.width / 2 : 0);
             const targetCenterY = this.target.y + (this.target.height ? this.target.height / 2 : 0);
             const targetDx = targetCenterX - this.x;
@@ -120,13 +119,14 @@ export class Bullet {
             while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
             while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
 
-            // trackingStrength を「1秒間にどれだけターゲットに近づくか」の割合とするか、
-            // 「1秒間に回転できる最大ラジアン」とするかで挙動が変わります。
-            // ここでは「1秒間に angleDiff の trackingStrength 分だけ角度を補正する」イメージ
-            let effectiveTurn = angleDiff * this.trackingStrength * deltaTime; // trackingStrengthが割合の場合
-            // もしくは、最大旋回角速度として trackingStrength をラジアン/秒で定義する場合
-            // let maxTurnThisFrame = this.trackingStrength * deltaTime;
-            // let effectiveTurn = Math.max(-maxTurnThisFrame, Math.min(maxTurnThisFrame, angleDiff));
+            // ===================== ★ここから修正 =====================
+            // trackingStrength を「1秒間に回転できる最大ラジアン（最大旋回角速度）」として扱います。
+            // このフレームで回転できる最大角度を計算します。
+            const maxTurnThisFrame = this.trackingStrength * deltaTime;
+
+            // ターゲットへの角度差が、このフレームで回転できる最大角度を超えないように補正量を制限します。
+            const effectiveTurn = Math.max(-maxTurnThisFrame, Math.min(maxTurnThisFrame, angleDiff));
+            // ===================== ★ここまで修正 =====================
 
             currentAngle += effectiveTurn;
 
