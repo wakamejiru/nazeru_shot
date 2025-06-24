@@ -37,9 +37,10 @@ export class EnemyBase {
         
         this.MaxHP = EnemyConfig.enemy_maxhp;
 
-        this.EnemyHPGuage = EnemyConfig.enemy_hp_guage;
+        this.MaxEnemyHPGuage = EnemyConfig.enemy_hp_guage;
+        this.NowEnemyHPGuage = EnemyConfig.enemy_hp_guage;
         this.EnemyPlayULT = EnemyConfig.enemy_play_ult;
-        this.MaxHPGuageHP = this.MaxHP / this.EnemyHPGuage;
+        this.MaxHPGuageHP = this.MaxHP / this.NowEnemyHPGuage;
         this.NowHPGuageHP = this.MaxHP;
         // スペルの発動条件
         this.ELimitBreakPoint = EnemyConfig.e_limit_break_point;
@@ -426,7 +427,8 @@ export class EnemyBase {
         if(this.NowHPGuageHP <= 0){
             // 0以下の場合次のゲージに移行
             this.NowHPGuageHP = this.MaxHPGuageHP;
-            
+            --this.NowEnemyHPGuage
+
             // ゲージ本数が0になったときにクリア
         }
 	}
