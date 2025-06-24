@@ -303,6 +303,11 @@ export class GameScreen extends BaseScreen{
 				this.PlayerInstance.updateScale(CurrentOverallScale, this.ShootingBackgroundImage.x, this.ShootingBackgroundImage.y,
 					this.ShootingBackgroundImage.width, this.ShootingBackgroundImage.height)
 			}
+
+			if(this.EnemyInstance){
+				this.EnemyInstance.updateScale(CurrentOverallScale, this.ShootingBackgroundImage.x, this.ShootingBackgroundImage.y,
+					this.ShootingBackgroundImage.width, this.ShootingBackgroundImage.height)
+			}
 		}
 	
 		/**

@@ -16,6 +16,7 @@ export class Bullet {
      * @param {number} options :弾の情報
 	 */
     constructor(ScreenContainer, startX, startY, options = {}) {
+        this.BaseConfig = options;
         this.x = startX - options.width/2;
         this.y = startY;
 
@@ -90,6 +91,13 @@ export class Bullet {
         
         this.bulletLifeTimer = 0; // 弾が生成されてからの経過時間（サイン関数の時間入力に使う）
 
+    }
+
+    /**
+	 * ベースからリサイズを行う
+	 */
+    ReiszeBullets(Magnifacture){
+        
     }
 
     update(deltaTime) {
