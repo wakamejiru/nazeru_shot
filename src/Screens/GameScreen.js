@@ -182,7 +182,7 @@ export class GameScreen extends BaseScreen{
 			this.ScreenContainer.addChild(this.ClippingMask);
 			this.ShootingContainer.mask = this.ClippingMask;
 
-			this.ScreenContainer.addChild(this.ShootingContainer); // TODO マスクが必要
+			this.ScreenContainer.addChild(this.ShootingContainer);
 			this.ScreenContainer.addChild(this.ScoreContainer);
 			this.ScreenContainer.addChild(this.ULTContainer);
 			super.SetScreenVisible(false); // 初期は非表示
@@ -372,6 +372,9 @@ export class GameScreen extends BaseScreen{
             this.EnemyInstance.move(DeltaTime);
 			// 弾の発射を行う
 			this.EnemyInstance._shoot(this.EnemyBulletInstances, this.PlayerInstance,  DeltaTime);
+
+			// Skillの実行を行う
+			this.EnemyInstance._skilrun(DeltaTime);
         }
 
 		// 両方の描画を行う
@@ -741,14 +744,15 @@ export class GameScreen extends BaseScreen{
 					bulletCenterX, bulletCenterY, bulletRadius //
 				)) {
 					// ヒットした時の処理
-					this.EnemyInstance.NowHP -= playerBullet.damage || 10; // 弾のダメージ分HPを減らす
+
+					this.EnemyInstance.DamageHit(playerBullet.damage  || 10);
 					// TODO: 敵のHPバー更新処理があれば呼び出す
 					
 					playerBullet.isHit = true; // 弾をヒット済みにする
 					
-					console.log(`Enemy Hit! HP: ${this.EnemyInstance.NowHP}`); //
+					console.log(`Enemy Hit! HP: ${this.EnemyInstance.NowHPGuageHP}`); //
 					
-					if(this.EnemyInstance.NowHP <= 0){ //
+					if(this.EnemyInstance.NowEnemyHPGuage <= 0){ //
 						console.log("Enemy Defeated!"); //
 						// TODO: 敵撃破処理（スコア加算、次の敵の生成、ゲームクリアなど）
 					}

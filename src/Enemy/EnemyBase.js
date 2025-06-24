@@ -40,8 +40,8 @@ export class EnemyBase {
         this.MaxEnemyHPGuage = EnemyConfig.enemy_hp_guage;
         this.NowEnemyHPGuage = EnemyConfig.enemy_hp_guage;
         this.EnemyPlayULT = EnemyConfig.enemy_play_ult;
-        this.MaxHPGuageHP = this.MaxHP / this.NowEnemyHPGuage;
-        this.NowHPGuageHP = this.MaxHP;
+        this.MaxHPGuageHP = this.MaxHP / this.MaxEnemyHPGuage;
+        this.NowHPGuageHP = this.MaxHPGuageHP;
         // スペルの発動条件
         this.ELimitBreakPoint = EnemyConfig.e_limit_break_point;
 
@@ -91,7 +91,9 @@ export class EnemyBase {
         this.HpBarBackground = null;
         this.HpBarFill = null;
         this.HpBarLimit = null;
-    
+
+        // Skill発動条件を起動
+        this.IsSkillTextShown = false;
     }
     /**
  	 * 非同期の初期化メソッドを追加
@@ -117,6 +119,34 @@ export class EnemyBase {
         
         // HPバーの初期化メソッドを呼び出す
         this.InitializeHpBar();
+
+        // HPゲージ文字列を追加する
+        this.HPGuageTextStyle = new PIXI.TextStyle({
+            fontFamily: 'Arial',
+            fontSize: 36,
+            fill: '#ffff42',
+            align: 'right'
+        });
+        this.HPGuageText = new PIXI.Text(`HP×${this.NowEnemyHPGuage}`, this.HPGuageTextStyle);
+        this.HPGuageText.x = 0;
+        this.HPGuageText.y = 0;
+        this.HPGuageText.anchor.set(0);
+        this.EnemyContainer.addChild(this.HPGuageText);
+
+        // skill名文字列を追加する
+        this.SkillTextStyle = new PIXI.TextStyle({
+            fontFamily: 'Arial',
+            fontSize: 36,
+            fill: '#ffffff',
+            align: 'right'
+        });
+        this.SkillText = new PIXI.Text("Skill1Activate", this.SkillTextStyle);
+        this.SkillText.x = 0;
+        this.SkillText.y = 0;
+        this.SkillText.anchor.set(0,0);
+        // this.SkillText.visible = false;
+        // this.SkillText.alpha = 0;
+        this.EnemyContainer.addChild(this.SkillText);
     }
 
 
@@ -166,8 +196,16 @@ export class EnemyBase {
         this.MoveAreaBottomY = this.MoveAreaTopY + this.NowPlayAreaHeight / 3 - this.EnemyHeight / 2;
         this.MoveAreaLeftX = this.StartAreaX + this.EnemyWidth / 2;
         this.MoveAreaRightX = this.MoveAreaLeftX +  this.NowPlayAreaWidth - this.EnemyWidth / 2;
+
         this.DrawHpBar();
 
+        this.HPGuageText.style.fontSize = this.HPGuageTextStyle.fontSize * NewScaleFactor;
+        this.HPGuageText.x = this.StartAreaX;
+        this.HPGuageText.y = this.StartAreaY;
+
+        this.SkillText.style.fontSize = this.SkillTextStyle.fontSize * NewScaleFactor;
+        this.SkillText.x = this.StartAreaX + this.NowPlayAreaWidth;
+        this.SkillText.y = this.StartAreaY;
         // この後に弾のスケーリングも多分必要
     }
 
@@ -247,8 +285,9 @@ export class EnemyBase {
 
     /**
  	 * スキルの実行を行う
+     * @param {number} DeltaTime - 時間
 	 */
-    _skilrun()
+    _skilrun(DeltaTime)
     {
         // 一定条件下でスキルを使う
         // HP何割削れたかで決める
@@ -314,6 +353,11 @@ export class EnemyBase {
             // 3度開けて書く
             this.HpBarLimit.arc(StartPointX, StartPointY, Radius, SkillAngle - MarkerLengthRad, SkillAngle + MarkerLengthRad);
             this.HpBarLimit.endFill();
+        }else{
+            if(this.SkillActivate == false){
+                // Skillを起動する
+                this.SkillActivate = true;
+            }
         }
         
     }
@@ -427,9 +471,14 @@ export class EnemyBase {
         if(this.NowHPGuageHP <= 0){
             // 0以下の場合次のゲージに移行
             this.NowHPGuageHP = this.MaxHPGuageHP;
-            --this.NowEnemyHPGuage
-
-            // ゲージ本数が0になったときにクリア
+            --this.NowEnemyHPGuage;
+            if(this.NowEnemyHPGuage < 0){
+                this.NowEnemyHPGuage = 0;
+                // ゲームスクリーンのほうで処理を行う
+            }else{
+                // HPゲージ本数を更新
+                this.HPGuageText.text = `HP×${this.NowEnemyHPGuage}`
+            }
         }
 	}
 }

@@ -387,9 +387,13 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
     
         /**
          * スキルを使用する
+         * @param {number} DeltaTime - 時間
          */
-        _skilrun()
+        _skilrun(DeltaTime)
         {
+            if(this.SkillActivate == true){
+                this.SkillText.visible = true;
+            }
             // 一定条件下でスキルを使う
             // HP何割削れたかで決める
 
