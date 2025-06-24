@@ -36,10 +36,11 @@ export class EnemyBase {
         this.EnemyHitPointRadius = this.EnemyConfigBase.enemy_hitpoint_radius;
         
         this.MaxHP = EnemyConfig.enemy_maxhp;
-        this.NowHP = this.MaxHP;
 
         this.EnemyHPGuage = EnemyConfig.enemy_hp_guage;
         this.EnemyPlayULT = EnemyConfig.enemy_play_ult;
+        this.MaxHPGuageHP = this.MaxHP / this.EnemyHPGuage;
+        this.NowHPGuageHP = this.MaxHP;
         // スペルの発動条件
         this.ELimitBreakPoint = EnemyConfig.e_limit_break_point;
 
@@ -277,7 +278,7 @@ export class EnemyBase {
 
         // グラフィックの描画は、HPバーオブジェクト自体の中心(0,0)を基準に行う
         const Radius = Math.max(this.EnemyWidth, this.EnemyHeight) * 1.0; // スケールを考慮しない半径
-        const HPPercent = this.NowHP / this.MaxHP;
+        const HPPercent = this.NowHPGuageHP / this.MaxHPGuageHP;
         const StandardAngle = 0; //-Math.PI / 2;
         const EndAngle = -Math.PI / 2;
         const HPLength = Radius*0.05;
@@ -414,4 +415,19 @@ export class EnemyBase {
 
         this.EnemyContainer.addChild(this.HpBarContainer);
     }
+
+	/**
+     * ダメージヒット処理を行う
+	 * @param {number} DamageParam - 受けたダメージ
+     */
+	DamageHit(DamageParam){
+		// ダメージを受けた処理を行う
+		this.NowHPGuageHP -= DamageParam;
+        if(this.NowHPGuageHP <= 0){
+            // 0以下の場合次のゲージに移行
+            this.NowHPGuageHP = this.MaxHPGuageHP;
+            
+            // ゲージ本数が0になったときにクリア
+        }
+	}
 }
