@@ -95,6 +95,7 @@ export class EnemyBase {
         // Skill発動条件を起動
         this.IsSkillTextShown = false;
         this.SkillActivate = false;
+        this.EndSkill = false;
     }
     /**
  	 * 非同期の初期化メソッドを追加
@@ -301,6 +302,24 @@ export class EnemyBase {
             }
         }
 
+
+        if(this.EndSkill == true){
+            // フラグをリセット
+            this.EndSkill = false;
+            this.SkillActivate = false;
+            this.IsSkillTextShown = false;
+            // 表示を削除
+            gsap.to(this.SkillText, {
+                    alpha: 0,         // 透明にする
+                    duration: 0.5,    // 0.5秒かける
+                    ease: "power1.in",
+                    onComplete: () => {
+                        // アニメーション完了後、オブジェクトを非表示にしておく
+                        this.SkillText.visible = false;
+                    }
+            });
+        }
+
     }
 
     /**
@@ -481,7 +500,8 @@ export class EnemyBase {
                 // ゲームスクリーンのほうで処理を行う
             }else{
                 // HPゲージ本数を更新
-                this.HPGuageText.text = `HP×${this.NowEnemyHPGuage}`
+                this.HPGuageText.text = `HP×${this.NowEnemyHPGuage}`;
+                this.EndSkill = true;
             }
         }
 	}
