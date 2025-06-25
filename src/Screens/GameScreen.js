@@ -400,7 +400,7 @@ export class GameScreen extends BaseScreen{
 			// 移動判定を行う
             this.PlayerInstance.move(InputCurrentState, DeltaTime);
 			// 弾の発射を行う
-			this.PlayerInstance._shoot(InputCurrentState, this.PlayerBulletInstances, this.EnemyInstance, DeltaTime);
+			//this.PlayerInstance._shoot(InputCurrentState, this.PlayerBulletInstances, this.EnemyInstance, DeltaTime);
         }
 
 		if(this.EnemyInstance){

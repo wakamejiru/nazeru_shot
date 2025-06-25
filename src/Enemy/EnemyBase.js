@@ -1,5 +1,5 @@
 // EnemyBase.js
-import { Bullet } from '../bullet.js'; 
+import { Bullet, ChangeActivation } from '../bullet.js'; 
 import { ImageAssetPaths, main_bulled_info_list, sub_bulled_info_list, EnemyTypeEnum, EnemySkillTypeEnum } from '../game_status.js';
 
 const SKILL_TIMER_MAX = 99;
@@ -82,7 +82,7 @@ export class EnemyBase {
         // 通常攻撃の待機時間
         this.AttackWatingTime = EnemyConfig.attack_watingtime;
         this.NowAttackWatingTime = 1.5; // 最初の待機時間
-        this.AttackState = 0;
+        this.AttackState = 5;
         this.AttackVariation = EnemyConfig.attack_variation;
         this.SkillActiveFlag = false;
 

@@ -240,3 +240,76 @@ export function windmillshotfunc(EnemyBulletList, centerX, centerY, ccw, Windmil
 
     }
 }
+
+/**
+ * 中心から円形に発射される弾
+ * @param {Array} EnemyBulletList - 弾の配列
+ * @param {number} CenterX - 打ち出し中心位置X
+ * @param {number} CenterY - 打ち出し中心位置Y
+ * @param {number} BulletNumber - 弾の数
+ * @param {number} StartAngle - 開始角度 (度数法)
+ * @param {number} EndAngle - 終了角度 (度数法)
+ * @param {object} Opitons - 弾の基本設定
+ * @param {object} NextOpitons - 移動後の弾の設定
+ * @param {number} ActivationSpeed - 挙動が変化する速度
+ * @param {PIXI.Container} ScrreenContainer - Pixiコンテナ
+ */
+export function CircleAndHomeShotFunc(
+    EnemyBulletList, 
+    CenterX, 
+    CenterY, 
+    BulletNumber, 
+    StartAngle,
+    EndAngle,
+    Opitons, 
+    NextOpitons,
+    ActivationLength,
+    ScrreenContainer
+) {
+    let StartPointX = CenterX;
+    let StartPointY = CenterY;
+
+    const OneStepAngle = (EndAngle - StartAngle) / BulletNumber;
+    const FirstAngle = StartAngle;
+
+    for (let i = 0; i < BulletNumber; i++) {
+        const RadiusAngle = (FirstAngle + (OneStepAngle * i)) * Math.PI / 180;
+        
+        const SpeedX = ChakcUndefined(Opitons.vx) * Math.cos(RadiusAngle);
+        const SpeedY = ChakcUndefined(Opitons.vy) * Math.sin(RadiusAngle);        
+        const BulletAccelX = ChakcUndefined(Opitons.ax) * Math.cos(RadiusAngle);
+        const BulletAccelY = ChakcUndefined(Opitons.ay) * Math.sin(RadiusAngle);
+        const BulletJerkX = ChakcUndefined(Opitons.jx) * Math.cos(RadiusAngle);
+        const BulletJerkY = ChakcUndefined(Opitons.jy) * Math.sin(RadiusAngle);
+        
+        // Bulletコンストラクタに渡すオプションを作成
+        const bulletOptions = {
+            // 基本的な弾の性能
+            ...Opitons, // 渡されたOpitonsをすべてコピー
+
+            // 向きと初速を設定
+            vx: SpeedX,
+            vy: SpeedY,
+            ax:BulletAccelX,
+            ay:BulletAccelY,
+            jx:BulletJerkX,
+            jy:BulletJerkY,
+
+            // ▼▼▼ ここがポイント！ ▼▼▼
+            // 挙動変化の条件と、変化後の設定を渡す
+            ActivationLength: ActivationLength,
+            PostActivationOptions: {
+                ...NextOpitons
+            },
+            // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+        };
+
+        EnemyBulletList.push(new Bullet(ScrreenContainer, StartPointX, StartPointY, bulletOptions));
+    }
+}
+
+// 未定義かどうかを判断する
+// 未定義なら0
+function ChakcUndefined(Param){
+    return Param !== undefined ? Param : 0;
+}

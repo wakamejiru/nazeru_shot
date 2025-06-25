@@ -1,6 +1,21 @@
 import { CharacterTypeEnum, SkillTypeEnum, UltTypeEnum, MainBulletEnum, SubBulletEnum, 
 	character_info_list, skill_info_list,  ult_info_list, main_bulled_info_list, sub_bulled_info_list, ImageAssetPaths} from './game_status.js'; // Bulletクラスもインポート
 
+
+export const ChangeActivation = Object.freeze({
+    Activate1: "一意の相手方向へ移動",
+    CharaSelect2: "CharaSelect2",
+    CharaSelect3: "CharaSelect3",
+    CharaSelect4: "CharaSelect4",
+    CharaSelect5: "CharaSelect5",
+    CharaSelect6: "CharaSelect6",
+    CharaSelect7: "CharaSelect7",
+    CharaSelect8: "CharaSelect8",
+    CharaSelect9: "CharaSelect9",
+    CharaSelect10: "CharaSelect10"
+});
+
+    
 // ==================================================================
 // Bullet クラスの定義
 // ==================================================================
@@ -19,6 +34,8 @@ export class Bullet {
         this.BaseConfig = options;
         this.x = startX - options.width/2;
         this.y = startY;
+        this.OriginX = this.x;
+        this.OriginY = this.y;
 
         // 速度と加速度 (ベクトルで管理)
         this.vx = options.vx !== undefined ? options.vx : 0; // X方向の初速
@@ -72,7 +89,11 @@ export class Bullet {
         this.target = options.target || null; // 追尾対象 (Player や Enemy インスタンスなど)
         this.trackingStrength = options.trackingStrength !== undefined ?  options.trackingStrength : 0; // 追尾の強さ (0なら追尾しない)
         this.maxSpeed = options.maxSpeed !== undefined ? options.maxSpeed : 300; // ピクセル/秒
-
+    
+        // 挙動変化のフラグ
+        this.ActivationLength = options.ActivationLength || null; // 挙動変化が起こる距離 (0なら即時)
+        this.PostActivationOptions = options.PostActivationOptions || null; // 変化後の挙動設定
+        this.IsActivated = false; // 挙動が変化したかどうかのフラグ
 
         // 方向変化用 (将来の拡張用)
         this.turnRate = options.turnRate || 0; // 旋回率 (ラジアン/フレーム)
@@ -100,9 +121,65 @@ export class Bullet {
         
     }
 
+    /**
+	 * 挙動変更関数
+	 */
+    UpdateActivation(){
+        switch(this.PostActivationOptions.ChangeActivation){
+            case ChangeActivation.Activate1:
+                // 現在のキャラの方向に向かって一目散に移動
+                if(this.target){
+                    const TaragetX = this.target.x;
+                    const TaragetY = this.target.y;
+
+                    // 今の座標位置から、ターゲット位置までを直線でつなぐような速度に変更する
+                    const NowXPos = this.x;
+                    const NowYPos = this.y;
+                    const LengthX = TaragetX - NowXPos;  
+                    const LengthY = TaragetY - NowYPos;
+                    const Distance = Math.sqrt(LengthX*LengthX + LengthY*LengthY) * this.PostActivationOptions.LengthParcent;
+                    const SIN_TARGET = LengthY / Distance;
+                    const COS_TARGET = LengthX / Distance;
+                    const NewSpeed = Math.sqrt(this.PostActivationOptions.vx*this.PostActivationOptions.vx + this.PostActivationOptions.vy*this.PostActivationOptions.vy);
+                    const NewAccel = Math.sqrt(this.PostActivationOptions.vx*this.PostActivationOptions.ax + this.PostActivationOptions.vy*this.PostActivationOptions.ay); 
+                    const NewJeak = Math.sqrt(this.PostActivationOptions.vx*this.PostActivationOptions.jx + this.PostActivationOptions.vy*this.PostActivationOptions.jy); 
+                    
+                    const ActivateSpeedX = COS_TARGET * NewSpeed;
+                    const ActivateSpeedY = SIN_TARGET * NewSpeed;
+                    const ActivateAccelX = SIN_TARGET * NewAccel;
+                    const ActivateAccelY = COS_TARGET * NewAccel;
+                    const ActivateJeakX = SIN_TARGET * NewJeak;
+                    const ActivateJeakY = COS_TARGET * NewJeak;
+                    this.vx = ActivateSpeedX;
+                    this.vy = ActivateSpeedY;
+                    this.ax = ActivateAccelX;
+                    this.ay = ActivateAccelY;
+                    this.jx = ActivateJeakX;
+                    this.jy = ActivateJeakY;
+                }
+                break;
+        }
+    }
+
     update(deltaTime) {
         if (this.isHit) return;
         this.bulletLifeTimer += deltaTime;
+        
+        if(this.ActivationLength){
+            if (!this.IsActivated) {
+                if (this.ActivationLength > 0) {
+                    const DistanceSq = (this.x - this.OriginX)**2 + (this.y - this.OriginY)**2;
+                    if (DistanceSq >= this.ActivationLength**2) {
+                        this.IsActivated = true;
+                        // ここで新しい挙動を定義しておく
+                        // 挙動は複数種類用意上で定義している
+                        this.UpdateActivation();
+                    }
+                }
+            }
+        }// else if 距離による差動
+        
+
        if (this.target && this.trackingStrength > 0) { // targetPlayerの代わりにthis.targetを使う
             const targetCenterX = this.target.x + (this.target.width ? this.target.width / 2 : 0);
             const targetCenterY = this.target.y + (this.target.height ? this.target.height / 2 : 0);

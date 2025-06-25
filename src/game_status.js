@@ -406,6 +406,7 @@ export const  sub_bulled_info_list = {
 
 // AssetManagerで使う画像パスのリスト
 export const ImageAssetPaths = Object.freeze({
+  AvatarType1:  "../image/avatar/Player1.png",
   AvatarTypeA:  "../image/avatar/avator1.png",
   HitImageTypeA: "../image/avatar/HitImage.svg",
   BulletTypeA: "../image/canon/cirlce1.svg",
@@ -622,7 +623,7 @@ export const  character_info_list = {
     [CharacterTypeEnum.TYPE_1]:
     {
         charachter_name:"タイプ1",
-        avatar_image_key:"AvatarTypeA",
+        avatar_image_key:"AvatarType1",
         sprite_base_draw_width: 40,      // アバターの (ピクセル)
         sprite_base_draw_height: 40,     // アバターの (ピクセル)
         hitpoint_image_key: "HitImageTypeA", // ヒットポイントの画像
@@ -753,7 +754,7 @@ export const  enemy_info_list = {
         enemy_image_key:"EnemyTypeA",
         enemy_hitpoint_radius:100,
         enemy_width:150,
-        enemy_height:180,
+        enemy_height:150,
         enemy_speed:100,
         enemy_maxhp:100000,
         enemy_mag:0,
