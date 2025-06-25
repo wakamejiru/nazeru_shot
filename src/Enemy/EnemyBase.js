@@ -2,6 +2,8 @@
 import { Bullet } from '../bullet.js'; 
 import { ImageAssetPaths, main_bulled_info_list, sub_bulled_info_list, EnemyTypeEnum, EnemySkillTypeEnum } from '../game_status.js';
 
+const SKILL_TIMER_MAX = 99;
+
 export class EnemyBase {
     /**
  	 * コンストラクタ
@@ -96,6 +98,7 @@ export class EnemyBase {
         this.IsSkillTextShown = false;
         this.SkillActivate = false;
         this.EndSkill = false;
+        this.SkillTimer = SKILL_TIMER_MAX;
     }
     /**
  	 * 非同期の初期化メソッドを追加
@@ -149,6 +152,19 @@ export class EnemyBase {
         this.SkillText.visible = false;
         this.SkillText.alpha = 0;
         this.EnemyContainer.addChild(this.SkillText);
+
+         this.SkillTimerTextStyle = new PIXI.TextStyle({
+            fontFamily: 'Arial',
+            fontSize: 36, // 少し小さくする
+            fill: '#ffffff', // 色を変える
+            align: 'right'
+        });
+
+        this.SkillTimerText = new PIXI.Text(`${Math.ceil(this.SkillTimer)}`, this.SkillTimerTextStyle);
+        this.SkillTimerText.anchor.set(1, 0); // 右上を基準にする
+        this.SkillTimerText.visible = false;
+        this.SkillTimerText.alpha = 0;
+        this.EnemyContainer.addChild(this.SkillTimerText);
     }
 
 
@@ -203,13 +219,14 @@ export class EnemyBase {
         this.HPGuageText.style.fontSize = this.HPGuageTextStyle.fontSize * NewScaleFactor;
         this.HPGuageText.x = this.StartAreaX;
         this.HPGuageText.y = this.StartAreaY;
-
-        // ★以下のSkillText位置設定を修正
+        const SKILL_MARGIN_Y = 5;
         this.SkillText.style.fontSize = this.SkillTextStyle.fontSize * NewScaleFactor;
         this.SkillText.x = this.StartAreaX + this.NowPlayAreaWidth; // 右端に設定
-        // HPゲージテキストの真下に配置（5pxの間隔を空ける）
-        this.SkillText.y = this.StartAreaY + 5* NewScaleFactor; 
-        // この後に弾のスケーリングも多分必要
+        this.SkillText.y = this.StartAreaY + SKILL_MARGIN_Y * NewScaleFactor;
+        
+        this.SkillTimerText.style.fontSize = this.SkillTimerTextStyle.fontSize * NewScaleFactor;
+        this.SkillTimerText.x = this.StartAreaX + this.NowPlayAreaWidth; // 右端に設定
+        this.SkillTimerText.y = this.SkillText.y + this.SkillText.style.fontSize + (SKILL_MARGIN_Y * NewScaleFactor);
     }
 
 
@@ -295,7 +312,7 @@ export class EnemyBase {
         const HPPercent = this.NowHPGuageHP / this.MaxHPGuageHP;
 
         if(this.ELimitBreakPoint > HPPercent){
-            console.log("Skill Activate1");
+            
             if( (this.IsSkillTextShown == false) && (this.SkillActivate == false)){
                 // Skillを起動する
                 this.SkillActivate = true;
@@ -303,21 +320,23 @@ export class EnemyBase {
         }
 
 
-        if(this.EndSkill == true){
-            // フラグをリセット
-            this.EndSkill = false;
-            this.SkillActivate = false;
-            this.IsSkillTextShown = false;
-            // 表示を削除
-            gsap.to(this.SkillText, {
-                    alpha: 0,         // 透明にする
-                    duration: 0.5,    // 0.5秒かける
-                    ease: "power1.in",
-                    onComplete: () => {
-                        // アニメーション完了後、オブジェクトを非表示にしておく
-                        this.SkillText.visible = false;
-                    }
-            });
+        if (this.SkillActivate == true) {
+            if (this.SkillTimer > 0) {
+                this.SkillTimer -= DeltaTime;
+            } else {
+                this.SkillTimer = 0;
+                this.EndSkill = true; // タイマーが0になったらスキル終了
+            }
+            // タイマーテキストの内容を毎フレーム更新
+            this.SkillTimerText.text = `${Math.ceil(this.SkillTimer)}`;
+        
+
+
+            if(this.EndSkill == true){
+               
+                // Skillが終了したためHPを消し飛ばす
+                this.UpdateEndHPGuage();
+            }
         }
 
     }
@@ -493,6 +512,43 @@ export class EnemyBase {
 		this.NowHPGuageHP -= DamageParam;
         if(this.NowHPGuageHP <= 0){
             // 0以下の場合次のゲージに移行
+            this.UpdateEndHPGuage();
+        }
+	}
+
+
+	/**
+     *ゲージを削り切った時の処理を行う
+     */
+    UpdateEndHPGuage(){
+        if(this.SkillActivate == true){
+            // フラグをリセット
+            this.EndSkill = false;
+            this.SkillActivate = false;
+            this.IsSkillTextShown = false;
+            // スキルテキストを非表示にする
+            gsap.to(this.SkillText, {
+                    alpha: 0,
+                    duration: 0.5,
+                    ease: "power1.in",
+                    onComplete: () => {
+                        this.SkillText.visible = false;
+                    }
+            });
+
+            // タイマーテキストも非表示にする
+            gsap.to(this.SkillTimerText, {
+                alpha: 0,
+                duration: 0.5,
+                ease: "power1.in",
+                onComplete: () => {
+                    this.SkillTimerText.visible = false;
+                }
+            });
+            // タイマーを初期値に戻す
+            this.SkillTimer = SKILL_TIMER_MAX;
+
+            console.log("sゲージ処理");
             this.NowHPGuageHP = this.MaxHPGuageHP;
             --this.NowEnemyHPGuage;
             if(this.NowEnemyHPGuage < 0){
@@ -504,5 +560,6 @@ export class EnemyBase {
                 this.EndSkill = true;
             }
         }
-	}
+    }
+
 }

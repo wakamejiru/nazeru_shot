@@ -398,30 +398,24 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                 
                 // テキストを見えるようにする
                 this.SkillText.visible = true;
+                this.SkillTimerText.visible = true;
                 
                 // (任意) スキルごとにテキスト内容を変更する場合
                 this.SkillText.text = "「全方位弾幕」";
-                console.log("Skill Activate");
 
-                const finalSafeY = this.SkillText.y;
-
-                // 2. アニメーションの開始Y座標を決める（安全な位置より少し下）
-                const startY = finalSafeY + 20; // 20ピクセル下から開始
-
-                // 3. gsap.fromTo を使ってアニメーションを実行
+               const finalSafeY = this.SkillText.y;
+                const startY = finalSafeY + 20;
+                
                 gsap.fromTo(this.SkillText, 
-                    {
-                        // 開始状態
-                        y: startY,
-                        alpha: 0
-                    }, 
-                    {
-                        // 終了状態
-                        y: finalSafeY,  // 必ず安全な位置で止まる
-                        alpha: 1,
-                        duration: 0.8,
-                        ease: "power2.out"
-                    }
+                    { y: startY, alpha: 0 }, 
+                    { y: finalSafeY, alpha: 1, duration: 0.8, ease: "power2.out" }
+                );
+
+                const finalTimerY = this.SkillTimerText.y;
+                const startTimerY = finalTimerY + 20;
+                gsap.fromTo(this.SkillTimerText, 
+                    { y: startTimerY, alpha: 0 },
+                    { y: finalTimerY, alpha: 1, duration: 0.8, ease: "power2.out" }
                 );
             }
         }
