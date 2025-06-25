@@ -364,7 +364,7 @@ export class EnemyBase {
         const StartPointY = this.y;
 
         // グラフィックの描画は、HPバーオブジェクト自体の中心(0,0)を基準に行う
-        const Radius = Math.max(this.EnemyWidth, this.EnemyHeight) * 1.0; // スケールを考慮しない半径
+        const Radius = Math.max(this.EnemyWidth, this.EnemyHeight) * 0.6; // スケールを考慮しない半径
         const HPPercent = this.NowHPGuageHP / this.MaxHPGuageHP;
         const StandardAngle = 0; //-Math.PI / 2;
         const EndAngle = -Math.PI / 2;
