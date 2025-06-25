@@ -138,11 +138,24 @@ export class GameScreen extends BaseScreen{
 			this.ScoreText.anchor.set(0, 0.5);
 			this.ScoreContainer.addChild(this.ScoreText); // スコアを表示するコンテナに追加
 
+			
+
 			this.hpBarBackground = new PIXI.Graphics(); // HPバーの背景（枠）
 			this.hpBarFill = new PIXI.Graphics();       // HPバーの中身（ゲージ）
+
 			this.ScoreContainer.addChild(this.hpBarBackground);
 			this.ScoreContainer.addChild(this.hpBarFill);
-
+			this.HPTextStyle = new PIXI.TextStyle({
+				fontFamily: 'Arial',
+				fontSize: 36,
+				fill: '#000000',
+				align: 'right'
+			});
+			this.HPText = new PIXI.Text("HP", this.HPTextStyle);
+			this.HPText.x = 0;
+			this.HPText.y = 0;
+			this.HPText.anchor.set(0, 0.5);
+			this.ScoreContainer.addChild(this.HPText);
 			
 			// ULTポイント画面を作成する
 			// ULTコンテナ内に，ULTONコンテナとULTOFFコンテナを作成，ULTを上にしておいて，非表示にすることでOFF状態を作成する
@@ -173,9 +186,22 @@ export class GameScreen extends BaseScreen{
 			this.ULTBackgroundImage.scale.set(InitialScale); // 初期スケールと画像サイズ調整
 			this.ULTBackgroundImage.x = 0; // 画面の一番左上に合わせる
 			this.ULTBackgroundImage.y = 0;
+
+			this.ULTTextStyle = new PIXI.TextStyle({
+				fontFamily: 'Arial',
+				fontSize: 36,
+				fill: '#000000',
+				align: 'right'
+			});
+			this.ULTText = new PIXI.Text("ULT", this.ULTTextStyle);
+			this.ULTText.x = 0;
+			this.ULTText.y = 0;
+			this.ULTText.anchor.set(0, 0.5);
+
 			this.ULTContainer.addChild(this.ULTBackgroundImage);
 			this.ULTContainer.addChild(this.ULTContainerOn);
 			this.ULTContainer.addChild(this.ULTContainerOff);
+			this.ULTContainer.addChild(this.ULTText);
 
 			// シューティング画面用のマスク
 			this.ClippingMask = new PIXI.Graphics();
@@ -247,26 +273,32 @@ export class GameScreen extends BaseScreen{
 			// スコアの文字列を背景に収める
 			this.ScoreText.style.fontSize = this.ScoreTextStyle.fontSize * CurrentOverallScale;
 			this.ScoreText.x = this.ScoreBackgroundImage.x + this.ScoreBackgroundImage.width*0.05;
-			this.ScoreText.y = this.ScoreBackgroundImage.y + this.ScoreBackgroundImage.height*0.5;
+			this.ScoreText.y = this.ScoreBackgroundImage.y + this.ScoreBackgroundImage.height*0.25;
+
+			this.HPText.style.fontSize = this.HPTextStyle.fontSize * CurrentOverallScale;
+			this.HPText.x = this.ScoreText.x;
+			this.HPText.y = this.ScoreText.y + this.ScoreBackgroundImage.height*0.5;
+
 			// スコア背景の幅を基準に、左右に5%ずつのマージンを設ける（合計90%の幅）
-			const hpBarMaxWidth = this.ScoreBackgroundImage.width * 0.9;
-			const hpBarMarginX = this.ScoreBackgroundImage.width * 0.05;
-			const hpBarHeight = 20 * CurrentOverallScale; // HPバーの高さ
+			const HPMargin = (this.ScoreBackgroundImage.width * 0.05);
+			const hpBarMaxWidth = this.ScoreBackgroundImage.width * 0.8 - HPMargin;
+			const hpBarMarginX = this.ScoreBackgroundImage.width  - hpBarMaxWidth - HPMargin;
+			const hpBarHeight = this.ScoreBackgroundImage.height * 0.25; // HPバーの高さ
 			
 			// HPバーの座標を計算 (スコア背景の下に配置、Y方向に少し間隔をあける)
 			const hpBarX = this.ScoreBackgroundImage.x + hpBarMarginX;
-			const hpBarY = this.ScoreBackgroundImage.y + this.ScoreBackgroundImage.height + (10 * CurrentOverallScale);
+			const hpBarY = this.ScoreBackgroundImage.y + this.ScoreBackgroundImage.height * 0.75;
 
 			// HPバーの背景を描画（暗い色）
 			this.hpBarBackground.clear();
 			this.hpBarBackground.beginFill(0x333333, 0.8); // 色:ダークグレー, 透明度:80%
-			this.hpBarBackground.drawRoundedRect(hpBarX, hpBarY, hpBarMaxWidth, hpBarHeight, 5 * CurrentOverallScale);
+			this.hpBarBackground.drawRoundedRect(hpBarX, hpBarY - (hpBarHeight * 0.5), hpBarMaxWidth, hpBarHeight, 5 * CurrentOverallScale);
 			this.hpBarBackground.endFill();
 
 			// HPバーの中身を描画（緑色） - 初期状態は満タン
 			this.hpBarFill.clear();
 			this.hpBarFill.beginFill(0x00FF00); // 色:緑
-			this.hpBarFill.drawRoundedRect(hpBarX, hpBarY, hpBarMaxWidth, hpBarHeight, 5 * CurrentOverallScale);
+			this.hpBarFill.drawRoundedRect(hpBarX, hpBarY - (hpBarHeight * 0.5), hpBarMaxWidth, hpBarHeight, 5 * CurrentOverallScale);
 			this.hpBarFill.endFill();
 			
 			// 後で更新に使うため、HPバーの寸法を保存しておく
@@ -278,6 +310,10 @@ export class GameScreen extends BaseScreen{
 			this.ULTBackgroundImage.height = NowImageSizeHeight * 0.15;
 			this.ULTBackgroundImage.x = this.ScoreBackgroundImage.x;
 			this.ULTBackgroundImage.y = this.ScoreBackgroundImage.y + this.ScoreBackgroundImage.height + NowImageSizeHeight * 0.1;
+
+			this.ULTText.style.fontSize = this.ULTTextStyle.fontSize * CurrentOverallScale;
+			this.ULTText.x = this.ULTBackgroundImage.x + this.ULTBackgroundImage.width*0.05;
+			this.ULTText.y = this.ULTBackgroundImage.y + this.ULTBackgroundImage.height*0.5;
 
 			const ULTPointAreaWidht = this.ULTBackgroundImage.width*0.7;
 			const ULTPointAreaStartX = this.ULTBackgroundImage.x + (this.ULTBackgroundImage.width - ULTPointAreaWidht);
@@ -640,7 +676,7 @@ export class GameScreen extends BaseScreen{
 			// HP残量に応じた色を選択（例：50%以上で緑、30%以上で黄色、それ未満で赤）
 			const fillColor = hpRatio > 0.5 ? 0x00FF00 : hpRatio > 0.3 ? 0xFFFF00 : 0xFF0000;
 			this.hpBarFill.beginFill(fillColor);
-			this.hpBarFill.drawRoundedRect(this.hpBarRect.x, this.hpBarRect.y, currentFillWidth, this.hpBarRect.height, this.hpBarRect.cornerRadius);
+			this.hpBarFill.drawRoundedRect(this.hpBarRect.x, this.hpBarRect.y - (this.hpBarRect.height * 0.5), currentFillWidth, this.hpBarRect.height, this.hpBarRect.cornerRadius);
 			this.hpBarFill.endFill();
 		}
 	}

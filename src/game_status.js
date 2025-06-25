@@ -111,7 +111,7 @@ export const  main_bulled_info_list = {
         jeak_x:0,
         jeak_y:0,
         color: 'rgb(255, 255, 255)',
-        damage: 2,
+        damage: 25,
         bulled_life: 5,
         bulled_maxSpeed: 10000,
         rate:0.2,
@@ -271,7 +271,7 @@ export const  sub_bulled_info_list = {
         jeak_x:0,
         jeak_y:0,
         color: 'rgb(255, 255, 255)',
-        damage: 2,
+        damage: 5,
         bulled_life: 3,
         bulled_maxSpeed: 10000,
         rate:0.2,
@@ -758,7 +758,7 @@ export const  enemy_info_list = {
         enemy_maxhp:100000,
         enemy_mag:0,
         e_ult_type: EnemyUltTypeEnum.E_ULT_1,
-        e_limit_break_point: 0.9, // スペルカード使用タイミング
+        e_limit_break_point: 0.6, // スペルカード使用タイミング
         move_wait_duration: 2.0,
         next_move_interval: 2.0,
         shooting_phases_number: 5.0, // 攻撃スキルの数
