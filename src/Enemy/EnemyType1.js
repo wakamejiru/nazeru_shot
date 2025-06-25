@@ -391,12 +391,39 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
          */
         _skilrun(DeltaTime)
         {
-            if(this.SkillActivate == true){
+            super._skilrun(DeltaTime);
+            if((this.SkillActivate == true) && (this.IsSkillTextShown == false)){
+                // これから表示するのでフラグをtrueにし、アニメーションの重複を防ぐ
+                this.IsSkillTextShown = true; 
+                
+                // テキストを見えるようにする
                 this.SkillText.visible = true;
-            }
-            // 一定条件下でスキルを使う
-            // HP何割削れたかで決める
+                
+                // (任意) スキルごとにテキスト内容を変更する場合
+                this.SkillText.text = "「全方位弾幕」";
+                console.log("Skill Activate");
 
+                const finalSafeY = this.SkillText.y;
+
+                // 2. アニメーションの開始Y座標を決める（安全な位置より少し下）
+                const startY = finalSafeY + 20; // 20ピクセル下から開始
+
+                // 3. gsap.fromTo を使ってアニメーションを実行
+                gsap.fromTo(this.SkillText, 
+                    {
+                        // 開始状態
+                        y: startY,
+                        alpha: 0
+                    }, 
+                    {
+                        // 終了状態
+                        y: finalSafeY,  // 必ず安全な位置で止まる
+                        alpha: 1,
+                        duration: 0.8,
+                        ease: "power2.out"
+                    }
+                );
+            }
         }
 
         /**

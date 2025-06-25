@@ -709,7 +709,7 @@ export class GameScreen extends BaseScreen{
 					enemyBullet.destroy();
 					this.EnemyBulletInstances.splice(i, 1);
 					
-					console.log(`Player Hit! HP: ${this.PlayerInstance.NowHP}`);
+					//console.log(`Player Hit! HP: ${this.PlayerInstance.NowHP}`);
 					
 					if(this.PlayerInstance.NowHP <= 0){
 						console.log("GAME OVER");
@@ -750,7 +750,7 @@ export class GameScreen extends BaseScreen{
 					
 					playerBullet.isHit = true; // 弾をヒット済みにする
 					
-					console.log(`Enemy Hit! HP: ${this.EnemyInstance.NowHPGuageHP}`); //
+					//console.log(`Enemy Hit! HP: ${this.EnemyInstance.NowHPGuageHP}`); //
 					
 					if(this.EnemyInstance.NowEnemyHPGuage <= 0){ //
 						console.log("Enemy Defeated!"); //

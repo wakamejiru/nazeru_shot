@@ -94,6 +94,7 @@ export class EnemyBase {
 
         // Skill発動条件を起動
         this.IsSkillTextShown = false;
+        this.SkillActivate = false;
     }
     /**
  	 * 非同期の初期化メソッドを追加
@@ -143,9 +144,9 @@ export class EnemyBase {
         this.SkillText = new PIXI.Text("Skill1Activate", this.SkillTextStyle);
         this.SkillText.x = 0;
         this.SkillText.y = 0;
-        this.SkillText.anchor.set(0,0);
-        // this.SkillText.visible = false;
-        // this.SkillText.alpha = 0;
+        this.SkillText.anchor.set(1,0);
+        this.SkillText.visible = false;
+        this.SkillText.alpha = 0;
         this.EnemyContainer.addChild(this.SkillText);
     }
 
@@ -165,7 +166,7 @@ export class EnemyBase {
         const RelativeY = this.y / OldEffectiveGameplayHeight;
         const RelativeTargetX = this.MoveingTargetX / OldEffectiveGameplayWidth;
         const RelativeTargetY = this.MoveingTargetY / OldEffectiveGameplayHeight;
-
+        
         this.CurrentScaleFactor = NewScaleFactor;
 
         this.EnemyWidth = this.EnemyConfigBase.enemy_width * NewScaleFactor;
@@ -198,14 +199,15 @@ export class EnemyBase {
         this.MoveAreaRightX = this.MoveAreaLeftX +  this.NowPlayAreaWidth - this.EnemyWidth / 2;
 
         this.DrawHpBar();
-
         this.HPGuageText.style.fontSize = this.HPGuageTextStyle.fontSize * NewScaleFactor;
         this.HPGuageText.x = this.StartAreaX;
         this.HPGuageText.y = this.StartAreaY;
 
+        // ★以下のSkillText位置設定を修正
         this.SkillText.style.fontSize = this.SkillTextStyle.fontSize * NewScaleFactor;
-        this.SkillText.x = this.StartAreaX + this.NowPlayAreaWidth;
-        this.SkillText.y = this.StartAreaY;
+        this.SkillText.x = this.StartAreaX + this.NowPlayAreaWidth; // 右端に設定
+        // HPゲージテキストの真下に配置（5pxの間隔を空ける）
+        this.SkillText.y = this.StartAreaY + 5* NewScaleFactor; 
         // この後に弾のスケーリングも多分必要
     }
 
@@ -289,8 +291,15 @@ export class EnemyBase {
 	 */
     _skilrun(DeltaTime)
     {
-        // 一定条件下でスキルを使う
-        // HP何割削れたかで決める
+        const HPPercent = this.NowHPGuageHP / this.MaxHPGuageHP;
+
+        if(this.ELimitBreakPoint > HPPercent){
+            console.log("Skill Activate1");
+            if( (this.IsSkillTextShown == false) && (this.SkillActivate == false)){
+                // Skillを起動する
+                this.SkillActivate = true;
+            }
+        }
 
     }
 
@@ -353,11 +362,6 @@ export class EnemyBase {
             // 3度開けて書く
             this.HpBarLimit.arc(StartPointX, StartPointY, Radius, SkillAngle - MarkerLengthRad, SkillAngle + MarkerLengthRad);
             this.HpBarLimit.endFill();
-        }else{
-            if(this.SkillActivate == false){
-                // Skillを起動する
-                this.SkillActivate = true;
-            }
         }
         
     }
