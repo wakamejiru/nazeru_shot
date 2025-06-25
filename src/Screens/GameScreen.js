@@ -918,5 +918,15 @@ export class GameScreen extends BaseScreen{
     //     return false;
     // }
 
+	/**
+     * スコアの加算処理
+     */
+	UpdateScores(){
+		// スコアは以下の研鑽で行う
+		// 基本的に減算処理
+		
+		// 減算
+	}
+
 
 }
