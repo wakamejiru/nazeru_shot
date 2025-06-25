@@ -90,7 +90,10 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                 
                 const ProprtyCoeffient = 2.0;
 
-                const BulletNumber = Math.round( (BulletNumberMax -  (ProprtyCoeffient * this.AttackCounter)));
+                let BulletNumber = Math.round( (BulletNumberMax -  (ProprtyCoeffient * this.AttackCounter)));
+
+                // 0以下なら強制1
+                BulletNumber= (BulletNumber < 0) ? 1 : BulletNumber; 
 
                 // 扇の角度
                 const FanAngle = 60;    
