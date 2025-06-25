@@ -1,7 +1,8 @@
 // Type1Enemyのクラス
 import { EnemyBase } from "./EnemyBase.js";
-import { RoundShotFunc, FanShotFunc, windmillshotfunc , CircleAndHomeShotFunc} from "./EnemyShot.js";
+import { SingleShotFunc, RoundShotFunc, FanShotFunc, windmillshotfunc , CircleAndHomeShotFunc} from "./EnemyShot.js";
 import { ChangeActivation } from '../bullet.js'; 
+import {DifficultyLevel} from "../Screens/BaseScreen.js"
 
 import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum, 
     main_bulled_info_list, sub_bulled_info_list, 
@@ -69,8 +70,185 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                 return;
             }
 
+            // 通常攻撃を行う
+
+            // 通常攻撃は3種類用意
+            // 難易度ごとに変化が起こる
+
+
+                // 扇型にの処理弾を3発
+            // 発射先は相手の現在の位置
+
+            // ここである程度間引いてやらないとビームみたいになる
+
+            if(this.NowAttackRateTimer1 < this.AttackRateTimer1){
+                this.NowAttackRateTimer1 += DeltaTime;
+            }else{
+                this.NowAttackRateTimer1 = 0; // リセット
+                this.AttackRateTimer1 = 0.5 / (1.0 + DifficultyLevel); // 一発ごとの間隔はeasy基準で増加 
+                const BulletNumberMax = 5 * (1.0 + DifficultyLevel); // 扇型にするために徐々に弾を消していかなければならないこの現象がなければバームクーヘンになる
+                
+                const ProprtyCoeffient = 2.0;
+
+                const BulletNumber = Math.round( (BulletNumberMax -  (ProprtyCoeffient * this.AttackCounter)));
+
+                // 扇の角度
+                const FanAngle = 60;    
+                const FanAngleOneStep = FanAngle/BulletNumberMax;    
+
+
+                // 発射中心は一発ごとに固定
+                if(this.AttackCounter == 0){
+                    // 発射位置、発射角度を求める
+                    // 発射位置は三回とも変化
+                    // とりあえず自分中心でとりあえず書いてみる
+                    this.NowPlayerPointX = TargetPlayer.x;
+                    this.NowPlayerPointY = TargetPlayer.y;
+                    this.NowEnemyPointX = this.x;
+                    this.NowEnemyPointY = this.y;
+                    this.DeltaX = this.NowPlayerPointX - this.NowEnemyPointX;
+                    this.DeltaY = this.NowPlayerPointY - this.NowEnemyPointY;
+                    // 角度をラジアンで計算
+                    this.AngleRadians = Math.atan2(this.DeltaY, this.DeltaX);
+                    // ラジアンを度数に変換
+                    this.CalculatedFanCenterAngleDegrees = this.AngleRadians * (180 / Math.PI);
+                }
+
+                const BulletOptions = {
+                    vx: 40,
+                    vy: 40,
+                    ax: 30,
+                    ay: 30,
+                    jx:  0,
+                    jy:  0,
+                    width: 10,
+                    height: 10,
+
+                    radius: 1000,
+                    damage: 25,
+                    life: 15,
+                    target: TargetPlayer,
+                    trackingStrength: 0,
+                    BulletImageKey: "BulletTypeA",
+                    shape: "rectangle"
+                };
+                //発射レート
+                this.AttackRateTimer = 0.2;
+                // 一巡目のスキル内容を書く
+                // 自分中心から弾を出す
+                FanShotFunc(EnemyBulletArray, this.NowEnemyPointX, this.NowEnemyPointY, 
+                                    BulletNumber, 
+                                    FanAngleOneStep, 
+                                    this.CalculatedFanCenterAngleDegrees,  // 扇の方向
+                                    BulletOptions, this.EnemyContainer);
+
+
+                this.AttackCounter += 1;
+                
+                if(BulletNumber == 1){
+                    this.AttackCounter = 0;
+                    this.NowAttackRateTimer1 = -1.5 / (1.0 + DifficultyLevel); // 一発ごとの間隔はeasy基準で増加 負にすることで待機時間を作成
+                }
+
+            }
+
+            // 円形に用意、敵に向かって発射
+            if(this.NowAttackRateTimer2 < this.AttackRateTimer2){
+                this.NowAttackRateTimer2 += DeltaTime;
+            }else{
+                this.NowAttackRateTimer2 = 0; // リセット
+                // 弾の基本的な設定
+                const bulletBasicOptions = {
+                    vx: 100, // 初速 (ピクセル/秒)
+                    vy: 100, // 初速 (ピクセル/秒)
+                    ax: -5,
+                    ay: -5,
+                    jx:  0,
+                    jy:  0,
+
+                    width: 10,
+                    height: 10,
+                    damage: 25,
+                    life: 15,
+                    target: TargetPlayer,
+                    trackingStrength: 0,
+                    BulletImageKey: "BulletTypeA",
+                    shape: "rectangle"
+                };
+                this.NowAttackRateTimer2 = 1.0 / (1.0 + DifficultyLevel); // 一発ごとの間隔
+
+                const ChangeOption={
+                    ...bulletBasicOptions,
+                    ChangeActivation: ChangeActivation.Activate1,
+                    LengthParcent: 0.7, // 指定場所に対して結んだ直線状の頂点をどこにするかの割合 
+                };
+                const BulletNumber = 20 * (1.0 + DifficultyLevel * 0.5);
+                // 新しい関数を呼び出す
+                CircleAndHomeShotFunc(
+                    EnemyBulletArray,  // 弾を管理する配列
+                    this.x,       // 敵のX座標
+                    this.y,       // 敵のY座標
+                    BulletNumber,                 // 弾の数: 20個
+                    0,                  // 開始角度: 0度
+                    360,                // 終了角度: 360度
+                    bulletBasicOptions, // 弾の基本設定
+                    ChangeOption, // 次の弾の設定
+                    this.NowPlayAreaWidth * 0.1,
+                    this.EnemyContainer      // PIXIのステージコンテナ
+                );
+
+                // 単発なので一回打つごとにインターバル
+                this.NowAttackRateTimer2 = -2.5 / (1.0 + DifficultyLevel); // 一発ごとの間隔はeasy基準で増加 負にすることで待機時間を作成
+            }
+
+            // 単発でおっきい弾を発射
+            if(this.NowAttackRateTimer3 < this.AttackRateTimer3){
+                this.NowAttackRateTimer3 += DeltaTime;
+            }else{
+                this.NowAttackRateTimer3 = 0; // リセット
+                // 弾の基本的な設定
+                const bulletBasicOptions = {
+                    vx: 100, // 初速 (ピクセル/秒)
+                    vy: 100, // 初速 (ピクセル/秒)
+                    ax: -5,
+                    ay: -5,
+                    jx:  0,
+                    jy:  0,
+
+                    width: 80,
+                    height: 80,
+                    damage: 100,
+                    life: 15,
+                    target: TargetPlayer,
+                    trackingStrength: 0,
+                    BulletImageKey: "BulletTypeA",
+                    shape: "rectangle"
+                };
+
+                
+                // 新しい関数を呼び出す
+                SingleShotFunc(
+                    EnemyBulletArray,  // 弾を管理する配列
+                    this.x,       // 敵のX座標
+                    this.y,       // 敵のY座標
+                    bulletBasicOptions, // 弾の基本設定
+                    this.EnemyContainer,
+                    TargetPlayer.x,
+                    TargetPlayer.y
+                );
+
+                // 単発なので一回打つごとにインターバル
+                this.NowAttackRateTimer3 = -2.5 / (1.0 + DifficultyLevel); // 一発ごとの間隔はeasy基準で増加 負にすることで待機時間を作成
+            }
+
             // 本格的に攻撃スキルを決定する
-            
+            // if (this.NowAttackWatingTime > 0) { // クールダウン中かチェック
+            //     this.NowAttackWatingTime -= DeltaTime; // クールダウンタイマーを減算
+            //     if (this.NowAttackWatingTime < 0) this.NowAttackWatingTime = 0;
+            // }else
+            // {
+            //     this.SkillActiveFlag = true;
+            // }
             
             // // クールダウンを確認する
             // if (this.NowAttackWatingTime > 0) { // クールダウン中かチェック

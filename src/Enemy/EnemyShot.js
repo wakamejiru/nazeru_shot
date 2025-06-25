@@ -17,7 +17,55 @@ import { Bullet } from '../bullet.js'; // Bulletクラスもインポート
 // 停止した時に何秒か待機できるようにする
 
 /**
- * 弾の打ち出しを行う関数
+ * 1弾の打ち出しを行う関数
+ * @param {number} EnemyBulletList :弾の配列
+ * @param {number} CenterX :打ち出し中心位置
+ * @param {number} CenterY :打ち出し中心位置
+ * @param {number} Opitons :弾の情報
+ * @param {Pixi} ScrreenContainer :Pixiコンテナ
+ * @param {Pixi} TargetX :打ち出し方向のX座標
+ * @param {Pixi} TargetY :打ち出し方向のY座標
+ */
+export function SingleShotFunc(EnemyBulletList, CenterX, CenterY, Opitons, ScrreenContainer, TargetX, TargetY){
+    // 作ったインスタンスをpushする
+    let StartPointX = CenterX;
+    let StartPointY = CenterY;
+
+    // 速度のベクトルを決定する
+    const LengthX = TargetX - StartPointX;  
+    const LengthY = TargetY - StartPointY;
+    const Distance = Math.sqrt(LengthX*LengthX + LengthY*LengthY);
+    const SIN_TARGET = LengthY / Distance;
+    const COS_TARGET = LengthX / Distance;
+    const NewSpeed = Math.sqrt(Opitons.vx*Opitons.vx + Opitons.vy*Opitons.vy);
+    const NewAccel = Math.sqrt(Opitons.ax*Opitons.ax + Opitons.ay*Opitons.ay); 
+    const NewJeak = Math.sqrt(Opitons.jx*Opitons.jx + Opitons.jy*Opitons.jy); 
+    
+    const SpeedX = COS_TARGET * NewSpeed;
+    const SpeedY = SIN_TARGET * NewSpeed;
+    const AccelX = SIN_TARGET * NewAccel;
+    const AccelY = COS_TARGET * NewAccel;
+    const JeakX = SIN_TARGET * NewJeak;
+    const JeakY = COS_TARGET * NewJeak;
+
+
+    const bulletOptions = {
+        ...Opitons, // 元のオプションをすべてコピー
+        vx: SpeedX, // ピクセル/秒
+        vy: SpeedY, // ピクセル/秒
+        ax: AccelX,
+        ay: AccelY,
+        jx: JeakX,
+        jy: JeakX,
+    };
+
+    EnemyBulletList.push(new Bullet(ScrreenContainer, StartPointX, StartPointY, bulletOptions));
+
+}
+
+
+/**
+ * 円状に弾の打ち出しを行う関数
  * @param {number} EnemyBulletList :弾の配列
  * @param {number} CenterX :打ち出し中心位置
  * @param {number} CenterY :打ち出し中心位置
@@ -120,42 +168,28 @@ export function FanShotFunc(
         AngleStepRad = FanSpreadAngleRad;
     }
 
-    // baseBulletOptions から速度、加速度、ジャークの「大きさ」を取得
-    // x_speed, accel_x, jeak_x をそれぞれの大きさとして利用する想定
-    // もし、{ speed: X, accel: Y, jerk: Z } のようなプロパティ名が良い場合は、そちらを参照
-    // 速度を高い方向にする
+
 
 
     for (let i = 0; i < numberOfBullets; i++) {
-        const currentAngleRad = FirstBulletAngleRad + (i * AngleStepRad);
+        const RadiusAngle = FirstBulletAngleRad + (i * AngleStepRad);
 
-        const cosAngle = Math.cos(currentAngleRad);
-        const sinAngle = Math.sin(currentAngleRad);
+        const SpeedX = ChakcUndefined(baseBulletOptions.vx) * Math.cos(RadiusAngle);
+        const SpeedY = ChakcUndefined(baseBulletOptions.vy) * Math.sin(RadiusAngle);        
+        const BulletAccelX = ChakcUndefined(baseBulletOptions.ax) * Math.cos(RadiusAngle);
+        const BulletAccelY = ChakcUndefined(baseBulletOptions.ay) * Math.sin(RadiusAngle);
+        const BulletJerkX = ChakcUndefined(baseBulletOptions.jx) * Math.cos(RadiusAngle);
+        const BulletJerkY = ChakcUndefined(baseBulletOptions.jy) * Math.sin(RadiusAngle);
 
         // baseBulletOptions をコピーし、方向と速度、加速度、ジャーク成分を上書き
         const finalBulletOptions = {
             ...baseBulletOptions, // 元のオプションをすべてコピー
-            vx: cosAngle * baseBulletOptions.x_speed,
-            vy: sinAngle * baseBulletOptions.y_speed, // CanvasのY軸は下向きが正なので、sinでそのまま計算してOK
-            ax: cosAngle * baseBulletOptions.accel_x,
-            ay: sinAngle * baseBulletOptions.accel_y,
-            jx: cosAngle * baseBulletOptions.jeak_x,
-            jy: sinAngle * baseBulletOptions.jeak_y,
-            
-            width: baseBulletOptions.bulletWidht,
-            height: baseBulletOptions.bulletheight,
-            radius: baseBulletOptions.bulletRadius,
-            
-            damage: baseBulletOptions.bulletDamage,
-            life: baseBulletOptions.bulletHP,
-            maxSpeed: baseBulletOptions.bulletMaxSpeed,
-
-            target: baseBulletOptions.playerInstance, // 追尾する場合
-            trackingStrength: baseBulletOptions.trackingStrength, // 0なら追尾しない。追尾させる場合は0より大きい値
-
-            // 弾の画像と形状
-            BulletImageKey: baseBulletOptions.BulletImageKey,
-            shape: baseBulletOptions.shape,
+            vx: SpeedX,
+            vy: SpeedY, // CanvasのY軸は下向きが正なので、sinでそのまま計算してOK
+            ax: BulletAccelX,
+            ay: BulletAccelY,
+            jx: BulletJerkX,
+            jy: BulletJerkY,
         };
         bulletList.push(new Bullet(ScrreenContainer, originX, originY, finalBulletOptions));
     }
@@ -295,13 +329,11 @@ export function CircleAndHomeShotFunc(
             jx:BulletJerkX,
             jy:BulletJerkY,
 
-            // ▼▼▼ ここがポイント！ ▼▼▼
             // 挙動変化の条件と、変化後の設定を渡す
             ActivationLength: ActivationLength,
             PostActivationOptions: {
                 ...NextOpitons
             },
-            // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
         };
 
         EnemyBulletList.push(new Bullet(ScrreenContainer, StartPointX, StartPointY, bulletOptions));

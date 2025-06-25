@@ -49,8 +49,12 @@ export class EnemyBase {
 
  
         // 弾の発射レートの管理用タイマ
-        this.AttackRateTimer = 0;
-        this.NowAttackRateTimer = 0;
+        this.AttackRateTimer1 = 0;
+        this.NowAttackRateTimer1 = 0;
+        this.AttackRateTimer2 = 0;
+        this.NowAttackRateTimer2 = 0;
+        this.AttackRateTimer3 = 0;
+        this.NowAttackRateTimer3 = 0;
         this.AttackCounter = 0; // 通常攻撃汎用カウンタ
 
         this.EnemyContainer = new PIXI.Container();
@@ -431,7 +435,7 @@ export class EnemyBase {
             this.NowAttackLimitCnt = 0;
 
             // 攻撃終了にあたり，攻撃の間隔タイマもりセット
-            this.NowAttackWatingTime = this.AttackWatingTime;
+            this.NowAttackWatingTime = this.AttackWWatingTime;
 
             // 攻撃汎用カウンタも削除
             this.AttackCounter = 0;

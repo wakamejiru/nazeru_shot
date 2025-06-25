@@ -32,7 +32,7 @@ export class Bullet {
 	 */
     constructor(ScreenContainer, startX, startY, options = {}) {
         this.BaseConfig = options;
-        this.x = startX - options.width/2;
+        this.x = startX;
         this.y = startY;
         this.OriginX = this.x;
         this.OriginY = this.y;
@@ -141,8 +141,8 @@ export class Bullet {
                     const SIN_TARGET = LengthY / Distance;
                     const COS_TARGET = LengthX / Distance;
                     const NewSpeed = Math.sqrt(this.PostActivationOptions.vx*this.PostActivationOptions.vx + this.PostActivationOptions.vy*this.PostActivationOptions.vy);
-                    const NewAccel = Math.sqrt(this.PostActivationOptions.vx*this.PostActivationOptions.ax + this.PostActivationOptions.vy*this.PostActivationOptions.ay); 
-                    const NewJeak = Math.sqrt(this.PostActivationOptions.vx*this.PostActivationOptions.jx + this.PostActivationOptions.vy*this.PostActivationOptions.jy); 
+                    const NewAccel = Math.sqrt(this.PostActivationOptions.ax*this.PostActivationOptions.ax + this.PostActivationOptions.ay*this.PostActivationOptions.ay); 
+                    const NewJeak = Math.sqrt(this.PostActivationOptions.jx*this.PostActivationOptions.jx + this.PostActivationOptions.jy*this.PostActivationOptions.jy); 
                     
                     const ActivateSpeedX = COS_TARGET * NewSpeed;
                     const ActivateSpeedY = SIN_TARGET * NewSpeed;
