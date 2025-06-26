@@ -19,7 +19,7 @@ export const SCREEN_STATE = Object.freeze({
 // ここに選んだマップ情報や，選んだキャラの情報を置いておく
 export let MapIndex = 0;
 export let CharaIndex = 0;
-export let DifficultyLevel = 3; // 0がeasy
+export let DifficultyLevel = 0; // 0がeasy
 
 
 
