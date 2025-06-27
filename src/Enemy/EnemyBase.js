@@ -310,8 +310,10 @@ export class EnemyBase {
     /**
  	 * スキルの実行を行う
      * @param {number} DeltaTime - 時間
+     * @param {number} EnemyBulletArray - 弾の配列
+     * @param {number} PlayerBulletArray - 弾の配列
 	 */
-    _skilrun(DeltaTime)
+    async _skilrun(DeltaTime, EnemyBulletArray, PlayerBulletArray)
     {
         const HPPercent = this.NowHPGuageHP / this.MaxHPGuageHP;
 
@@ -320,6 +322,11 @@ export class EnemyBase {
             if( (this.IsSkillTextShown == false) && (this.SkillActivate == false)){
                 // Skillを起動する
                 this.SkillActivate = true;
+                // 弾を全部消す
+                EnemyBulletArray.forEach(bullet => {bullet.destroy(); });
+                PlayerBulletArray.forEach(bullet => {bullet.destroy(); });
+                this.CanMoveFlag  = false; // 通常移動を停止
+                await wait(1.5); // 桜井に言われた通りに停止
             }
         }
 
@@ -552,9 +559,12 @@ export class EnemyBase {
             // タイマーを初期値に戻す
             this.SkillTimer = SKILL_TIMER_MAX;
 
-            console.log("sゲージ処理");
             this.NowHPGuageHP = this.MaxHPGuageHP;
             --this.NowEnemyHPGuage;
+
+            // ゲージ破壊処理を実行
+             this.EnemyContainer.emit('gaugeBroken');
+
             if(this.NowEnemyHPGuage < 0){
                 this.NowEnemyHPGuage = 0;
                 // ゲームスクリーンのほうで処理を行う
@@ -565,5 +575,4 @@ export class EnemyBase {
             }
         }
     }
-
 }

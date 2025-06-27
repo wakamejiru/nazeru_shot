@@ -1,7 +1,7 @@
 // Type1Enemyのクラス
 import { EnemyBase } from "./EnemyBase.js";
 import { SingleShotFunc, RoundShotFunc, FanShotFunc, windmillshotfunc, CircleAndHomeShotFunc } from "./EnemyShot.js";
-import { ChangeActivation } from '../bullet.js'; 
+import { ChangeActivation, Bullet } from '../bullet.js'; 
 import { DifficultyLevel } from "../Screens/BaseScreen.js"
 import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum, 
     main_bulled_info_list, sub_bulled_info_list, 
@@ -48,11 +48,10 @@ export class EnemyType1 extends EnemyBase {
         if (!this._attackLoopsStarted) {
             this._attackLoopsStarted = true;
             
-            // ★修正点★
             // 各パターンのループに、開始遅延時間（秒）を渡す
-            this.pattern1_Loop(EnemyBulletArray, TargetPlayer, 0.5);  // 0.5秒後に開始
+            this.pattern1_Loop(EnemyBulletArray, TargetPlayer, 0.3);  // 0.3秒後に開始
             this.pattern2_Loop(EnemyBulletArray, TargetPlayer, 1.5);  // 1.5秒後に開始
-            this.pattern3_Loop(EnemyBulletArray, TargetPlayer, 2.5);  // 2.5秒後に開始
+            this.pattern3_Loop(EnemyBulletArray, TargetPlayer, 2);  // 2秒後に開始
         }
     }
 
@@ -84,7 +83,8 @@ export class EnemyType1 extends EnemyBase {
             };
 
             for (let i = 0; i < sequenceCount; i++) {
-                if(this.NowHPGuageHP > 0){
+                // HPが0もしくは、スキル中なら行わない
+                if ((this.NowHPGuageHP > 0) && (this.SkillActivate == false)) {
                     console.log("ShotPattern1");
                     let bulletNumber = Math.round(bulletCountMax - (2.0 * i));
                     bulletNumber = (bulletNumber < 1) ? 1 : bulletNumber; 
@@ -109,8 +109,8 @@ export class EnemyType1 extends EnemyBase {
         while (this.NowHPGuageHP > 0) {
             const difficultyMultiplier = 1.0 + DifficultyLevel;
 
-            // 発射前に一度だけHPをチェック
-            if (this.NowHPGuageHP > 0) {
+            // HPが0もしくは、スキル中なら行わない
+            if ((this.NowHPGuageHP > 0) && (this.SkillActivate == false)) {
                 const bulletNumber = 10 * (1.0 + difficultyMultiplier * 0.5);
                 const bulletBasicOptions = { vx: 100, vy: 100, ax: -5, ay: -5, jx: 0, jy: 0, width: 10, height: 10, damage: 25, life: 15, target: TargetPlayer, trackingStrength: 0, BulletImageKey: "BulletTypeA", shape: "rectangle" };
                 const changeOption = { ...bulletBasicOptions, ChangeActivation: ChangeActivation.Activate1, LengthParcent: 0.3 };
@@ -132,7 +132,8 @@ export class EnemyType1 extends EnemyBase {
         while (this.NowHPGuageHP > 0) {
             const difficultyMultiplier = 1.0 + DifficultyLevel;
             
-            if (this.NowHPGuageHP > 0) {
+            // HPが0もしくは、スキル中なら行わない
+            if ((this.NowHPGuageHP > 0) && (this.SkillActivate == false)) {
                 const bulletBasicOptions = { vx: 100, vy: 100, ax: -5, ay: -5, jx: 0, jy: 0, width: 80, height: 80, damage: 100, life: 15, target: TargetPlayer, trackingStrength: 0, BulletImageKey: "BulletTypeA", shape: "rectangle" };
                 SingleShotFunc(EnemyBulletArray, this.x, this.y, bulletBasicOptions, this.EnemyContainer, TargetPlayer.x, TargetPlayer.y);
             }
@@ -142,21 +143,20 @@ export class EnemyType1 extends EnemyBase {
         }
     }
     
-    _skilrun(DeltaTime, TargetPlayer, EnemyBulletArray, PlayerBulletArray) {
-        super._skilrun(DeltaTime);
+    async _skilrun(DeltaTime, TargetPlayer, EnemyBulletArray, PlayerBulletArray) {
+        super._skilrun(DeltaTime, EnemyBulletArray, PlayerBulletArray);
         if((this.SkillActivate == true) && (this.IsSkillTextShown == false)){
             // スキル発動時は弾を全削除
 
 
             this.IsSkillTextShown = true; 
-            switch(this.NowEnemyHPGuage){
+            switch(this.MaxEnemyHPGuage - this.NowEnemyHPGuage){
                 case 0:
-                    this.SkillText.text = "「全方位弾幕」";
+                    this.SkillRun1(EnemyBulletArray, TargetPlayer);
                     break;
             }
             this.SkillText.visible = true;
             this.SkillTimerText.visible = true;
-            this.SkillText.text = "「全方位弾幕」";
             const finalSafeY = this.SkillText.y;
             const startY = finalSafeY + 20;
             gsap.fromTo(this.SkillText, { y: startY, alpha: 0 }, { y: finalSafeY, alpha: 1, duration: 0.8, ease: "power2.out" });
@@ -174,7 +174,89 @@ export class EnemyType1 extends EnemyBase {
     async SkillRun1(EnemyBulletArray, TargetPlayer){
         // 攻撃と移動を停止
         // X中心Y0.2に移動
+        const TargetX = this.StartAreaX + (this.NowPlayAreaWidth * 0.5);
+        const TargetY = this.StartAreaY + this.NowPlayAreaHeight * 0.25;
+        this.SkillText.text = "五月雨";
+        // 指定位置に移動
 
+         const movePromise = new Promise(resolve => {
+            gsap.to(this, { // ★対象を this.EnemyImage から this に変更
+                x: TargetX,
+                y: TargetY,
+                duration: 1.5,
+                ease: "power2.inOut",
+                onUpdate: () => {
+                    // onUpdateは不要になるが、念のため描画更新を入れても良い
+                    this.DrawEnemyImage(); 
+                },
+                onComplete: () => {
+                    resolve(); // アニメーション完了時にPromiseを解決
+                }
+            });
+        });
+
+        // Promiseの完了を await で待つ
+        await movePromise;
+
+        // awaitの後（移動完了後）に攻撃を開始する
+        this.x = this.EnemyImage.x;
+        this.y = this.EnemyImage.y;
+        await this.AttackSkill1(EnemyBulletArray, TargetPlayer); 
+    }
+
+    /**
+     * スペル1を発動の攻撃を実働させる
+     * @param {instance} EnemyBulletArray - 弾のベクタ
+     * @param {instance} TargetPlayer - プレイヤーのインスタンス
+     */
+    async AttackSkill1(EnemyBulletArray, TargetPlayer) {
+        const DifficultyMultiplier = 1.0 + (DifficultyLevel * 0.5); // 難易度補正
+
+        // HPが残っている/Spellが有効な間、ループ
+        while ((this.NowHPGuageHP > 0) && (this.SkillActivate == true)) {
+            
+            const BulletNumber = 20 + Math.floor(15 * DifficultyLevel); // 弾の数
+            const MaxHorizontalSpeed = 1700; // 横方向への広がりを決める最大速度
+
+            for (let i = 0; i < BulletNumber; i++) {
+                const StartX = this.x;
+                const StartY = this.y;
+
+                const SpeedStep = (MaxHorizontalSpeed * 2) / (BulletNumber - 1);
+                const BaseHorizontalSpeed = -MaxHorizontalSpeed + i * SpeedStep;
+
+                const RandomOffset = (Math.random() - 0.5) * SpeedStep * 0.8; // 係数0.8で揺らぎを調整
+
+                const FinalHorizontalSpeed = BaseHorizontalSpeed + RandomOffset;
+
+                const IsOchibaMode = true;
+                const sine_wave_enabled = IsOchibaMode;
+                const sine_amplitude = IsOchibaMode ? (Math.random() * 5) * DifficultyMultiplier : 0;
+                const sine_angular_frequency = IsOchibaMode ? Math.PI * (1 + Math.random() * 2) : 0;
+
+                const BulletOptions = {
+                    vx: FinalHorizontalSpeed,
+                    vy: -850 - (Math.random() * 150), 
+                    ax: 0,
+                    ay: 350 + (Math.random() * 100),
+
+                    // ( ... 以下、元のコードと同じ ... )
+                    sine_wave_enabled: sine_wave_enabled,
+                    sine_amplitude: sine_amplitude,
+                    sine_angular_frequency: sine_angular_frequency,
+                    sine_axis: "x",
+                    width: 12, height: 12, damage: 50, life: 20,
+                    BulletImageKey: "BulletTypeA", shape: "circle",
+                    target: TargetPlayer, trackingStrength: 0
+                };
+
+                EnemyBulletArray.push(new Bullet(this.EnemyContainer, StartX, StartY, BulletOptions));                
+            }
+
+            // 次の弾幕までの待機時間
+            await wait(0.8 / DifficultyMultiplier);
+        }
+        this.CanMoveFlag  = true;
     }
 
     DrawEnemyImagedraw() {

@@ -756,7 +756,7 @@ export const  enemy_info_list = {
         enemy_width:150,
         enemy_height:150,
         enemy_speed:100,
-        enemy_maxhp:100000,
+        enemy_maxhp:50000,
         enemy_mag:0,
         e_ult_type: EnemyUltTypeEnum.E_ULT_1,
         e_limit_break_point: 0.6, // スペルカード使用タイミング

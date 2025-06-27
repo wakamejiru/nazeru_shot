@@ -400,7 +400,7 @@ export class GameScreen extends BaseScreen{
 			// 移動判定を行う
             this.PlayerInstance.move(InputCurrentState, DeltaTime);
 			// 弾の発射を行う
-			//this.PlayerInstance._shoot(InputCurrentState, this.PlayerBulletInstances, this.EnemyInstance, DeltaTime);
+			this.PlayerInstance._shoot(InputCurrentState, this.PlayerBulletInstances, this.EnemyInstance, DeltaTime);
         }
 
 		if(this.EnemyInstance){
@@ -410,9 +410,8 @@ export class GameScreen extends BaseScreen{
 			this.EnemyInstance._shoot(this.EnemyBulletInstances, this.PlayerInstance,  DeltaTime);
 
 			// Skillの実行を行う
-			this.EnemyInstance._skilrun(DeltaTime);
+			this.EnemyInstance._skilrun(DeltaTime, this.PlayerInstance, this.EnemyBulletInstances, this.PlayerBulletInstances);
         }
-		console.log(`玉の数: ${this.EnemyBulletInstances.length}`);
 		
 
 		// 両方の描画を行う
@@ -647,6 +646,17 @@ export class GameScreen extends BaseScreen{
 				this.EnemyInstance.Initialize();
 				break;
 		}
+
+		 if (this.EnemyInstance) {
+            this.EnemyInstance.EnemyContainer.on('gaugeBroken', () => {
+				// 弾をすべて削除
+				this.EnemyBulletInstances.forEach(bullet => bullet.destroy());
+                this.EnemyBulletInstances.length = 0;
+
+                this.PlayerBulletInstances.forEach(bullet => bullet.destroy());
+                this.PlayerBulletInstances.length = 0;
+            });
+        }
 	}
 
 	/**
