@@ -940,7 +940,7 @@ export class GameScreen extends BaseScreen{
         this.IsEffectPaused = true;
 
         // 2. 敵のフラッシュ演出を呼び出し、完了を待つ
-        await this.EnemyInstance.PlayEmphasisEffect(FlashCount, FlashInterval); // 4回、0.08秒間隔でフラッシュ
+        await this.EnemyInstance.PlayEmphasisEffect(FlashCount, FlashInterval);
 
         // 3. 必要であれば、弾を全消去
         if (ShouldClearBullets) {

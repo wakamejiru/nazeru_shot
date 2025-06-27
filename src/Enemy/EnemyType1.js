@@ -26,6 +26,31 @@ export class EnemyType1 extends EnemyBase {
 
         // 各攻撃ループが開始されたかを管理するフラグ
         this._attackLoopsStarted = false;
+
+        // スキルごとの設定をデータとして定義
+        this.SkillDefinitions = {
+            0: {
+                name: "五月雨",
+                // 移動先座標を関数として定義
+                // 移動がない場合以下のフラグを無しに
+                NoMoveFlag: false,
+                targetX: () => this.StartAreaX + (this.NowPlayAreaWidth * 0.5),
+                targetY: () => this.StartAreaY + this.NowPlayAreaHeight * 0.25,
+                // 実行する攻撃関数を紐付け
+                attackFunction: this.AttackSkill1, 
+                // スキル終了後、通常移動を許可するか
+                allowMoveAfter: true
+            },
+            1: {
+                name: "時雨",              
+                NoMoveFlag: false,
+                targetX: () => this.StartAreaX + (this.NowPlayAreaWidth * 0.2), // 左側に移動
+                targetY: () => this.StartAreaY + this.NowPlayAreaHeight * 0.2,
+                attackFunction: this.AttackSkill2, // 新しい攻撃関数
+                allowMoveAfter: false // スキル後も移動しない
+            }
+            // ... さらにスキルを追加可能
+        };
     }
 
     updateScale(NewScaleFactor, NewShootingStartX, NewShootingStartY, NewShootingWidth, NewShootingHeight) {
@@ -142,18 +167,34 @@ export class EnemyType1 extends EnemyBase {
             await wait(3.0 / difficultyMultiplier);
         }
     }
-    
+
+    /**
+     * スキルを発動する
+     * @param {number} DeltaTime - 経過時間
+     * @param {instance} TargetPlayer - ターゲットプレイヤのインスタンス
+     * @param {LIST} EnemyBulletArray - バレットのアレイ
+     * @param {LIST} PlayerBulletArray - バレットのアレイ
+     */
     async _skilrun(DeltaTime, TargetPlayer, EnemyBulletArray, PlayerBulletArray) {
         super._skilrun(DeltaTime, EnemyBulletArray, PlayerBulletArray);
         if((this.SkillActivate == true) && (this.IsSkillTextShown == false)){
-            // 20250627 酸っぱいシチューを行けるかと思ってグラタンにして食べた。腹が痛い食べるべきではなかった。 
-            this.EnemyContainer.emit('skillActivated', true, 1.5, 0.3);
+            
             this.IsSkillTextShown = true; 
-            switch(this.MaxEnemyHPGuage - this.NowEnemyHPGuage){
-                case 0:
-                    this.SkillRun1(EnemyBulletArray, TargetPlayer);
-                    break;
+            // （引数は調整してください）
+            this.EnemyContainer.emit('skillActivated', true, 5, 0.1);
+
+            const currentPhase = this.MaxEnemyHPGuage - this.NowEnemyHPGuage;
+            const definition = this._getSkillDefinitionForPhase(currentPhase);
+
+            if (definition) {
+                // 汎用メソッドを呼び出す
+                this._executeSkill(definition, EnemyBulletArray, TargetPlayer);
+            } else {
+                console.warn(`Skill definition for phase ${currentPhase} not found.`);
+                this.CanMoveFlag = true; // 安全のため
             }
+            
+            // スキル名とタイマーの表示アニメーション（ここは共通なので変更なし）
             this.SkillText.visible = true;
             this.SkillTimerText.visible = true;
             const finalSafeY = this.SkillText.y;
@@ -165,43 +206,61 @@ export class EnemyType1 extends EnemyBase {
         }
     }
     
+    // async _skilrun(DeltaTime, TargetPlayer, EnemyBulletArray, PlayerBulletArray) {
+    //     super._skilrun(DeltaTime, EnemyBulletArray, PlayerBulletArray);
+    //     if((this.SkillActivate == true) && (this.IsSkillTextShown == false)){
+    //         // 20250627 酸っぱいシチューを行けるかと思ってグラタンにして食べた。腹が痛い食べるべきではなかった。 
+    //         this.EnemyContainer.emit('skillActivated', true, 1.5, 0.3);
+    //         this.IsSkillTextShown = true; 
+    //         switch(this.MaxEnemyHPGuage - this.NowEnemyHPGuage){
+    //             case 0:
+    //                 this.SkillRun1(EnemyBulletArray, TargetPlayer);
+    //                 break;                
+    //             case 1:
+    //                 this.SkillRun2(EnemyBulletArray, TargetPlayer);
+    //                 break;
+    //         }
+           
+    //     }
+    // }
+    
     /**
      * スペル1を発動
      * @param {number} EnemyBulletArray - 弾の配列
      * @param {instance} TargetPlayer - プレイヤーインスタンス
      */
-    async SkillRun1(EnemyBulletArray, TargetPlayer){
-        // 攻撃と移動を停止
-        // X中心Y0.2に移動
-        const TargetX = this.StartAreaX + (this.NowPlayAreaWidth * 0.5);
-        const TargetY = this.StartAreaY + this.NowPlayAreaHeight * 0.25;
-        this.SkillText.text = "五月雨";
-        // 指定位置に移動
+    // async SkillRun1(EnemyBulletArray, TargetPlayer){
+    //     // 攻撃と移動を停止
+    //     // X中心Y0.2に移動
+    //     const TargetX = this.StartAreaX + (this.NowPlayAreaWidth * 0.5);
+    //     const TargetY = this.StartAreaY + this.NowPlayAreaHeight * 0.25;
+    //     this.SkillText.text = "五月雨";
+    //     // 指定位置に移動
 
-         const movePromise = new Promise(resolve => {
-            gsap.to(this, { // ★対象を this.EnemyImage から this に変更
-                x: TargetX,
-                y: TargetY,
-                duration: 1.5,
-                ease: "power2.inOut",
-                onUpdate: () => {
-                    // onUpdateは不要になるが、念のため描画更新を入れても良い
-                    this.DrawEnemyImage(); 
-                },
-                onComplete: () => {
-                    resolve(); // アニメーション完了時にPromiseを解決
-                }
-            });
-        });
+    //      const movePromise = new Promise(resolve => {
+    //         gsap.to(this, {
+    //             x: TargetX,
+    //             y: TargetY,
+    //             duration: 1.5,
+    //             ease: "power2.inOut",
+    //             onUpdate: () => {
+    //                 // onUpdateは不要になるが、念のため描画更新を入れても良い
+    //                 this.DrawEnemyImage(); 
+    //             },
+    //             onComplete: () => {
+    //                 resolve(); // アニメーション完了時にPromiseを解決
+    //             }
+    //         });
+    //     });
 
-        // Promiseの完了を await で待つ
-        await movePromise;
+    //     // Promiseの完了を await で待つ
+    //     await movePromise;
 
-        // awaitの後（移動完了後）に攻撃を開始する
-        this.x = this.EnemyImage.x;
-        this.y = this.EnemyImage.y;
-        await this.AttackSkill1(EnemyBulletArray, TargetPlayer); 
-    }
+    //     // awaitの後（移動完了後）に攻撃を開始する
+    //     this.x = this.EnemyImage.x;
+    //     this.y = this.EnemyImage.y;
+    //     await this.AttackSkill1(EnemyBulletArray, TargetPlayer); 
+    // }
 
     /**
      * スペル1を発動の攻撃を実働させる
@@ -258,7 +317,20 @@ export class EnemyType1 extends EnemyBase {
         this.CanMoveFlag  = true;
     }
 
+    /**
+ 	 * キャラクターの画像を当たり判定の座標軸と一致させる
+	 */
     DrawEnemyImagedraw() {
         super.DrawEnemyImage()
+    }
+
+    /**
+     * 【実装】EnemyBaseから呼ばれる、スキル定義を返すためのメソッド
+     * @param {number} phase 
+     * @returns スキル定義
+     */
+    _getSkillDefinitionForPhase(phase) {
+        // 自身の SkillDefinitions から対応する定義を返す
+        return this.SkillDefinitions[phase];
     }
 }

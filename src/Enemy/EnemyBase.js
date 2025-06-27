@@ -621,4 +621,58 @@ export class EnemyBase {
             tween.eventCallback('onComplete', resolve);
         });
     }
+
+     /**
+     * 【新設】スキル定義に基づき、移動から攻撃までの一連の流れを実行する汎用メソッド
+     * @param {object} skillDefinition - スキルの設定オブジェクト
+     * @param {Array} EnemyBulletArray 
+     * @param {object} TargetPlayer 
+     */
+    async _executeSkill(skillDefinition, EnemyBulletArray, TargetPlayer) {
+        if (!skillDefinition) {
+            console.error("Skill definition is missing.");
+            this.CanMoveFlag = true; // 安全のため移動可能にしておく
+            return;
+        }
+
+        // 1. スキル名をテキストに設定
+        this.SkillText.text = skillDefinition.name;
+        if(skillDefinition.NoMoveFlag == false){
+            
+            // 2. 移動先を定義から取得
+            const TargetX = skillDefinition.targetX();
+            const TargetY = skillDefinition.targetY();
+
+            // 3. 指定位置へ移動（GSAPの処理はここに共通化）
+            await new Promise(resolve => {
+                gsap.to(this, {
+                    x: TargetX,
+                    y: TargetY,
+                    duration: 1.5,
+                    ease: "power2.inOut",
+                    onComplete: resolve
+                });
+            });
+        }
+
+        // 4. 定義された攻撃関数を実行
+        // .call(this, ...) を使うことで、攻撃関数内の 'this' が正しくEnemyインスタンスを指すようにする
+        if (skillDefinition.attackFunction) {
+            await skillDefinition.attackFunction.call(this, EnemyBulletArray, TargetPlayer);
+        }
+
+        // 5. スキル終了後、定義に基づいて移動フラグを設定
+        this.CanMoveFlag = skillDefinition.allowMoveAfter;
+    }
+
+    /**
+     * 【新設】派生クラスが実装すべき、フェーズに応じたスキル定義を返すメソッド
+     * @param {number} phase - 現在のフェーズ（HPゲージの残り本数など）
+     * @returns {object | null} スキル定義オブジェクト、またはnull
+     */
+    _getSkillDefinitionForPhase(phase) {
+        // 基底クラスでは空にしておき、派生クラスで必ず上書き（オーバーライド）させる
+        console.error("'_getSkillDefinitionForPhase' must be implemented by a derived class.");
+        return null;
+    }
 }
