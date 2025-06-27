@@ -29,17 +29,6 @@ export const ScreenImages = [
   "ULTPointImageOff",
 ];
 
-
-
-
-
-
-
-
-
-
-
-
 // 実際のゲーム画面を設計する
 export class GameScreen extends BaseScreen{
 		/**
@@ -61,6 +50,7 @@ export class GameScreen extends BaseScreen{
 			this.EnemyInstance = null;
 			this.PlayerBulletInstances = [];
 			this.EnemyBulletInstances = [];
+			this.IsEffectPaused = false;
 			
 		}
 
@@ -389,6 +379,9 @@ export class GameScreen extends BaseScreen{
 	   * 
 	   */
 	  EventPoll(DeltaTime, InputCurrentState){
+		if (this.IsEffectPaused) { // エフェクト中はすべての処理をスキップ
+            return this.ScreenState; // 処理を中断
+        }
 		super.EventPoll(DeltaTime, InputCurrentState);
 		 if (this.InputCooldown > 0) {
             this.InputCooldown -= DeltaTime;
@@ -647,14 +640,17 @@ export class GameScreen extends BaseScreen{
 				break;
 		}
 
-		 if (this.EnemyInstance) {
+		if (this.EnemyInstance) {
+            // ★★★ ゲージ破壊イベントのリスナーを修正 ★★★
             this.EnemyInstance.EnemyContainer.on('gaugeBroken', () => {
-				// 弾をすべて削除
-				this.EnemyBulletInstances.forEach(bullet => bullet.destroy());
-                this.EnemyBulletInstances.length = 0;
+                // 演出ハンドラを呼び出す（弾も消去する）
+                this.TriggerEmphasisEffect(true);
+            });
 
-                this.PlayerBulletInstances.forEach(bullet => bullet.destroy());
-                this.PlayerBulletInstances.length = 0;
+            // スキル発動イベントのリスナーを新規追加
+            this.EnemyInstance.EnemyContainer.on('skillActivated', (ShouldClearBullets = false, FlashInterval = 3, FlashCount = 0.1) => {
+                // 演出ハンドラを呼び出す（弾も消去する）
+                this.TriggerEmphasisEffect(ShouldClearBullets, FlashInterval, FlashCount);
             });
         }
 	}
@@ -930,6 +926,37 @@ export class GameScreen extends BaseScreen{
 		
 		// 減算
 	}
+
+	/**
+	 * 敵の強調演出を制御するハンドラ
+	 * @param {boolean} ShouldClearBullets - 演出後に弾を消去するかどうか
+	 * @param {number} FlashCount - フラッシュ間隔
+	 * @param {number} FlashInterval - フラッシュを行う長さ
+	 */
+    async TriggerEmphasisEffect(ShouldClearBullets = false, FlashCount = 3,  FlashInterval = 0.1) {
+        if (!this.EnemyInstance) return;
+
+        // 1. ゲームを一時停止
+        this.IsEffectPaused = true;
+
+        // 2. 敵のフラッシュ演出を呼び出し、完了を待つ
+        await this.EnemyInstance.PlayEmphasisEffect(FlashCount, FlashInterval); // 4回、0.08秒間隔でフラッシュ
+
+        // 3. 必要であれば、弾を全消去
+        if (ShouldClearBullets) {
+            this.EnemyBulletInstances.forEach(bullet => bullet.destroy());
+            this.EnemyBulletInstances.length = 0;
+
+            this.PlayerBulletInstances.forEach(bullet => bullet.destroy());
+            this.PlayerBulletInstances.length = 0;
+        }
+
+        // 4. 少しだけ待機（演出の余韻）
+        await new Promise(resolve => setTimeout(resolve, 200)); // 0.2秒待機
+
+        // 5. ゲームの停止を解除
+        this.IsEffectPaused = false;
+    }
 
 
 }

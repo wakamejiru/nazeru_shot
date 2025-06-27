@@ -146,9 +146,8 @@ export class EnemyType1 extends EnemyBase {
     async _skilrun(DeltaTime, TargetPlayer, EnemyBulletArray, PlayerBulletArray) {
         super._skilrun(DeltaTime, EnemyBulletArray, PlayerBulletArray);
         if((this.SkillActivate == true) && (this.IsSkillTextShown == false)){
-            // スキル発動時は弾を全削除
-
-
+            // 20250627 酸っぱいシチューを行けるかと思ってグラタンにして食べた。腹が痛い食べるべきではなかった。 
+            this.EnemyContainer.emit('skillActivated', true, 1.5, 0.3);
             this.IsSkillTextShown = true; 
             switch(this.MaxEnemyHPGuage - this.NowEnemyHPGuage){
                 case 0:

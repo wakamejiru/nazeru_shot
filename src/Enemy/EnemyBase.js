@@ -129,6 +129,21 @@ export class EnemyBase {
         // HPバーの初期化メソッドを呼び出す
         this.InitializeHpBar();
 
+        // エフェクト用に同じ画像を追加
+        this.FlashOverlay = new PIXI.Sprite(EnemyTexture);
+        this.FlashOverlay.anchor.set(0.5);
+        this.FlashOverlay.scale.set(this.CurrentScaleFactor);
+        this.FlashOverlay.width = this.EnemyImage.width;
+        this.FlashOverlay.height = this.EnemyImage.height;
+        this.FlashOverlay.x = this.x;
+        this.FlashOverlay.y = this.y;
+        this.FlashOverlay.tint = 0xFFFFFF;
+        // 初期状態では完全に見えなくしておく
+        this.FlashOverlay.alpha = 0; 
+        
+        // 本体の上に重ねてコンテナに追加
+        this.EnemyContainer.addChild(this.FlashOverlay);
+
         // HPゲージ文字列を追加する
         this.HPGuageTextStyle = new PIXI.TextStyle({
             fontFamily: 'Arial',
@@ -200,6 +215,12 @@ export class EnemyBase {
         const PositionXY = this.IsAreaIn(RelativeX * NewShootingWidth, RelativeY * NewShootingHeight);
         this.x = PositionXY.AreaXPos; 
         this.y = PositionXY.AreaYPos; 
+        if (this.FlashOverlay) {
+            this.FlashOverlay.width = this.EnemyImage.width;
+            this.FlashOverlay.height = this.EnemyImage.height;
+            this.FlashOverlay.x = this.x;
+            this.FlashOverlay.y = this.y;
+        }
         
         // 旧サイズを捨て更新
         this.NowPlayAreaWidth = NewShootingWidth; 
@@ -322,11 +343,7 @@ export class EnemyBase {
             if( (this.IsSkillTextShown == false) && (this.SkillActivate == false)){
                 // Skillを起動する
                 this.SkillActivate = true;
-                // 弾を全部消す
-                EnemyBulletArray.forEach(bullet => {bullet.destroy(); });
-                PlayerBulletArray.forEach(bullet => {bullet.destroy(); });
                 this.CanMoveFlag  = false; // 通常移動を停止
-                await wait(1.5); // 桜井に言われた通りに停止
             }
         }
 
@@ -359,6 +376,10 @@ export class EnemyBase {
         if (this.NowHP <= 0 || !this.EnemyImage) return;
         this.EnemyImage.x = this.x;
         this.EnemyImage.y = this.y;
+        if (this.FlashOverlay) {
+            this.FlashOverlay.x = this.x;
+            this.FlashOverlay.y = this.y;
+        }
         this.DrawHpBar();
     }
 
@@ -574,5 +595,30 @@ export class EnemyBase {
                 this.EndSkill = true;
             }
         }
+    }
+
+
+    /**
+     * 強調演出（ヒットストップ＆フラッシュ）を再生する共通メソッド
+     * @param {number} FlashCount - フラッシュさせる回数
+     * @param {number} FlashInterval - フラッシュ1回あたりの時間（秒）
+     */
+    async PlayEmphasisEffect(FlashCount = 3, FlashInterval = 0.1) {
+        // 敵の画像を白く点滅させるアニメーションを作成
+        if (!this.FlashOverlay) return; // オーバーレイがなければ何もしない
+
+        // flashCountの回数だけ「白くなる -> 元に戻る」を繰り返す
+        const tween = gsap.to(this.FlashOverlay, {
+            alpha: 1,
+            duration: FlashInterval,
+            repeat: FlashCount,
+            yoyo: true, // alphaが 0 -> 1 -> 0 -> 1... と変化する
+            ease: "power1.inOut"
+        });
+
+        // アニメーションが終わるまで待機
+        return new Promise(resolve => {
+            tween.eventCallback('onComplete', resolve);
+        });
     }
 }
