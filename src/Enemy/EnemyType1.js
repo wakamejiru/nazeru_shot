@@ -142,9 +142,12 @@ export class EnemyType1 extends EnemyBase {
         }
     }
     
-    _skilrun(DeltaTime, TargetPlayer) {
+    _skilrun(DeltaTime, TargetPlayer, EnemyBulletArray, PlayerBulletArray) {
         super._skilrun(DeltaTime);
         if((this.SkillActivate == true) && (this.IsSkillTextShown == false)){
+            // スキル発動時は弾を全削除
+
+
             this.IsSkillTextShown = true; 
             switch(this.NowEnemyHPGuage){
                 case 0:
@@ -162,8 +165,15 @@ export class EnemyType1 extends EnemyBase {
             gsap.fromTo(this.SkillTimerText, { y: startTimerY, alpha: 0 }, { y: finalTimerY, alpha: 1, duration: 0.8, ease: "power2.out" });
         }
     }
-
-    SkillRun1(EnemyBulletArray, TargetPlayer){
+    
+    /**
+     * スペル1を発動
+     * @param {number} EnemyBulletArray - 弾の配列
+     * @param {instance} TargetPlayer - プレイヤーインスタンス
+     */
+    async SkillRun1(EnemyBulletArray, TargetPlayer){
+        // 攻撃と移動を停止
+        // X中心Y0.2に移動
 
     }
 
