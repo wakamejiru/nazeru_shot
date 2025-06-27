@@ -111,9 +111,9 @@ export class EnemyType1 extends EnemyBase {
 
             // 発射前に一度だけHPをチェック
             if (this.NowHPGuageHP > 0) {
-                const bulletNumber = 20 * (1.0 + difficultyMultiplier * 0.5);
+                const bulletNumber = 10 * (1.0 + difficultyMultiplier * 0.5);
                 const bulletBasicOptions = { vx: 100, vy: 100, ax: -5, ay: -5, jx: 0, jy: 0, width: 10, height: 10, damage: 25, life: 15, target: TargetPlayer, trackingStrength: 0, BulletImageKey: "BulletTypeA", shape: "rectangle" };
-                const changeOption = { ...bulletBasicOptions, ChangeActivation: ChangeActivation.Activate1, LengthParcent: 0.7 };
+                const changeOption = { ...bulletBasicOptions, ChangeActivation: ChangeActivation.Activate1, LengthParcent: 0.3 };
                 CircleAndHomeShotFunc(EnemyBulletArray, this.x, this.y, bulletNumber, 0, 360, bulletBasicOptions, changeOption, this.NowPlayAreaWidth * 0.1, this.EnemyContainer);
             }
 
@@ -142,7 +142,7 @@ export class EnemyType1 extends EnemyBase {
         }
     }
     
-    _skilrun(DeltaTime) {
+    _skilrun(DeltaTime, TargetPlayer) {
         super._skilrun(DeltaTime);
         if((this.SkillActivate == true) && (this.IsSkillTextShown == false)){
             this.IsSkillTextShown = true; 
@@ -161,6 +161,10 @@ export class EnemyType1 extends EnemyBase {
             const startTimerY = finalTimerY + 20;
             gsap.fromTo(this.SkillTimerText, { y: startTimerY, alpha: 0 }, { y: finalTimerY, alpha: 1, duration: 0.8, ease: "power2.out" });
         }
+    }
+
+    SkillRun1(EnemyBulletArray, TargetPlayer){
+
     }
 
     DrawEnemyImagedraw() {
