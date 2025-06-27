@@ -412,6 +412,8 @@ export class GameScreen extends BaseScreen{
 			// Skillの実行を行う
 			this.EnemyInstance._skilrun(DeltaTime);
         }
+		console.log(`玉の数: ${this.EnemyBulletInstances.length}`);
+		
 
 		// 両方の描画を行う
 		if(this.PlayerInstance){
@@ -422,27 +424,7 @@ export class GameScreen extends BaseScreen{
             this.EnemyInstance.DrawEnemyImage();
         }
 
-		// 味方の放った弾の情報を更新する
-		this.PlayerBulletInstances.forEach((bullet, index) => {
-            if(bullet){
-				bullet.update(DeltaTime);
-				bullet.DrwaUpdate();
-			}
-        });
-
-		// 敵の放った弾の情報を更新する
-		this.EnemyBulletInstances.forEach((bullet, index) => {
-            if(bullet){
-				bullet.update(DeltaTime);
-				bullet.DrwaUpdate();
-			}
-        });
-
-		// 敵の放った弾の情報を更新する（同様に新しい配列に詰め込む）
-        const activeEnemyBullets = [];
-        const activePlayerBullets = [];
-
-
+		// 弾の情報を更新
 		// X座標が弾がエリアを越していないことを判定 true:超えていない false:超えている
 		const IsBulletXArea = (BulletXPos, BulletWidth) => {
             const BulletWidhtHalf = BulletWidth/2;
@@ -459,38 +441,49 @@ export class GameScreen extends BaseScreen{
 			return (MinXArea < (BulletYPos - BulletHeightHalf) && MaxXArea > (BulletYPos + BulletHeightHalf));
         };
 
-		// 当たったり画面外になった弾は弾く
-		this.EnemyBulletInstances.forEach(bullet => {
-            if (bullet) {
+		// ループ中に配列から要素を安全に削除するため、後ろからループする
+		for (let i = this.EnemyBulletInstances.length - 1; i >= 0; i--) {
+			const bullet = this.EnemyBulletInstances[i];
+
+			if (bullet) {
+				bullet.update(DeltaTime);
+				bullet.DrwaUpdate(); // ※DrwaUpdateはDrawUpdateのタイポの可能性があります
+
+				// 弾が生存する条件（ヒットしておらず、エリア内にいる）
+				const isAlive = !bullet.isHit && 
+								IsBulletXArea(bullet.BulletImage.x, bullet.BulletImage.width) && 
+								IsBulletYArea(bullet.BulletImage.y, bullet.BulletImage.height);
+				
+				// 条件を満たさない（生存していない）場合
+				if (!isAlive) {
+					bullet.destroy(); // 弾を破棄
+					this.EnemyBulletInstances.splice(i, 1); // 配列からこの要素を直接削除
+				}
+			} else {
+				// nullやundefinedが配列に入っていた場合も削除
+				this.EnemyBulletInstances.splice(i, 1);
+			}
+		}
+
+		// --- 味方の弾の更新と削除 ---
+		// 同様に、配列を置き換えるのではなく直接操作するように修正
+		for (let i = this.PlayerBulletInstances.length - 1; i >= 0; i--) {
+			const bullet = this.PlayerBulletInstances[i];
+			if (bullet) {
 				bullet.update(DeltaTime);
 				bullet.DrwaUpdate();
-                if (!bullet.isHit && IsBulletXArea(bullet.BulletImage.x, bullet.BulletImage.width) && 
-				IsBulletYArea(bullet.BulletImage.y, bullet.BulletImage.height)) { // isHitしていないかつ、範囲外を出ていない弾をリストに加える
-                    activeEnemyBullets.push(bullet);
-                } else {
-                    // isHitがtrueになった弾はここで実際にdestroyを呼び出す
-                    bullet.destroy();
-                }
+				const isAlive = !bullet.isHit && 
+								IsBulletXArea(bullet.BulletImage.x, bullet.BulletImage.width) && 
+								IsBulletYArea(bullet.BulletImage.y, bullet.BulletImage.height);
+
+				if (!isAlive) {
+					bullet.destroy();
+					this.PlayerBulletInstances.splice(i, 1);
+				}
+			} else {
+				this.PlayerBulletInstances.splice(i, 1);
 			}
-        });
-
-		this.PlayerBulletInstances.forEach(bullet => {
-            if (bullet) {
-				bullet.update(DeltaTime);
-				bullet.DrwaUpdate();
-                if (!bullet.isHit && IsBulletXArea(bullet.BulletImage.x, bullet.BulletImage.width) && 
-				IsBulletYArea(bullet.BulletImage.y, bullet.BulletImage.height)) { // isHitしていないかつ、範囲外を出ていない弾をリストに加える
-                    activePlayerBullets.push(bullet);
-                } else {
-                    // isHitがtrueになった弾はここで実際にdestroyを呼び出す
-                    bullet.destroy();
-                }
-			}
-        });
-
-
-        this.EnemyBulletInstances = activeEnemyBullets; // 新しいアクティブな弾のリストに置き換え
-		this.PlayerBulletInstances = activePlayerBullets;
+		}
 
 		this.HitJudgment();
 
