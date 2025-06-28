@@ -90,19 +90,21 @@ export function RoundShotFunc(EnemyBulletList, CenterX, CenterY, BulletNumber,
         const RadiusAngle = (FirstAngle + (OneStepAngle * i))* Math.PI / 180;
         // 停止条件も変更する必要がある
         // 速度を触る
-        const SpeedX = Opitons.x_speed * Math.cos(RadiusAngle);
-        const SpeedY = Opitons.y_speed * Math.sin(RadiusAngle);
-        const BulletAccelX = Opitons.accel_x * Math.cos(RadiusAngle);
-        const BulletAccelY = Opitons.accel_y * Math.sin(RadiusAngle);
-        const BulletJerkX = Opitons.jeak_x * Math.cos(RadiusAngle);
-        const BulletJerkY = Opitons.jeak_y * Math.sin(RadiusAngle);
-// 将来的にかかかそくどまで考慮できるようにする
-        ///        const BulletSnapX = Opitons.snap_Y * Math.sin(RadiusAngle);
-//        const BulletSnapY = Opitons.snap_Y * Math.sin(RadiusAngle);
+        const SpeedX = Opitons.vx * Math.cos(RadiusAngle);
+        const SpeedY = Opitons.vy * Math.sin(RadiusAngle);
+        const BulletAccelX = Opitons.ax * Math.cos(RadiusAngle);
+        const BulletAccelY = Opitons.ay * Math.sin(RadiusAngle);
+        const BulletJerkX = Opitons.jx * Math.cos(RadiusAngle);
+        const BulletJerkY = Opitons.jy * Math.sin(RadiusAngle);
+        
             const bulletOptions = {
                 vx: SpeedX, // ピクセル/秒
                 vy: SpeedY, // ピクセル/秒
-                // 後で速度を追記
+                ax: BulletAccelX,
+                ay: BulletAccelY,
+                jx: BulletJerkX,
+                jy: BulletJerkY,
+
 
                 width: Opitons.bulletWidht,
                 height: Opitons.bulletheight,

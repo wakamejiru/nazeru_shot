@@ -331,10 +331,8 @@ export class EnemyBase {
     /**
  	 * スキルの実行を行う
      * @param {number} DeltaTime - 時間
-     * @param {number} EnemyBulletArray - 弾の配列
-     * @param {number} PlayerBulletArray - 弾の配列
 	 */
-    async _skilrun(DeltaTime, EnemyBulletArray, PlayerBulletArray)
+    async _skilrun(DeltaTime)
     {
         const HPPercent = this.NowHPGuageHP / this.MaxHPGuageHP;
 
@@ -348,23 +346,15 @@ export class EnemyBase {
         }
 
 
-        if (this.SkillActivate == true) {
+       if (this.SkillActivate == true) {
             if (this.SkillTimer > 0) {
                 this.SkillTimer -= DeltaTime;
             } else {
-                this.SkillTimer = 0;
-                this.EndSkill = true; // タイマーが0になったらスキル終了
-            }
-            // タイマーテキストの内容を毎フレーム更新
-            this.SkillTimerText.text = `${Math.ceil(this.SkillTimer)}`;
-        
-
-
-            if(this.EndSkill == true){
-               
-                // Skillが終了したためHPを消し飛ばす
+                // タイマーが0になったら、ゲージ破壊処理を呼び出すだけにする
                 this.UpdateEndHPGuage();
             }
+            // タイマーテキストの更新
+            this.SkillTimerText.text = `${Math.ceil(this.SkillTimer)}`;
         }
 
     }
@@ -398,7 +388,6 @@ export class EnemyBase {
         // グラフィックの描画は、HPバーオブジェクト自体の中心(0,0)を基準に行う
         const Radius = Math.max(this.EnemyWidth, this.EnemyHeight) * 0.6; // スケールを考慮しない半径
         const HPPercent = this.NowHPGuageHP / this.MaxHPGuageHP;
-        const StandardAngle = 0; //-Math.PI / 2;
         const EndAngle = -Math.PI / 2;
         const HPLength = Radius*0.05;
 
@@ -553,47 +542,41 @@ export class EnemyBase {
      *ゲージを削り切った時の処理を行う
      */
     UpdateEndHPGuage(){
-        if(this.SkillActivate == true){
-            // フラグをリセット
-            this.EndSkill = false;
-            this.SkillActivate = false;
-            this.IsSkillTextShown = false;
-            // スキルテキストを非表示にする
-            gsap.to(this.SkillText, {
-                    alpha: 0,
-                    duration: 0.5,
-                    ease: "power1.in",
-                    onComplete: () => {
-                        this.SkillText.visible = false;
-                    }
-            });
+            
+        this.SkillActivate = false;
+        this.EndSkill = false;
+        this.IsSkillTextShown = false;
 
-            // タイマーテキストも非表示にする
-            gsap.to(this.SkillTimerText, {
+        // 2. スキルUIを非表示にする
+        gsap.to(this.SkillText, {
                 alpha: 0,
                 duration: 0.5,
                 ease: "power1.in",
-                onComplete: () => {
-                    this.SkillTimerText.visible = false;
-                }
-            });
-            // タイマーを初期値に戻す
-            this.SkillTimer = SKILL_TIMER_MAX;
+                onComplete: () => { this.SkillText.visible = false; }
+        });
+        gsap.to(this.SkillTimerText, {
+            alpha: 0,
+            duration: 0.5,
+            ease: "power1.in",
+            onComplete: () => { this.SkillTimerText.visible = false; }
+        });
 
-            this.NowHPGuageHP = this.MaxHPGuageHP;
-            --this.NowEnemyHPGuage;
+        // 3. タイマーを初期値に戻す
+        this.SkillTimer = SKILL_TIMER_MAX;
 
-            // ゲージ破壊処理を実行
-             this.EnemyContainer.emit('gaugeBroken');
+        // 4. HPゲージをリセットし、本数を減らす
+        this.NowHPGuageHP = this.MaxHPGuageHP;
+        --this.NowEnemyHPGuage;
 
-            if(this.NowEnemyHPGuage < 0){
-                this.NowEnemyHPGuage = 0;
-                // ゲームスクリーンのほうで処理を行う
-            }else{
-                // HPゲージ本数を更新
-                this.HPGuageText.text = `HP×${this.NowEnemyHPGuage}`;
-                this.EndSkill = true;
-            }
+        // 5. ゲージ破壊イベントを発行（弾消去などのため）
+        this.EnemyContainer.emit('gaugeBroken');
+
+        // 6. 残りゲージ数を更新
+        if(this.NowEnemyHPGuage < 0){
+            this.NowEnemyHPGuage = 0;
+            // TODO: 敵撃破処理
+        } else {
+            this.HPGuageText.text = `HP×${this.NowEnemyHPGuage}`;
         }
     }
 
@@ -660,6 +643,18 @@ export class EnemyBase {
         if (skillDefinition.attackFunction) {
             await skillDefinition.attackFunction.call(this, EnemyBulletArray, TargetPlayer);
         }
+
+        // スキルの終了フラグを行う
+        this.SkillActivate = false;
+        this.IsSkillTextShown = false;
+        this.EndSkill = false; // 念のため
+
+        // 2. スキルUIを非表示にするアニメーション
+        gsap.to(this.SkillText, { alpha: 0, duration: 0.5, onComplete: () => this.SkillText.visible = false });
+        gsap.to(this.SkillTimerText, { alpha: 0, duration: 0.5, onComplete: () => this.SkillTimerText.visible = false });
+        
+        // 3. スキルタイマーをリセット
+        this.SkillTimer = SKILL_TIMER_MAX;
 
         // 5. スキル終了後、定義に基づいて移動フラグを設定
         this.CanMoveFlag = skillDefinition.allowMoveAfter;

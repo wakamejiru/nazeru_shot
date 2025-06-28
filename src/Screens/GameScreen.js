@@ -403,7 +403,7 @@ export class GameScreen extends BaseScreen{
 			this.EnemyInstance._shoot(this.EnemyBulletInstances, this.PlayerInstance,  DeltaTime);
 
 			// Skillの実行を行う
-			this.EnemyInstance._skilrun(DeltaTime, this.PlayerInstance, this.EnemyBulletInstances, this.PlayerBulletInstances);
+			this.EnemyInstance._skilrun(DeltaTime, this.PlayerInstance, this.EnemyBulletInstances);
         }
 		
 
