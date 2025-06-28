@@ -18,10 +18,14 @@ export class EnemyType1 extends EnemyBase {
     constructor(GameScreenContainer, StartShootingX, StartShootingY, StartShootingWidth, StartShootingHeight) {
         
         const enemyInfo = enemy_info_list[EnemyTypeEnum.E_TYPE_1];
+        // HP、バーを難易度ごとに変更
         const BaseConfig = {
             ...enemyInfo,
+            enemy_maxhp: enemyInfo.enemy_maxhp * ((0.6 * DifficultyLevel) + 0.4),
+            enemy_hp_guage: (DifficultyLevel  < 2) ? 2 : 3,
             ETypeTypeID: EnemyTypeEnum.E_TYPE_1
         };
+
         super(GameScreenContainer, StartShootingX, StartShootingY, StartShootingWidth, StartShootingHeight, BaseConfig);
 
         // 各攻撃ループが開始されたかを管理するフラグ
