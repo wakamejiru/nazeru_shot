@@ -44,12 +44,19 @@ export class EnemyType1 extends EnemyBase {
             1: {
                 name: "四重奏のプレリュード",              
                 NoMoveFlag: false,
-                targetX: () => this.StartAreaX + (this.NowPlayAreaWidth * 0.5), // 左側に移動
+                targetX: () => this.StartAreaX + (this.NowPlayAreaWidth * 0.5),
                 targetY: () => this.StartAreaY + this.NowPlayAreaHeight * 0.3,
                 attackFunction: this.AttackSkill2, // 新しい攻撃関数
-                allowMoveAfter: false // スキル後も移動しない
+                allowMoveAfter: true // スキル後も移動しない
+            },
+            2: {
+                name: "十字",              
+                NoMoveFlag: false,
+                targetX: () => this.StartAreaX + (this.NowPlayAreaWidth * 0.5),
+                targetY: () => this.StartAreaY + this.NowPlayAreaHeight * 0.5,
+                attackFunction: this.AttackSkill3, // 新しい攻撃関数
+                allowMoveAfter: true // スキル後も移動しない
             }
-            // ... さらにスキルを追加可能
         };
     }
 
@@ -315,11 +322,58 @@ export class EnemyType1 extends EnemyBase {
                 this.EnemyContainer
             );
 
-            //次の発射位置インデックスを更新
+            // 次の発射位置インデックスを更新
             currentPositionIndex = (currentPositionIndex + 1) % positions.length; // 0, 1, 2, 3 とループさせる
 
-            // ポイント5: 計算した待機時間だけ待つ ■
+            // 計算した待機時間だけ待つ
             await wait(currentDelay);
+        }
+
+        // ループが終了したら（スキル終了後）、再度移動を許可（念のため）
+        this.CanMoveFlag = true;
+    }
+
+    /**
+     * スペル3
+     * キャラを中心に移動、4方向に弾を連続発射し、それを回転(難易度によって回転速度が変化)
+     * @param {instance} EnemyBulletArray - 弾のベクタ
+     * @param {instance} TargetPlayer - プレイヤーのインスタンス
+     */
+    async AttackSkill3(EnemyBulletArray, TargetPlayer) {
+        const difficultyMultiplier = 1.0 + 0.5 * DifficultyLevel;
+        const AngleSpeedMag = 0.05 * (10 * difficultyMultiplier); // 角度速度 // 一番右を基準
+        let Angle = 0;
+        let NowCnt = 1; // log(1) = 0
+        // HPが残っている/Spellが有効な間、ループ
+        while ((this.NowHPGuageHP > 0) && (this.SkillActivate == true)) {
+
+            const BulletSpeed = 150;
+            // 4方向に打ち出し
+            for (let i = 0; i < 4; i++) {
+                const StartX = this.x;
+                const StartY = this.y;
+
+                let NowAngle = Angle +  i * Math.PI / 2; // 直交
+                const SpeedX = BulletSpeed * Math.cos(NowAngle);
+                const SpeedY = BulletSpeed * Math.sin(NowAngle);
+
+                const BulletOptions = {
+                    vx: SpeedX,
+                    vy: SpeedY,
+                    width: 12, height: 12, damage: 50, life: 20,
+                    BulletImageKey: "BulletTypeA", shape: "circle",
+                    target: TargetPlayer, trackingStrength: 0
+                };
+
+                EnemyBulletArray.push(new Bullet(this.EnemyContainer, StartX, StartY, BulletOptions));                
+            }
+            
+            // 片対数で速度を向上
+            const RotationAmount = AngleSpeedMag * Math.log(NowCnt);
+            Angle += RotationAmount * (Math.PI / 180);
+            NowCnt += 1;
+            // 出すぎを防ぐためある程度の間隔をあける
+            await wait(0.15);
         }
 
         // ループが終了したら（スキル終了後）、再度移動を許可（念のため）
