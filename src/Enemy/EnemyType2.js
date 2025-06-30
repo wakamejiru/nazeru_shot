@@ -94,12 +94,18 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                             const BulletNumber = 72;
                             const DeficitPercent = 0;
                             this.AttackCounter += 1;
-                                                    
-                            let StartAngle = 0;
-                            let EndAngle = StartAngle + 90;
+                            this.NowPlayerPointX = TargetPlayer.x;
+                            this.NowPlayerPointY = TargetPlayer.y;
+                            this.NowEnemyPointX = this.x;
+                            this.NowEnemyPointY = this.y;
                             
-                            let BaseAngle = 0;
-                            
+                            this.DeltaX = this.NowEnemyPointX - this.NowPlayerPointX;
+                            this.DeltaY = this.NowEnemyPointY - this.NowPlayerPointY;
+                            // 角度をラジアンで計算
+                            let BaseAngle = Math.atan2(this.DeltaY, this.DeltaX);
+                            const Angle = 90;
+                            const StartAngle = BaseAngle - Angle * 0.5;
+                            const EndAngle = BaseAngle + Angle * 0.5;                            
                             
                             const BulletOptions = {
                                 x_speed: 200,
@@ -128,8 +134,6 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                                                 BulletNumber, StartAngle,  
                                                 BulletOptions, EndAngle, this.EnemyContainer);
                             this.NowAttackLimitCnt += 1.0;
-                            
-
                         }
                         // 攻撃のながさが終わったかを確認する
                         // 20個打ったら終了

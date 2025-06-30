@@ -631,14 +631,20 @@ export class GameScreen extends BaseScreen{
 		switch(MapIndex){
 			case 0:
 				this.EnemyInstance = new EnemyType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
-				await this.EnemyInstance.Initialize();
-				this.EnemyInstance.updateScale(this.NowScale, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
 				break;
+
+			case 1:
+				this.EnemyInstance = new EnemyType2(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				break;
+
 			default:
 				this.EnemyInstance = new EnemyType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
 				this.EnemyInstance.Initialize();
 				break;
 		}
+		
+		await this.EnemyInstance.Initialize();
+		this.EnemyInstance.updateScale(this.NowScale, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
 
 		if (this.EnemyInstance) {
             // ★★★ ゲージ破壊イベントのリスナーを修正 ★★★

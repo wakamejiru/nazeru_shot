@@ -1,6 +1,6 @@
 import { CustomButton } from "../Buttons/ButtonBase.js";
 import { ImageAssetPaths } from '../game_status.js'; 
-import { BaseScreen, FRAME_DURATION, SCREEN_STATE } from './BaseScreen.js';
+import { BaseScreen, FRAME_DURATION, SCREEN_STATE, MapIndex } from './BaseScreen.js';
 // タイトル画面
 
 // 項目は4つ
@@ -655,7 +655,11 @@ export class MapScreen extends BaseScreen{
 				// 押されたボタンに対して遷移先を決定する
 				switch(selectedButton){
 					case ButtonID.Button1:
+						MapIndex = 0;
 						break; 
+					case ButtonID.Button1:
+						MapIndex = 1;
+						break; 	
 				}
 				NextScreen = SCREEN_STATE.CHARACTER_SELECT;
             }
