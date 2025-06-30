@@ -85,6 +85,7 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                     case 0:
 
                         // ここである程度間引いてやらないとビームみたいになる
+                        // 扇型で発射
 
                         if(this.NowAttackRateTimer < this.AttackRateTimer){
                             this.NowAttackRateTimer += DeltaTime;
@@ -94,9 +95,12 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
                             const DeficitPercent = 0;
                             this.AttackCounter += 1;
                                                     
-                            let StartAngle = (this.AttackCounter % 2 == 0) ? (2) : 0;
-                            StartAngle += (this.AttackCounter % 3 == 0) ? (4) : 0;
-                            let EndAngle = StartAngle + 360;
+                            let StartAngle = 0;
+                            let EndAngle = StartAngle + 90;
+                            
+                            let BaseAngle = 0;
+                            
+                            
                             const BulletOptions = {
                                 x_speed: 200,
                                 y_speed: 200,
