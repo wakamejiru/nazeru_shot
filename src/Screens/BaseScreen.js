@@ -21,7 +21,9 @@ export let MapIndex = 0;
 export let CharaIndex = 0;
 export let DifficultyLevel = 1; // 0がeasy
 
-
+export function ChangeMapIndex(number){
+	MapIndex = number;
+}
 
 
 export class BaseScreen{
