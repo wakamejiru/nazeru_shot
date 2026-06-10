@@ -6,7 +6,15 @@ import { BaseScreen, FRAME_DURATION, SCREEN_STATE, MapIndex,  CharaIndex} from '
 import {PlayerType1} from "../Player/Type1Player.js";
 import {EnemyType1} from "../Enemy/EnemyType1.js";
 import {EnemyType2} from "../Enemy/EnemyType2.js";
-
+import {EnemyType3} from "../Enemy/EnemyType3.js";
+import {EnemyType4} from "../Enemy/EnemyType4.js";
+import {EnemyType5} from "../Enemy/EnemyType5.js";
+import {EnemyType6} from "../Enemy/EnemyType6.js";
+import {EnemyType7} from "../Enemy/EnemyType7.js";
+import {EnemyType8} from "../Enemy/EnemyType8.js";
+import {EnemyType9} from "../Enemy/EnemyType9.js";
+import {EnemyType10} from "../Enemy/EnemyType10.js";
+import {EnemyType11} from "../Enemy/EnemyType11.js";
 
 // ボタンはない
 const ButtonID = Object.freeze({
@@ -117,7 +125,7 @@ export class GameScreen extends BaseScreen{
 
 			// 文字列を追加する
 			this.ScoreTextStyle = new PIXI.TextStyle({
-				fontFamily: 'Arial',
+				fontFamily: 'DotGothic16',
 				fontSize: 36,
 				fill: '#000000',
 				align: 'right'
@@ -136,7 +144,7 @@ export class GameScreen extends BaseScreen{
 			this.ScoreContainer.addChild(this.hpBarBackground);
 			this.ScoreContainer.addChild(this.hpBarFill);
 			this.HPTextStyle = new PIXI.TextStyle({
-				fontFamily: 'Arial',
+				fontFamily: 'DotGothic16',
 				fontSize: 36,
 				fill: '#000000',
 				align: 'right'
@@ -178,7 +186,7 @@ export class GameScreen extends BaseScreen{
 			this.ULTBackgroundImage.y = 0;
 
 			this.ULTTextStyle = new PIXI.TextStyle({
-				fontFamily: 'Arial',
+				fontFamily: 'DotGothic16',
 				fontSize: 36,
 				fill: '#000000',
 				align: 'right'
@@ -631,14 +639,56 @@ export class GameScreen extends BaseScreen{
 		switch(MapIndex){
 			case 0:
 				this.EnemyInstance = new EnemyType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
-				await this.EnemyInstance.Initialize();
-				this.EnemyInstance.updateScale(this.NowScale, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
 				break;
+
+			case 1:
+				this.EnemyInstance = new EnemyType2(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				break;
+
+			case 2:
+				this.EnemyInstance = new EnemyType3(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				break;
+
+			case 3:
+				this.EnemyInstance = new EnemyType4(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				break;
+
+			case 4:
+				this.EnemyInstance = new EnemyType5(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				break;
+
+			case 5:
+				this.EnemyInstance = new EnemyType6(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				break;
+
+			case 6:
+				this.EnemyInstance = new EnemyType7(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				break;
+
+			case 7:
+				this.EnemyInstance = new EnemyType8(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				break;
+
+			case 8:
+				this.EnemyInstance = new EnemyType9(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				break;
+
+			case 9:
+				this.EnemyInstance = new EnemyType10(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				break;
+
+			case 10:
+				this.EnemyInstance = new EnemyType11(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				break;
+
 			default:
 				this.EnemyInstance = new EnemyType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
 				this.EnemyInstance.Initialize();
 				break;
 		}
+		
+		await this.EnemyInstance.Initialize();
+		this.EnemyInstance.updateScale(this.NowScale, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
 
 		if (this.EnemyInstance) {
             // ★★★ ゲージ破壊イベントのリスナーを修正 ★★★

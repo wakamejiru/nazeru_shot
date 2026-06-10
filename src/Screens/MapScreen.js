@@ -1,6 +1,6 @@
 import { CustomButton } from "../Buttons/ButtonBase.js";
 import { ImageAssetPaths } from '../game_status.js'; 
-import { BaseScreen, FRAME_DURATION, SCREEN_STATE } from './BaseScreen.js';
+import { BaseScreen, FRAME_DURATION, SCREEN_STATE, ChangeMapIndex } from './BaseScreen.js';
 // タイトル画面
 
 // 項目は4つ
@@ -12,12 +12,6 @@ const ButtonID = Object.freeze({
     Button5: "ButtonStage5",
     Button6: "ButtonStage6",
     Button7: "ButtonStage7",
-    Button8: "ButtonStage8",
-    Button9: "ButtonStage9",
-    Button10: "ButtonStage10",
-    Button11: "ButtonStage11",
-    Button12: "ButtonStage12",
-    Button13: "ButtonStage13",
 });
 
 const ButtonLabel = Object.freeze({
@@ -26,14 +20,8 @@ const ButtonLabel = Object.freeze({
     Button3: "Stage3",
     Button4: "Stage4",
     Button5: "Stage5",
-    Button6: "Stage6",
-    Button7: "Stage7",
-    Button8: "Stage8",
-    Button9: "Stage9",
-    Button10: "Stage10",
-    Button11: "EX1",
-    Button12: "EX2",
-    Button13: "EX3",
+    Button6: "EX1",
+    Button7: "EX2",
 });
 
 const TitleButtonSizeWidth = 150
@@ -212,158 +200,6 @@ const ButtonConfigs = [
 			color: {
 				normal:   0x000000,
 				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    },
-	{
-        id: ButtonID.Button8,
-		label: ButtonLabel.Button8,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    },
-	{
-        id: ButtonID.Button9,
-		label: ButtonLabel.Button9,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    },
-	{
-        id: ButtonID.Button10,
-		label: ButtonLabel.Button10,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    },
-	{
-        id: ButtonID.Button11,
-		label: ButtonLabel.Button11,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    },
-	{
-        id: ButtonID.Button12,
-		label: ButtonLabel.Button12,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-				pressed:  0x48d1cc,
-			},
-		},
-			
-    },
-	{
-        id: ButtonID.Button13,
-		label: ButtonLabel.Button13,
-        width: TitleButtonSizeWidth,
-        height: TitleButtonSizeHeight,
-        iconPath: '',
-        soundPath: 'system45',
-        shape: {
-			cornerRadius: ButtonCornerRadius
-		},
-		fill_colors: {
-			normal: 0xFFFFFF,
-			selected: 0xff00ff,
-			pressed: 0x48d1cc,
-		},
-		stroke:{
-			width: 3,
-			color: {
-				normal:   0x000000,
-				selected: 0xFFFFFF,
-
-
 				pressed:  0x48d1cc,
 			},
 		},
@@ -653,9 +489,41 @@ export class MapScreen extends BaseScreen{
                 this.InputCooldown = this.COOLDOWN_TIME; // 決定後、少し待つ
 
 				// 押されたボタンに対して遷移先を決定する
-				switch(selectedButton){
+				switch(selectedButton.id){
 					case ButtonID.Button1:
-						break; 
+						ChangeMapIndex(0);
+						break;
+					case ButtonID.Button2:
+						ChangeMapIndex(1);
+						break;
+					case ButtonID.Button3:
+						ChangeMapIndex(2);
+						break;
+					case ButtonID.Button4:
+						ChangeMapIndex(3);
+						break;
+					case ButtonID.Button5:
+						ChangeMapIndex(4);
+						break;
+					case ButtonID.Button6:
+						ChangeMapIndex(5);
+						break;
+					case ButtonID.Button7:
+						ChangeMapIndex(6);
+						break;
+					case ButtonID.Button8:
+						ChangeMapIndex(7);
+						break;
+					case ButtonID.Button9:
+						ChangeMapIndex(8);
+						break;
+					case ButtonID.Button10:
+						ChangeMapIndex(9);
+						break;
+					case ButtonID.Button11:
+						ChangeMapIndex(10);
+						break;
+					// Button12, Button13 は隠しステージのため非実装
 				}
 				NextScreen = SCREEN_STATE.CHARACTER_SELECT;
             }

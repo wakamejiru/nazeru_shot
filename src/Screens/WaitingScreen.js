@@ -54,7 +54,7 @@ export class WaitingScreen extends BaseScreen{
 
 // 赤色テキスト用のスタイル
         const redTextStyle = new PIXI.TextStyle({
-            fontFamily: '"Helvetica Neue", "Arial", "Noto Serif JP"', // フォント
+            fontFamily: 'DotGothic16', // フォント
             fontSize: 48, // フォントサイズ
             fill: '#ff4500', // 色 (トマトレッド)
             stroke: { color: '#000000', width: 2 }, // 縁取り（白）
@@ -63,7 +63,7 @@ export class WaitingScreen extends BaseScreen{
 
         // 通常テキスト用のスタイル
         const normalTextStyle = new PIXI.TextStyle({
-            fontFamily: '"Helvetica Neue", "Arial", "Noto Serif JP"',
+            fontFamily: 'DotGothic16',
             fontSize: 48,
             fill: '#000000', // 黒
             align: 'center',

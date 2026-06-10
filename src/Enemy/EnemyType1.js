@@ -1,4 +1,6 @@
 // Type1Enemyのクラス
+// コンセプト：一般的なシューター
+
 import { EnemyBase } from "./EnemyBase.js";
 import { SingleShotFunc, RoundShotFunc, FanShotFunc, windmillshotfunc, CircleAndHomeShotFunc } from "./EnemyShot.js";
 import { ChangeActivation, Bullet } from '../bullet.js'; 
@@ -177,6 +179,13 @@ export class EnemyType1 extends EnemyBase {
         }
     }
 
+    // TODO設計する【攻撃パターン4】非常に速く長い棒状の弾の連続射出(出す方向に赤色の表示エリアを一瞬表示させてから射出する)
+
+
+
+
+    // TODO設計する【攻撃パターン5】一旦弾を円弧状に展開，中心は自身の中心座標から少しずらす　一個ずつおいて置き終わった後に1呼吸おいてから高速に射出，円弧の角度は120度，射出方向は下方向のみ固定，ここでは赤色の予測エリアはおかない
+
     /**
      * スキルを発動する
      * @param {number} DeltaTime - 経過時間
@@ -277,7 +286,8 @@ export class EnemyType1 extends EnemyBase {
      */
     async AttackSkill2(EnemyBulletArray, TargetPlayer) {
         const difficultyMultiplier = 1.0 + (DifficultyLevel * 0.5);
-        this.CanMoveFlag = true; // このスキル中は敵が動き回る
+        this.CanMoveFlag = true; // このスキル中は敵が動き回る TODO　変更：射出する中心に対して複製からだを設置，低難易度の場合，敵それぞれに当たり判定があるが，上位になるとどれか一つが本体であり当たり判定がないことにする
+
 
         // --- スキル固有パラメータ ---
         const bulletNumberPerShot = 12 + Math.floor(2 * DifficultyLevel); // 1回に発射する円形弾の数
@@ -336,7 +346,7 @@ export class EnemyType1 extends EnemyBase {
         // ループが終了したら（スキル終了後）、再度移動を許可（念のため）
         this.CanMoveFlag = true;
     }
-
+    // TODO：ここからNormalのみ有効なスペル
     /**
      * スペル3
      * キャラを中心に移動、4方向に弾を連続発射し、それを回転(難易度によって回転速度が変化)
@@ -383,6 +393,17 @@ export class EnemyType1 extends EnemyBase {
         // ループが終了したら（スキル終了後）、再度移動を許可（念のため）
         this.CanMoveFlag = true;
     }
+
+    // TODO：ここからhardのみ有効なスペル
+
+    // TODO：スペル4追加，120度の円弧に弾を5つ左右に振り分けて接地，設置する時の円弧の中心は敵キャラの中心から少し右，少し左に振り分ける
+            // 弾の初期は速度が速い，射出する直前に画面上8割の部分を赤エリアに表示
+            //　8割に突入すると停止，その後プレイキャラにゆっくり近づく弾と停止して動かない弾に分ける
+
+    // TODO：ここからlunacticのみ有効なスペル
+    // TODO：スペル5追加，敵キャラクタ中心に移動．大きな弾を計6方向に3ずつ射出，射出した弾は均等間隔で停止，その後弾が分裂し8方向に対して分裂，その後，また，分裂を繰りかえすこの分裂を4回行う
+
+
 
     /**
  	 * キャラクターの画像を当たり判定の座標軸と一致させる

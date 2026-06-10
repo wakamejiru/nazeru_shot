@@ -220,6 +220,7 @@ export class DifficultySelectScreen extends BaseScreen{
 
 		// 2. テキストを作成
 		const descriptionStyle = new PIXI.TextStyle({
+			fontFamily: 'DotGothic16',
 			fontSize: 32,
 			fill: '#000000', // テキストの色を黒に変更
 			wordWrap: true,

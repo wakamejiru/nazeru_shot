@@ -16,11 +16,6 @@ const CharaImagePath = Object.freeze({
     CharaSelect3: "CharaSelect3",
     CharaSelect4: "CharaSelect4",
     CharaSelect5: "CharaSelect5",
-    CharaSelect6: "CharaSelect6",
-    CharaSelect7: "CharaSelect7",
-    CharaSelect8: "CharaSelect8",
-    CharaSelect9: "CharaSelect9",
-    CharaSelect10: "CharaSelect10"
 });
 
 // --- ボタンの設定 ---
@@ -44,7 +39,7 @@ export const ScreenImages = [
 const InfoFontSize = 34;
 // 通常テキスト用のスタイル
 const textStyle = new PIXI.TextStyle({
-	fontFamily: '"Helvetica Neue", "Arial", "Noto Serif JP"',
+	fontFamily: 'DotGothic16',
 	fontSize: InfoFontSize,
 	fill: '#000000', // 黒
 	align: 'center',

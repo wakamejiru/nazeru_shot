@@ -1,6 +1,7 @@
 // EnemyBase.js
 import { Bullet, ChangeActivation } from '../bullet.js'; 
 import { ImageAssetPaths, main_bulled_info_list, sub_bulled_info_list, EnemyTypeEnum, EnemySkillTypeEnum } from '../game_status.js';
+import { showBurstWarning } from '../DangerWarning.js';
 
 const SKILL_TIMER_MAX = 99;
 
@@ -146,7 +147,7 @@ export class EnemyBase {
 
         // HPゲージ文字列を追加する
         this.HPGuageTextStyle = new PIXI.TextStyle({
-            fontFamily: 'Arial',
+            fontFamily: 'DotGothic16',
             fontSize: 36,
             fill: '#ffff42',
             align: 'right'
@@ -159,7 +160,7 @@ export class EnemyBase {
 
         // skill名文字列を追加する
         this.SkillTextStyle = new PIXI.TextStyle({
-            fontFamily: 'Arial',
+            fontFamily: 'DotGothic16',
             fontSize: 36,
             fill: '#ffffff',
             align: 'right'
@@ -173,7 +174,7 @@ export class EnemyBase {
         this.EnemyContainer.addChild(this.SkillText);
 
          this.SkillTimerTextStyle = new PIXI.TextStyle({
-            fontFamily: 'Arial',
+            fontFamily: 'DotGothic16',
             fontSize: 36, // 少し小さくする
             fill: '#ffffff', // 色を変える
             align: 'right'
@@ -293,7 +294,7 @@ export class EnemyBase {
                 this.MoveWaitTimer -= DeltaTime;
                 return;
             }
-
+            // TODO 移動が等加速度運動になっているので，これをS字の移動にする
             const Dx = this.MoveingTargetX - this.x;
             const Dy = this.MoveingTargetY - this.y;
             const Distance = Math.sqrt(Dx * Dx + Dy * Dy);
@@ -345,7 +346,7 @@ export class EnemyBase {
             }
         }
 
-
+        // TODOスキル発動時にキャラ画像のカットインを画面裏に透過で表示させるようにする
        if (this.SkillActivate == true) {
             if (this.SkillTimer > 0) {
                 this.SkillTimer -= DeltaTime;
@@ -620,6 +621,12 @@ export class EnemyBase {
 
         // 1. スキル名をテキストに設定
         this.SkillText.text = skillDefinition.name;
+
+        // 1.5. スキル発動前の警告エフェクト（スペルカード発動の「溜め」演出）
+        // 敵を中心に赤い警告円を表示してプレイヤーに準備時間を与える
+        const warningRadius = Math.max(this.EnemyWidth, this.EnemyHeight) * 1.2;
+        await showBurstWarning(this.EnemyContainer, this.x, this.y, warningRadius, 1.0);
+
         if(skillDefinition.NoMoveFlag == false){
             
             // 2. 移動先を定義から取得
