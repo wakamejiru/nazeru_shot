@@ -104,6 +104,12 @@ export class EnemyBase {
         this.SkillActivate = false;
         this.EndSkill = false;
         this.SkillTimer = SKILL_TIMER_MAX;
+
+        // S字移動のパラメータ初期化
+        this.MoveingStartX = this.x;
+        this.MoveingStartY = this.y;
+        this.MoveTimeElapsed = 0;
+        this.MoveDuration = 0.01;
     }
     /**
  	 * 非同期の初期化メソッドを追加
@@ -269,6 +275,15 @@ export class EnemyBase {
         const PositionXY = this.IsAreaIn(this.MoveingTargetX, this.MoveingTargetY);
         this.MoveingTargetX = PositionXY.AreaXPos; 
         this.MoveingTargetY = PositionXY.AreaYPos;     
+
+        // S字移動用の移動前パラメータ記録
+        this.MoveingStartX = this.x;
+        this.MoveingStartY = this.y;
+        this.MoveTimeElapsed = 0;
+        const dx = this.MoveingTargetX - this.x;
+        const dy = this.MoveingTargetY - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        this.MoveDuration = this.EnemySpeed > 0 ? distance / this.EnemySpeed : 0.01;
     }
 
     /**
@@ -294,20 +309,20 @@ export class EnemyBase {
                 this.MoveWaitTimer -= DeltaTime;
                 return;
             }
-            // TODO 移動が等加速度運動になっているので，これをS字の移動にする
-            const Dx = this.MoveingTargetX - this.x;
-            const Dy = this.MoveingTargetY - this.y;
-            const Distance = Math.sqrt(Dx * Dx + Dy * Dy);
-
-            if (Distance < (this.EnemySpeed * DeltaTime) || Distance < 1.0) { // ほぼ到達
+            // S字の移動（smoothstep補間）
+            this.MoveTimeElapsed += DeltaTime;
+            if (this.MoveTimeElapsed >= this.MoveDuration) {
                 this.x = this.MoveingTargetX;
                 this.y = this.MoveingTargetY;
                 this.MoveWaitTimer = this.MoveWaitDuration;
                 return;
             }
 
-            this.x += (Dx / Distance) * this.EnemySpeed * DeltaTime;
-            this.y += (Dy / Distance) * this.EnemySpeed * DeltaTime;
+            const t = this.MoveTimeElapsed / this.MoveDuration;
+            const s = t * t * (3 - 2 * t); // smoothstep補間
+            
+            this.x = this.MoveingStartX + (this.MoveingTargetX - this.MoveingStartX) * s;
+            this.y = this.MoveingStartY + (this.MoveingTargetY - this.MoveingStartY) * s;
 
             // 範囲内の確認を行う
             const PositionXY = this.IsAreaIn(this.x, this.y);
@@ -331,7 +346,7 @@ export class EnemyBase {
 
     /**
  	 * スキルの実行を行う
-     * @param {number} DeltaTime - 時間
+      * @param {number} DeltaTime - 時間
 	 */
     async _skilrun(DeltaTime)
     {
@@ -361,7 +376,7 @@ export class EnemyBase {
     }
 
     /**
- 	 * キャラクターの画像を当たり判定の座標軸と一致させる
+  	 * キャラクターの画像を当たり判定の座標軸と一致させる
 	 */
     DrawEnemyImage() {
         if (this.NowHP <= 0 || !this.EnemyImage) return;
@@ -375,7 +390,7 @@ export class EnemyBase {
     }
 
     /**
- 	 * キャラクターのHPバーを表示する
+  	 * キャラクターのHPバーを表示する
 	 */
     DrawHpBar() {
         if (this.NowHP <= 0 || !this.MaxHP || this.MaxHP <= 0) {
@@ -394,7 +409,7 @@ export class EnemyBase {
 
         const StartAngle = (EndAngle) - Math.PI * 2 * HPPercent;
 
-        // --- クリア ---
+        // ---  ---
         this.HpBarBackground.clear();
         this.HpBarFill.clear();
         this.HpBarLimit.clear();
@@ -427,8 +442,8 @@ export class EnemyBase {
     }
 
     /**
- 	 * ダメージを受けた時の処理
-     * @param amount - 受けたダメージの総量
+  	 * ダメージを受けた時の処理
+      * @param amount - 受けたダメージの総量
 	 */
     takeDamage(amount) {
         this.NowHP -= amount;
@@ -437,10 +452,10 @@ export class EnemyBase {
     }
 
     /**
- 	 * 攻撃終了を判定する
-     * @param NowAttack - 今の経過時間
-     * @param AttackLimitTh - 攻撃最大時間
-     * @param NextState - 次のアタックシーケンス
+  	 * 攻撃終了を判定する
+      * @param NowAttack - 今の経過時間
+      * @param AttackLimitTh - 攻撃最大時間
+      * @param NextState - 次のアタックシーケンス
 	 */
     isAttackendfuc(NowAttack, AttackLimitTh, NextState){
         
@@ -453,7 +468,7 @@ export class EnemyBase {
             this.NowAttackLimitCnt = 0;
 
             // 攻撃終了にあたり，攻撃の間隔タイマもりセット
-            this.NowAttackWatingTime = this.AttackWWatingTime;
+            this.NowAttackWatingTime = this.AttackWatingTime;
 
             // 攻撃汎用カウンタも削除
             this.AttackCounter = 0;
@@ -532,6 +547,7 @@ export class EnemyBase {
 	DamageHit(DamageParam){
 		// ダメージを受けた処理を行う
 		this.NowHPGuageHP -= DamageParam;
+        this.flashDamage(); // 被弾フラッシュを再生
         if(this.NowHPGuageHP <= 0){
             // 0以下の場合次のゲージに移行
             this.UpdateEndHPGuage();
@@ -606,6 +622,56 @@ export class EnemyBase {
         });
     }
 
+    /**
+     * 被弾時のフラッシュ演出を再生するメソッド
+     */
+    flashDamage() {
+        if (!this.FlashOverlay) return;
+        gsap.killTweensOf(this.FlashOverlay);
+        this.FlashOverlay.alpha = 0.8;
+        gsap.to(this.FlashOverlay, {
+            alpha: 0,
+            duration: 0.1,
+            ease: "power1.out"
+        });
+    }
+
+    /**
+     * スキル発動時のカットイン演出を再生するメソッド
+     */
+    showSkillCutIn() {
+        if (!this.EnemyImageKey) return;
+        
+        // カットイン用の大型スプライトを作成
+        const texture = PIXI.Texture.from(this.EnemyImageKey);
+        const cutInSprite = new PIXI.Sprite(texture);
+        cutInSprite.anchor.set(0.5);
+        cutInSprite.alpha = 0;
+        
+        // シューティングエリアの中心に配置し、右から左へスライドさせる
+        const startX = this.StartAreaX + this.NowPlayAreaWidth * 1.2;
+        const targetX = this.StartAreaX + this.NowPlayAreaWidth * 0.5;
+        const endX = this.StartAreaX - this.NowPlayAreaWidth * 0.2;
+        
+        cutInSprite.x = startX;
+        cutInSprite.y = this.StartAreaY + this.NowPlayAreaHeight * 0.5;
+        
+        // サイズを大きく設定（プレイエリア高さの70%）
+        const scale = (this.NowPlayAreaHeight * 0.7) / cutInSprite.texture.orig.height;
+        cutInSprite.scale.set(scale);
+        
+        // キャラクターや弾の裏側に表示されるように、コンテナの最背面(インデックス0)に追加
+        this.EnemyContainer.addChildAt(cutInSprite, 0);
+        
+        // アニメーションの実行
+        gsap.timeline()
+            .to(cutInSprite, { alpha: 0.25, x: targetX, duration: 0.4, ease: "power2.out" })
+            .to(cutInSprite, { x: targetX - 50, duration: 0.8, ease: "none" })
+            .to(cutInSprite, { alpha: 0, x: endX, duration: 0.4, ease: "power2.in", onComplete: () => {
+                cutInSprite.destroy();
+            }});
+    }
+
      /**
      * 【新設】スキル定義に基づき、移動から攻撃までの一連の流れを実行する汎用メソッド
      * @param {object} skillDefinition - スキルの設定オブジェクト
@@ -621,6 +687,9 @@ export class EnemyBase {
 
         // 1. スキル名をテキストに設定
         this.SkillText.text = skillDefinition.name;
+
+        // スキルカットイン演出を再生
+        this.showSkillCutIn();
 
         // 1.5. スキル発動前の警告エフェクト（スペルカード発動の「溜め」演出）
         // 敵を中心に赤い警告円を表示してプレイヤーに準備時間を与える

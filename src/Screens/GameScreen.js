@@ -53,6 +53,9 @@ export class GameScreen extends BaseScreen{
 			
 			// ゲーム中の必要なパラメータはここで宣言する
 			this.NowULTPoint = 3;
+			this.NowScore = 0;
+			this.IsGameOver = false;
+			this.IsGameClear = false;
 			// プレイヤーと敵のインスタンス	
 			this.PlayerInstance = null;
 			this.EnemyInstance = null;
@@ -209,6 +212,40 @@ export class GameScreen extends BaseScreen{
 			this.ScreenContainer.addChild(this.ShootingContainer);
 			this.ScreenContainer.addChild(this.ScoreContainer);
 			this.ScreenContainer.addChild(this.ULTContainer);
+
+			// ゲームオーバー / ゲームクリア用テキストの追加
+			this.GameOverTextStyle = new PIXI.TextStyle({
+				fontFamily: 'DotGothic16',
+				fontSize: 72,
+				fill: '#ff0000',
+				align: 'center',
+				dropShadow: true,
+				dropShadowColor: '#000000',
+				dropShadowBlur: 4,
+				dropShadowAngle: Math.PI / 6,
+				dropShadowDistance: 6
+			});
+			this.GameOverText = new PIXI.Text('GAME OVER\nPress ENTER to Return', this.GameOverTextStyle);
+			this.GameOverText.anchor.set(0.5);
+			this.GameOverText.visible = false;
+			this.ScreenContainer.addChild(this.GameOverText);
+
+			this.GameClearTextStyle = new PIXI.TextStyle({
+				fontFamily: 'DotGothic16',
+				fontSize: 72,
+				fill: '#ffd700',
+				align: 'center',
+				dropShadow: true,
+				dropShadowColor: '#000000',
+				dropShadowBlur: 4,
+				dropShadowAngle: Math.PI / 6,
+				dropShadowDistance: 6
+			});
+			this.GameClearText = new PIXI.Text('GAME CLEAR!\nPress ENTER to Return', this.GameClearTextStyle);
+			this.GameClearText.anchor.set(0.5);
+			this.GameClearText.visible = false;
+			this.ScreenContainer.addChild(this.GameClearText);
+
 			super.SetScreenVisible(false); // 初期は非表示
 		}
 	
@@ -342,6 +379,18 @@ export class GameScreen extends BaseScreen{
 				this.EnemyInstance.updateScale(CurrentOverallScale, this.ShootingBackgroundImage.x, this.ShootingBackgroundImage.y,
 					this.ShootingBackgroundImage.width, this.ShootingBackgroundImage.height)
 			}
+
+			// テキストの位置を調整
+			if (this.GameOverText) {
+				this.GameOverText.x = this.ShootingBackgroundImage.x + this.ShootingBackgroundImage.width / 2;
+				this.GameOverText.y = this.ShootingBackgroundImage.y + this.ShootingBackgroundImage.height / 2;
+				this.GameOverText.style.fontSize = 64 * CurrentOverallScale;
+			}
+			if (this.GameClearText) {
+				this.GameClearText.x = this.ShootingBackgroundImage.x + this.ShootingBackgroundImage.width / 2;
+				this.GameClearText.y = this.ShootingBackgroundImage.y + this.ShootingBackgroundImage.height / 2;
+				this.GameClearText.style.fontSize = 64 * CurrentOverallScale;
+			}
 		}
 	
 		/**
@@ -350,6 +399,12 @@ export class GameScreen extends BaseScreen{
 		 */
 	  	async StartScreen(){
 			this.NowULTPoint = 3;
+			this.NowScore = 0;
+			this.IsGameOver = false;
+			this.IsGameClear = false;
+			if (this.GameOverText) this.GameOverText.visible = false;
+			if (this.GameClearText) this.GameClearText.visible = false;
+			if (this.ScoreText) this.ScoreText.text = 'Score: 0';
 			// ULTの表示を反映
 			this.UpdateULTPointVeiw();
 			await this.CreateEnemyPlayerInstance();
@@ -357,12 +412,28 @@ export class GameScreen extends BaseScreen{
 		}
 		
 		/**
-	   * 画面の開始を行う
-	   * @param {boolean} Visible - true:ON false:OFF
-	   */
-	  EndScreen(){
+ 	   * 画面の開始を行う
+ 	   * @param {boolean} Visible - true:ON false:OFF
+ 	   */
+ 	  EndScreen(){
 		super.EndScreen();
-	  }
+		if (this.PlayerInstance) {
+			if (this.PlayerInstance.CharacterContainer) {
+				this.PlayerInstance.CharacterContainer.destroy({ children: true });
+			}
+			this.PlayerInstance = null;
+		}
+		if (this.EnemyInstance) {
+			if (this.EnemyInstance.EnemyContainer) {
+				this.EnemyInstance.EnemyContainer.destroy({ children: true });
+			}
+			this.EnemyInstance = null;
+		}
+		this.PlayerBulletInstances.forEach(bullet => bullet.destroy());
+		this.PlayerBulletInstances = [];
+		this.EnemyBulletInstances.forEach(bullet => bullet.destroy());
+		this.EnemyBulletInstances = [];
+ 	  }
 
     /**
      * 画像を読み込み、PixiJSテクスチャを準備する関数
@@ -395,7 +466,35 @@ export class GameScreen extends BaseScreen{
             this.InputCooldown -= DeltaTime;
         }
 
+		if (this.IsGameOver || this.IsGameClear) {
+			// ENTERキーまたはゲームパッドの決定ボタンでタイトル画面へ戻る
+			let confirmed = false;
+			if (InputCurrentState) {
+				if (InputCurrentState.gamepad?.confirm || InputCurrentState.keys.has('Enter')) {
+					confirmed = true;
+				}
+			}
+			if (confirmed && this.InputCooldown <= 0) {
+				this.InputCooldown = this.COOLDOWN_TIME;
+				return SCREEN_STATE.GAME_TITLE;
+			}
+			return this.ScreenState;
+		}
+
 		if(this.PlayerInstance){
+			// ULT（無敵）発動判定
+			if (InputCurrentState) {
+				const isUltKeyboard = InputCurrentState.keys.has('KeyX') || InputCurrentState.keys.has('Space');
+				const isUltGamepad = InputCurrentState.gamepad?.buttons[1]?.pressed;
+				if ((isUltKeyboard || isUltGamepad) && this.NowULTPoint > 0 && !this.PlayerInstance.WakeUpULT) {
+					this.NowULTPoint--;
+					this.UpdateULTPointVeiw();
+					this.PlayerInstance.WakeUpULT = true;
+					this.PlayerInstance.ULTNowDuringTime = 0;
+					this.PlayerInstance.trackingStrengthPower = 5.0; // ULT中は追尾性能を最高に
+				}
+			}
+
 			// スキルの判定を行う
 			this.PlayerInstance._skillrun(DeltaTime);
 			// 移動判定を行う
@@ -788,8 +887,24 @@ export class GameScreen extends BaseScreen{
 
 				if (isHit) {
 					// --- ヒットした時の共通処理 ---
-					this.PlayerInstance.NowHP -= enemyBullet.damage || 10;
+					// ULT（無敵）時間中はダメージを受けない
+					if (this.PlayerInstance.WakeUpULT) {
+						enemyBullet.destroy();
+						this.EnemyBulletInstances.splice(i, 1);
+						continue;
+					}
+
+					let damage = enemyBullet.damage || 10;
+					// パッシブダメージ軽減の適用
+					if (this.PlayerInstance.PassiveSkillDemageCut > 0) {
+						damage *= (1 - this.PlayerInstance.PassiveSkillDemageCut);
+					}
+
+					this.PlayerInstance.NowHP -= damage;
 					this.updateHpBarView();
+
+					// スコア減算
+					this.UpdateScores(-100);
 
 					enemyBullet.destroy();
 					this.EnemyBulletInstances.splice(i, 1);
@@ -797,8 +912,11 @@ export class GameScreen extends BaseScreen{
 					//console.log(`Player Hit! HP: ${this.PlayerInstance.NowHP}`);
 					
 					if(this.PlayerInstance.NowHP <= 0){
+						this.PlayerInstance.NowHP = 0;
+						this.updateHpBarView();
 						console.log("GAME OVER");
-						// TODO: ゲームオーバー処理
+						this.IsGameOver = true;
+						this.GameOverText.visible = true;
 					}
 					// 無敵時間など
 				}
@@ -831,7 +949,9 @@ export class GameScreen extends BaseScreen{
 					// ヒットした時の処理
 
 					this.EnemyInstance.DamageHit(playerBullet.damage  || 10);
-					// TODO: 敵のHPバー更新処理があれば呼び出す
+					
+					// スコア加算
+					this.UpdateScores(10);
 					
 					playerBullet.isHit = true; // 弾をヒット済みにする
 					
@@ -839,9 +959,10 @@ export class GameScreen extends BaseScreen{
 					
 					if(this.EnemyInstance.NowEnemyHPGuage <= 0){ //
 						console.log("Enemy Defeated!"); //
-						// TODO: 敵撃破処理（スコア加算、次の敵の生成、ゲームクリアなど）
+						this.IsGameClear = true;
+						this.GameClearText.visible = true;
+						this.UpdateScores(1000); // 撃破スコア加算
 					}
-					// TODO: 敵の無敵時間や被弾アニメーションなどの処理があれば追加
 				}
 			}
 		}
@@ -968,13 +1089,17 @@ export class GameScreen extends BaseScreen{
     // }
 
 	/**
-     * スコアの加算処理
+     * スコアの加算・減算処理
      */
-	UpdateScores(){
-		// スコアは以下の研鑽で行う
-		// 基本的に減算処理
-		
-		// 減算
+	UpdateScores(amount){
+		if (this.NowScore === undefined) {
+			this.NowScore = 0;
+		}
+		this.NowScore += amount;
+		if (this.NowScore < 0) {
+			this.NowScore = 0;
+		}
+		this.ScoreText.text = `Score: ${this.NowScore}`;
 	}
 
 	/**

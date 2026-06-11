@@ -364,7 +364,7 @@ export const  sub_bulled_info_list = {
     },
     [SubBulletEnum.S_BULLET_4]: // 外側に向かって発射
     {
-        ullet_number :6, // バレットの数は5
+        bullet_number :6, // バレットの数は5
         Bullet_Angle :72, // バレットの放射角度(R)
         z_bullet_angle_mag: 0, // 低速モード時の集中率
         // 半径と設置角度からバレットの放出点を計算することができる        

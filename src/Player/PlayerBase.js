@@ -60,6 +60,8 @@ export class PlayerBase {
         this.CharacterSkillType2 = CharacterConfig.character_skill2;
         this.CharacterULTType = CharacterConfig.character_ULT;
         this.PussivSkillKey = CharacterConfig.passiv_skill;
+        this.WakeUpULT = false;
+        this.PassiveSkillDemageCut = 0.0;
 
         // 移動用
         this.dx = 0;
@@ -561,5 +563,12 @@ export class PlayerBase {
         this.CharacterImage.y = this.y;
         this.HitPointImage.x = this.x;
         this.HitPointImage.y = this.y;
+
+        // ULT（無敵）時間中の明滅演出
+        if (this.WakeUpULT) {
+            this.CharacterImage.alpha = 0.5 + 0.3 * Math.sin(Date.now() * 0.02);
+        } else {
+            this.CharacterImage.alpha = 1.0;
+        }
     }
 }

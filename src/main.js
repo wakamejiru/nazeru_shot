@@ -142,6 +142,13 @@ function ResizeGame() {
     ScreenList.forEach(Screen => {
         Screen.ResizeScreen(App, MainScaleFactor);
     });
+
+    if (fadeOverlay) {
+        fadeOverlay.clear();
+        fadeOverlay.beginFill(0x000000);
+        fadeOverlay.drawRect(0, 0, App.screen.width, App.screen.height);
+        fadeOverlay.endFill();
+    }
 }
 
 /**
@@ -156,7 +163,7 @@ async function InitializeGame(){
     
     await LoadScreen.PreloadLoadingScreenAssetsForPixi() // ローディングアニメーション用画像を読み込む
 
-    Utils.Wait(0.2); // 上記のロードが終わらないと，ResizeGameでlistが完成しておらず仕様を満たさない
+    await Utils.Wait(0.2); // 上記のロードが終わらないと，ResizeGameでlistが完成しておらず仕様を満たさない
     
     // ロードスクリーンの画面だけインスタンスを作成して初期化
     ScreenList.push(new LoadScreen.LoadScreen(App, BaseScreen.SCREEN_STATE.LOADING));
@@ -165,6 +172,14 @@ async function InitializeGame(){
     NowScreenInstance.InitializeScreen(MainScaleFactor);
     NowScreenInstance.StartScreen();
 
+    // フェード用黒オーバーレイの作成と追加
+    fadeOverlay = new PIXI.Graphics();
+    fadeOverlay.beginFill(0x000000);
+    fadeOverlay.drawRect(0, 0, App.screen.width, App.screen.height);
+    fadeOverlay.endFill();
+    fadeOverlay.alpha = 0;
+    fadeOverlay.visible = false;
+    App.stage.addChild(fadeOverlay);
 
     ResizeGame();
     // ゲームループを開始
@@ -287,45 +302,65 @@ async function GameLoop(CurrentTime){
     // ゼロ除算や極端なdeltaTimeを防ぐ（ブラウザがバックグラウンドになった場合など）
     const ClampedDeltaTime = Math.min(DeltaTime, 0.1); // 例: 最大0.1秒に制限
 
-    const InputCurrentState = (NowWaitInputLag > WaitInputLag) ? InputManagerInstance.getState() : null;
+    const InputCurrentState = (NowWaitInputLag > WaitInputLag && !isFading) ? InputManagerInstance.getState() : null;
     NowWaitInputLag += DeltaTime;
 
-    if(CurrentScreen == BaseScreen.SCREEN_STATE.LOADING){
-        // ロード画面の際は特殊な操作が必要
-        NextScreen = NowScreenInstance.EventPoll(ClampedDeltaTime, InputCurrentState);
-        await UpdateLoadingLogic();        
-    }else{
-        NextScreen = NowScreenInstance.EventPoll(ClampedDeltaTime, InputCurrentState);
+    if (!isFading) {
+        if(CurrentScreen == BaseScreen.SCREEN_STATE.LOADING){
+            // ロード画面の際は特殊な操作が必要
+            NextScreen = NowScreenInstance.EventPoll(ClampedDeltaTime, InputCurrentState);
+            await UpdateLoadingLogic();        
+        }else{
+            NextScreen = NowScreenInstance.EventPoll(ClampedDeltaTime, InputCurrentState);
+        }
     }
 
-    if(NextScreen != CurrentScreen){
-        // ロード画面が終わった場合はすべての画面をリサイズする(ここは後でうまく作る)
-        if(CurrentScreen == BaseScreen.SCREEN_STATE.LOADING){
-            ScreenList.forEach(Screen => {
-                Screen.ResizeScreen(App, MainScaleFactor);
-            });
-        }
+    if(NextScreen != CurrentScreen && !isFading){
+        isFading = true;
 
-        // 遷移するので処理を行う
-        PreviousScrren = CurrentScreen;
-        CurrentScreen = NextScreen;
-        // フェード開始
-        InputManagerInstance.clearInputState(); // 入力を削除
-        NowScreenInstance.EndScreen();
-        NowScreenInstance = GetScreenInstance(CurrentScreen);
-        
-        console.log(`${NowScreenInstance.GetScreenKey()}`);
-        NowScreenInstance.StartScreen();
+        // フェード用オーバーレイを最前面に移動
+        App.stage.addChild(fadeOverlay);
+        fadeOverlay.visible = true;
 
-        // フェード停止
+        // フェードアウト
+        gsap.to(fadeOverlay, {
+            alpha: 1,
+            duration: FADE_DURATION,
+            onComplete: async () => {
+                // ロード画面が終わった場合はすべての画面をリサイズする(ここは後でうまく作る)
+                if(CurrentScreen == BaseScreen.SCREEN_STATE.LOADING){
+                    ScreenList.forEach(Screen => {
+                        Screen.ResizeScreen(App, MainScaleFactor);
+                    });
+                }
 
+                // 遷移するので処理を行う
+                PreviousScrren = CurrentScreen;
+                CurrentScreen = NextScreen;
+                
+                InputManagerInstance.clearInputState(); // 入力を削除
+                NowScreenInstance.EndScreen();
+                NowScreenInstance = GetScreenInstance(CurrentScreen);
+                
+                console.log(`${NowScreenInstance.GetScreenKey()}`);
+                await NowScreenInstance.StartScreen();
 
+                // 新しい画面に合わせたリサイズ
+                ResizeGame();
 
-        // 画面遷移後数ミリ秒間は入力を無効化する
-        NowWaitInputLag = 0;        
-
-
-
+                // フェードイン
+                gsap.to(fadeOverlay, {
+                    alpha: 0,
+                    duration: FADE_DURATION,
+                    onComplete: () => {
+                        fadeOverlay.visible = false;
+                        isFading = false;
+                        // 画面遷移後数ミリ秒間は入力を無効化する
+                        NowWaitInputLag = 0;
+                    }
+                });
+            }
+        });
     }
 
     requestAnimationFrame(GameLoop); // 再起によりMainループが回る
