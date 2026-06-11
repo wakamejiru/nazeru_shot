@@ -197,7 +197,7 @@ export class LogoScreen extends BaseScreen{
      * @param {number} CurrentOverallScale 現在のメイン画面倍率
    */
     ResizeScreen(App, CurrentOverallScale){
-      if (!this.ScreenContainer) return;
+      if (!this.ScreenContainer || !this.LogoAnimation || !this.InfomationBackgroundImage) return;
 
       // Anime画像をリサイズ
 

@@ -11,10 +11,6 @@ import {EnemyType4} from "../Enemy/EnemyType4.js";
 import {EnemyType5} from "../Enemy/EnemyType5.js";
 import {EnemyType6} from "../Enemy/EnemyType6.js";
 import {EnemyType7} from "../Enemy/EnemyType7.js";
-import {EnemyType8} from "../Enemy/EnemyType8.js";
-import {EnemyType9} from "../Enemy/EnemyType9.js";
-import {EnemyType10} from "../Enemy/EnemyType10.js";
-import {EnemyType11} from "../Enemy/EnemyType11.js";
 
 // ボタンはない
 const ButtonID = Object.freeze({
@@ -765,19 +761,10 @@ export class GameScreen extends BaseScreen{
 				break;
 
 			case 7:
-				this.EnemyInstance = new EnemyType8(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
-				break;
-
 			case 8:
-				this.EnemyInstance = new EnemyType9(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
-				break;
-
 			case 9:
-				this.EnemyInstance = new EnemyType10(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
-				break;
-
 			case 10:
-				this.EnemyInstance = new EnemyType11(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+				this.EnemyInstance = new EnemyType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
 				break;
 
 			default:
@@ -925,8 +912,6 @@ export class GameScreen extends BaseScreen{
 
 		if (this.EnemyInstance && this.PlayerBulletInstances) { //
 			// 敵の中心座標と半径を取得 (敵も円形と仮定)
-			const enemyCenterX = this.EnemyInstance.x; //
-			const enemyCenterY = this.EnemyInstance.y; //
 			const enemyRadius = this.EnemyInstance.EnemyHitPointRadius; // 敵インスタンスが持つ当たり判定半径
 
 			// 味方弾の配列をループ
@@ -941,13 +926,27 @@ export class GameScreen extends BaseScreen{
 				const bulletCenterY = playerBullet.y; //
 				const bulletRadius = playerBullet.HitPointRadius || (playerBullet.BulletImage.width / 2); //
 
-				// 円と円の当たり判定
-				if (this.checkCircleCircleCollision( //
-					enemyCenterX, enemyCenterY, enemyRadius, //
-					bulletCenterX, bulletCenterY, bulletRadius //
-				)) {
-					// ヒットした時の処理
+				// 判定対象（本体 ＋ 有効なクローン）のリスト
+				const targets = [{ x: this.EnemyInstance.x, y: this.EnemyInstance.y }];
+				if (this.EnemyInstance.ActiveClones && this.EnemyInstance.ClonesCollidable) {
+					for (const clone of this.EnemyInstance.ActiveClones) {
+						targets.push({ x: clone.x, y: clone.y });
+					}
+				}
 
+				let hit = false;
+				for (const target of targets) {
+					if (this.checkCircleCircleCollision(
+						target.x, target.y, enemyRadius,
+						bulletCenterX, bulletCenterY, bulletRadius
+					)) {
+						hit = true;
+						break;
+					}
+				}
+
+				if (hit) {
+					// ヒットした時の処理
 					this.EnemyInstance.DamageHit(playerBullet.damage  || 10);
 					
 					// スコア加算

@@ -1,5 +1,6 @@
-// Type1Enemyのクラス
+// Type2Enemyのクラス
 // テーマ：ビーム+音
+
 import { EnemyBase } from "./EnemyBase.js";
 import { SingleShotFunc, RoundShotFunc, FanShotFunc, windmillshotfunc, CircleAndHomeShotFunc } from "./EnemyShot.js";
 import { ChangeActivation, Bullet } from '../bullet.js'; 
@@ -8,6 +9,7 @@ import { CharacterTypeEnum, character_info_list, MainBulletEnum, SubBulletEnum,
     main_bulled_info_list, sub_bulled_info_list, 
     enemy_info_list,
     EnemyTypeEnum } from '../game_status.js';
+import { showLineWarning, showBurstWarning, showSpotWarning, showFanWarning, showAreaWarning } from '../DangerWarning.js';
 
 /**
  * 指定された秒数だけ待機するPromiseを返すヘルパー関数
@@ -18,51 +20,79 @@ const wait = (seconds) => new Promise(resolve => setTimeout(resolve, seconds * 1
 export class EnemyType2 extends EnemyBase {
     constructor(GameScreenContainer, StartShootingX, StartShootingY, StartShootingWidth, StartShootingHeight) {
         
-        const enemyInfo = enemy_info_list[EnemyTypeEnum.E_TYPE_1];
+        const enemyInfo = enemy_info_list[EnemyTypeEnum.E_TYPE_2] || enemy_info_list[EnemyTypeEnum.E_TYPE_1];
         // HP、バーを難易度ごとに変更
+        const hpGauges = (DifficultyLevel < 1) ? 2 : (DifficultyLevel <= 2) ? 3 : 4;
         const BaseConfig = {
             ...enemyInfo,
-            enemy_maxhp: 10000000000,// enemyInfo.enemy_maxhp * ((0.6 * DifficultyLevel) + 0.4),
-            enemy_hp_guage: (DifficultyLevel  < 2) ? 2 : 3,
-            ETypeTypeID: EnemyTypeEnum.E_TYPE_1
+            enemy_maxhp: enemyInfo.enemy_maxhp * ((0.6 * DifficultyLevel) + 0.4),
+            enemy_hp_guage: hpGauges,
+            ETypeTypeID: EnemyTypeEnum.E_TYPE_2
         };
 
         super(GameScreenContainer, StartShootingX, StartShootingY, StartShootingWidth, StartShootingHeight, BaseConfig);
 
-        // 各攻撃ループが開始されたかを管理するフラグ
         this._attackLoopsStarted = false;
 
         // スキルごとの設定をデータとして定義
         this.SkillDefinitions = {
             0: {
-                name: "バームクーヘン",
-                // 移動先座標を関数として定義
-                // 移動がない場合以下のフラグを無しに
+                name: "輪音「バームクーヘン」",
                 NoMoveFlag: false,
                 targetX: () => this.StartAreaX + (this.NowPlayAreaWidth * 0.5),
                 targetY: () => this.StartAreaY + this.NowPlayAreaHeight * 0.25,
-                // 実行する攻撃関数を紐付け
                 attackFunction: this.AttackSkill1, 
-                // スキル終了後、通常移動を許可するか
                 allowMoveAfter: true
             },
             1: {
-                name: "四重奏のプレリュード",              
+                name: "光響「超電磁集束ビーム」",              
                 NoMoveFlag: false,
                 targetX: () => this.StartAreaX + (this.NowPlayAreaWidth * 0.5),
-                targetY: () => this.StartAreaY + this.NowPlayAreaHeight * 0.3,
-                attackFunction: this.AttackSkill2, // 新しい攻撃関数
-                allowMoveAfter: true // スキル後も移動しない
-            },
-            2: {
-                name: "十字",              
-                NoMoveFlag: false,
-                targetX: () => this.StartAreaX + (this.NowPlayAreaWidth * 0.5),
-                targetY: () => this.StartAreaY + this.NowPlayAreaHeight * 0.5,
-                attackFunction: this.AttackSkill3, // 新しい攻撃関数
-                allowMoveAfter: true // スキル後も移動しない
+                targetY: () => this.StartAreaY + this.NowPlayAreaHeight * 0.2,
+                attackFunction: this.AttackSkill2, 
+                allowMoveAfter: true 
             }
         };
+
+        if (DifficultyLevel === 2) {
+            // Hard
+            this.SkillDefinitions[2] = {
+                name: "旋律「回転十字ビームと残光」",
+                NoMoveFlag: false,
+                targetX: () => this.StartAreaX + (this.NowPlayAreaWidth * 0.5),
+                targetY: () => this.StartAreaY + this.NowPlayAreaHeight * 0.25,
+                attackFunction: this.AttackSkill3,
+                allowMoveAfter: true
+            };
+        } else if (DifficultyLevel === 3) {
+            // Lunatic
+            this.SkillDefinitions[2] = {
+                name: "旋律「回転十字ビームと残光」",
+                NoMoveFlag: false,
+                targetX: () => this.StartAreaX + (this.NowPlayAreaWidth * 0.5),
+                targetY: () => this.StartAreaY + this.NowPlayAreaHeight * 0.25,
+                attackFunction: this.AttackSkill3,
+                allowMoveAfter: true
+            };
+            this.SkillDefinitions[3] = {
+                name: "反響「多重反射レーザー」",
+                NoMoveFlag: false,
+                targetX: () => this.StartAreaX + (this.NowPlayAreaWidth * 0.5),
+                targetY: () => this.StartAreaY + this.NowPlayAreaHeight * 0.25,
+                attackFunction: this.AttackSkill4,
+                allowMoveAfter: true
+            };
+        } else if (DifficultyLevel === 1) {
+            // Normal
+            this.SkillDefinitions[2] = {
+                name: "反響「多重反射レーザー」",
+                NoMoveFlag: false,
+                targetX: () => this.StartAreaX + (this.NowPlayAreaWidth * 0.5),
+                targetY: () => this.StartAreaY + this.NowPlayAreaHeight * 0.25,
+                attackFunction: this.AttackSkill4,
+                allowMoveAfter: true
+            };
+        }
     }
 
     updateScale(NewScaleFactor, NewShootingStartX, NewShootingStartY, NewShootingWidth, NewShootingHeight) {
@@ -73,9 +103,6 @@ export class EnemyType2 extends EnemyBase {
         super.move(DeltaTime);
     }
 
-    /**
-     * 各攻撃パターンを、指定した遅延（位相）で並列に開始させるトリガー
-     */
     _shoot(EnemyBulletArray, TargetPlayer, DeltaTime) {
         if (this.NowHPGuageHP <= 0) {
             this._attackLoopsStarted = false; 
@@ -85,391 +112,346 @@ export class EnemyType2 extends EnemyBase {
         if (!this._attackLoopsStarted) {
             this._attackLoopsStarted = true;
             
-            // 各パターンのループに、開始遅延時間（秒）を渡す
-            this.pattern1_Loop(EnemyBulletArray, TargetPlayer, 0.3);  // 0.3秒後に開始
-            this.pattern2_Loop(EnemyBulletArray, TargetPlayer, 1.5);  // 1.5秒後に開始
-            this.pattern3_Loop(EnemyBulletArray, TargetPlayer, 2);  // 2秒後に開始
+            this.pattern1_Loop(EnemyBulletArray, TargetPlayer, 0.3);
+            this.pattern2_Loop(EnemyBulletArray, TargetPlayer, 1.5);
+            this.pattern3_Loop(EnemyBulletArray, TargetPlayer, 2.0);
         }
     }
 
     /**
-     * 【攻撃パターン1】扇形弾の独立した実行ループ
-     * @param {number} initialDelay - このループの開始遅延時間（秒）
+     * 【攻撃パターン1】微小円弧のカーブ弾幕
      */
-    // TODO 変更した方向に大きめの弾で10度ぐらいの円弧を作成，円の半径を大きくしてできるだけ曲率少しあるかなぐらいにする
-    // これを繰り返して発射，難易度で発射レートと弾の速度が上がる
-    // 
     async pattern1_Loop(EnemyBulletArray, TargetPlayer, initialDelay) {
-        // 指定された時間だけ待機してからループを開始
         await wait(initialDelay);
 
-        // HPゲージが残っている間、ループし続ける
         while (this.NowHPGuageHP > 0) {
-            const difficultyMultiplier = 1.0 + DifficultyLevel;
-            
-            // --- 扇形弾の1シーケンス（このブロックは一度始まると最後まで実行される） ---
-            const BulletNumber = 3 * Math.floor(5 * DifficultyLevel / 4);
-
-            for (let i = 0; i < BulletNumber; i++) {
-
-                const deltaX = TargetPlayer.x - this.x;
-                const deltaY = TargetPlayer.y - this.y;
-                const centerAngleDegrees = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-                const fanAngle = 45;
-                const StartAngle = centerAngleDegrees - fanAngle;
-                const EndAngle = centerAngleDegrees + fanAngle;
+            const dm = 1.0 + DifficultyLevel * 0.5;
+            if ((this.NowHPGuageHP > 0) && (this.SkillActivate == false)) {
+                const dx = TargetPlayer.x - this.x;
+                const dy = TargetPlayer.y - this.y;
+                const centerAngleDegrees = Math.atan2(dy, dx) * (180 / Math.PI);
+                
+                const bulletCount = 3 + Math.floor(DifficultyLevel);
+                const fanAngle = 12; // 狭い円弧
+                
+                const speed = 180 * dm;
+                const turnDirection = Math.random() > 0.5 ? 1 : -1;
+                
                 const bulletOptions = {
-                    vx: 40, vy: 40, ax: 30, ay: 30, jx: 0, jy: 0,
-                    width: 10, height: 10, radius: 1000, damage: 25, life: 15,
-                    target: TargetPlayer, trackingStrength: 0,
-                    BulletImageKey: "BulletTypeA", shape: "rectangle"
+                    vx: speed, vy: speed, ax: 0, ay: 0, jx: 0, jy: 0,
+                    width: 20, height: 20, damage: 20, life: 15,
+                    BulletImageKey: "BulletTypeA", shape: "circle",
+                    turnRate: 0.15 * turnDirection * dm
                 };
-                if ((this.NowHPGuageHP > 0) && (this.SkillActivate == false)) {
-                    RoundShotFunc(EnemyBulletArray, this.x, this.y, 
-                                                BulletNumber, StartAngle,  
-                                                bulletOptions, EndAngle, this.EnemyContainer);
 
-                    await wait(0.5 / difficultyMultiplier); // 短い待機
-                }
+                const startAngle = centerAngleDegrees - fanAngle / 2;
+                const endAngle = centerAngleDegrees + fanAngle / 2;
+
+                RoundShotFunc(EnemyBulletArray, this.x, this.y, bulletCount, startAngle, bulletOptions, endAngle, this.EnemyContainer);
             }
-            // --- シーケンス終了 ---
-
-            // 次のシーケンスまでの長い待機
-            await wait(4.0 / difficultyMultiplier);
+            await wait(1.5 / dm);
         }
     }
 
     /**
-     * 【攻撃パターン2】円形弾の独立した実行ループ
-     * @param {number} initialDelay - このループの開始遅延時間（秒）
+     * 【攻撃パターン2】移動円形弾＋極太薙ぎ払いビーム
      */
-    // TODO 移動しながら円形の連続して弾を発射，加えて非常に大きい弾を連続して発射してビームに見立てる
-    // ビームを下方向の180度に対して薙ぎ払い
     async pattern2_Loop(EnemyBulletArray, TargetPlayer, initialDelay) {
-            await wait(initialDelay);
+        await wait(initialDelay);
 
-            const AddAngle = 30;
-            let StartAngle = 0;
-            let EndAngle = 360;
-            let BulletWidth = 10;
-            let BulletHeight = 10;
-        // HPゲージが残っている間、ループし続ける
         while (this.NowHPGuageHP > 0) {
-            const difficultyMultiplier = 1.0 + DifficultyLevel;
-            
-
-            // 打つたびに位相の変更
-            // Hard以上：ランダムで大きさの変更を行う
-            // 大きい場合は間隔が増大
-            // 乱数を生成、unitに移動するのちに
-            const getRandomInt = (min, max) => {
-                min = Math.ceil(min); // 最小値を切り上げ
-                max = Math.floor(max); // 最大値を切り捨て
-                return Math.floor(Math.random() * (max - min + 1)) + min;
-            }
-
-
-            
-            for (let i = 0; i < 10; i++) {
+            const dm = 1.0 + DifficultyLevel * 0.4;
+            if ((this.NowHPGuageHP > 0) && (this.SkillActivate == false)) {
                 this.CanMoveFlag = false;
-                // --- 扇形弾の1シーケンス（このブロックは一度始まると最後まで実行される） ---
-                const BulletNumber = 5 * Math.floor(5 * DifficultyLevel / 4);
-                StartAngle += AddAngle;
-                StartAngle  = StartAngle % 360;
-                EndAngle = 360 + StartAngle;
 
-                // 30から10までの乱数を生成（この場合、min=10, max=30 となります）
-                const randomNumber = getRandomInt(10, 30);
-                // 高難易度だと出現率上昇
-                if((DifficultyLevel > 1) && (Math.floor(Math.random()) % (DifficultyLevel > 2) ? 2 : 4)){
-                    BulletWidth = randomNumber;
-                    BulletHeight = randomNumber;
-                }
-                const bulletOptions = {
-                    vx: 100, vy: 100, ax: 0, ay: 0, jx: 0, jy: 0,
-                    width: BulletWidth, height: BulletHeight, radius: 1000, damage: 25, life: 15,
-                    target: TargetPlayer, trackingStrength: 0,
-                    BulletImageKey: "BulletTypeA", shape: "rectangle"
+                // 薙ぎ払いビーム (0度〜180度へスイープ)
+                const sweepSteps = 30 + Math.floor(10 * DifficultyLevel);
+                const sweepDuration = 1.5;
+                const stepDelay = sweepDuration / sweepSteps;
+                
+                // 円形弾幕を同時に放つ
+                const bulletOptionsCircle = {
+                    vx: 120 * dm, vy: 120 * dm, ax: 0, ay: 0, jx: 0, jy: 0,
+                    width: 10, height: 10, damage: 15, life: 15,
+                    BulletImageKey: "BulletTypeA", shape: "circle"
                 };
-                if ((this.NowHPGuageHP > 0) && (this.SkillActivate == false)) {
-                    RoundShotFunc(EnemyBulletArray, this.x, this.y, 
-                                                BulletNumber, StartAngle,  
-                                                bulletOptions, EndAngle, this.EnemyContainer);
+                RoundShotFunc(EnemyBulletArray, this.x, this.y, 16, 0, bulletOptionsCircle, 360, this.EnemyContainer);
 
-                    await wait(1.0 / difficultyMultiplier); // 短い待機
+                // スイープビーム射出
+                const sweepDirection = Math.random() > 0.5 ? 1 : -1;
+                const startAngle = sweepDirection === 1 ? 0 : 180;
+                const endAngle = sweepDirection === 1 ? 180 : 0;
+                
+                for (let i = 0; i <= sweepSteps; i++) {
+                    if (this.NowHPGuageHP <= 0 || this.SkillActivate) break;
+                    
+                    const angleDeg = startAngle + (endAngle - startAngle) * (i / sweepSteps);
+                    const angleRad = angleDeg * Math.PI / 180;
+                    
+                    // ビームを構成する重ね弾
+                    for (let dist = 0; dist < 8; dist++) {
+                        const sx = this.x + dist * 15 * Math.cos(angleRad);
+                        const sy = this.y + dist * 15 * Math.sin(angleRad);
+                        const bulletOptionsBeam = {
+                            vx: 550 * dm * Math.cos(angleRad),
+                            vy: 550 * dm * Math.sin(angleRad),
+                            width: 25, height: 25, damage: 30, life: 1,
+                            BulletImageKey: "BulletTypeA", shape: "circle"
+                        };
+                        EnemyBulletArray.push(new Bullet(this.EnemyContainer, sx, sy, bulletOptionsBeam));
+                    }
+                    await wait(stepDelay);
                 }
-
+                
+                this.CanMoveFlag = true;
             }
-            // --- シーケンス終了 ---
-            this.CanMoveFlag = true;
-
-            // 次のシーケンスまでの長い待機
-            await wait(5.0 / difficultyMultiplier);
+            await wait(4.5 / dm);
         }
     }
 
-    // TODO変更：外から下から上方向に向けて弾を発射それは二次関数のように一度停止してから，下に降りてくる
-    // キャラクタの中心からひし形状にならべた玉をある程度の速度でPlayerの方向に向かって射出その時に，途中でひし形の奥の弾の方が早くなり，手前の弾が遅くなって前後が癪転する(視覚的にきれいに)
     /**
-     * 長い球を発射単発巨大弾の独立した実行ループ
-     * @param {number} initialDelay - このループの開始遅延時間（秒）
+     * 【攻撃パターン3】放物線上昇弾＋自機狙い前後逆転ひし形弾
      */
     async pattern3_Loop(EnemyBulletArray, TargetPlayer, initialDelay) {
         await wait(initialDelay);
 
         while (this.NowHPGuageHP > 0) {
-            const difficultyMultiplier = 1.0 + (DifficultyLevel / 4);
-            // HPが0もしくは、スキル中なら行わない
+            const dm = 1.0 + DifficultyLevel * 0.4;
             if ((this.NowHPGuageHP > 0) && (this.SkillActivate == false)) {
-                const bulletBasicOptions = { vx: 100, vy: 100, ax: 0, ay: 0, jx: 0, jy: 0, width: 20, height: 250, damage: 100, life: 15, target: TargetPlayer, trackingStrength: 0, BulletImageKey: "BulletTypeA", shape: "rectangle" };
-                SingleShotFunc(EnemyBulletArray, this.x, this.y, bulletBasicOptions, this.EnemyContainer, TargetPlayer.x, TargetPlayer.y);
-                 console.log("ShotLongBullet");
+                // 1. 放物線上昇弾
+                const bottomY = this.StartAreaY + this.NowPlayAreaHeight * 0.95;
+                const bulletCountBottom = 6 + Math.floor(4 * DifficultyLevel);
+                for (let i = 0; i < bulletCountBottom; i++) {
+                    const startX = this.StartAreaX + (this.NowPlayAreaWidth * (i + 1)) / (bulletCountBottom + 1);
+                    const bulletOptionsBottom = {
+                        vx: 0,
+                        vy: -350 * dm, // 上方へ発射
+                        ax: 0,
+                        ay: 180 * dm,  // 下方向への加速度（重力）
+                        width: 12, height: 12, damage: 20, life: 20,
+                        BulletImageKey: "BulletTypeA", shape: "circle"
+                    };
+                    EnemyBulletArray.push(new Bullet(this.EnemyContainer, startX, bottomY, bulletOptionsBottom));
+                }
+
+                // 2. 前後逆転ひし形弾（自機狙い）
+                const dx = TargetPlayer.x - this.x;
+                const dy = TargetPlayer.y - this.y;
+                const angle = Math.atan2(dy, dx);
+                
+                const count = 4;
+                for (let i = 0; i < count; i++) {
+                    // 後ろの弾ほど初速・加速度を上げる
+                    const speed = 120 + i * 25;
+                    const accel = 15 + i * 25;
+                    
+                    const bulletOptionsRhombus = {
+                        vx: speed * dm * Math.cos(angle),
+                        vy: speed * dm * Math.sin(angle),
+                        ax: accel * dm * Math.cos(angle),
+                        ay: accel * dm * Math.sin(angle),
+                        width: 14, height: 14, damage: 25, life: 10,
+                        BulletImageKey: "BulletTypeA", shape: "circle"
+                    };
+                    EnemyBulletArray.push(new Bullet(this.EnemyContainer, this.x, this.y, bulletOptionsRhombus));
+                }
             }
-            
-            // 次の攻撃までの長い待機
-            await wait(1.0 / difficultyMultiplier);
-        }
-    }
-
-
-
-    // TODO設計する【攻撃パターン4】Playerを追従する小さい弾を連続で1つずつ大量に発射する．弾は角の取れた小さい矩形，加えて5つの円形に通常の弾を発射(3～5回発射[難易度により変異])弾はある程度のキャラクタとの距離を得るとそこで停止し，そこから一気に加速し射出される(jarkと加速度と初速をうまいこと組み合わせたら設計可能)
-
-
-
-
-    // TODO設計する【攻撃パターン5】球を自身を囲うように円形に作成そして，一番下からPlayerの方に高速に射出，この時に赤枠の予知エリアを設置，この速度はLunaticの場合目で見えないほどの速さにする
-
-    /**
-     * スキルを発動する
-     * @param {number} DeltaTime - 経過時間
-     * @param {instance} TargetPlayer - ターゲットプレイヤのインスタンス
-     * @param {LIST} EnemyBulletArray - バレットのアレイ
-     */
-    async _skilrun(DeltaTime, TargetPlayer, EnemyBulletArray) {
-        super._skilrun(DeltaTime);
-        if((this.SkillActivate == true) && (this.IsSkillTextShown == false)){
-            
-            this.IsSkillTextShown = true; 
-            // （引数は調整してください）
-            this.EnemyContainer.emit('skillActivated', true, 5, 0.1);
-
-            const currentPhase = this.MaxEnemyHPGuage - this.NowEnemyHPGuage;
-            const definition = this._getSkillDefinitionForPhase(currentPhase);
-
-            if (definition) {
-                // 汎用メソッドを呼び出す
-                this._executeSkill(definition, EnemyBulletArray, TargetPlayer);
-            } else {
-                console.warn(`Skill definition for phase ${currentPhase} not found.`);
-                this.CanMoveFlag = true; // 安全のため
-            }
-            
-            // スキル名とタイマーの表示アニメーション（ここは共通なので変更なし）
-            this.SkillText.visible = true;
-            this.SkillTimerText.visible = true;
-            const finalSafeY = this.SkillText.y;
-            const startY = finalSafeY + 20;
-            gsap.fromTo(this.SkillText, { y: startY, alpha: 0 }, { y: finalSafeY, alpha: 1, duration: 0.8, ease: "power2.out" });
-            const finalTimerY = this.SkillTimerText.y;
-            const startTimerY = finalTimerY + 20;
-            gsap.fromTo(this.SkillTimerText, { y: startTimerY, alpha: 0 }, { y: finalTimerY, alpha: 1, duration: 0.8, ease: "power2.out" });
+            await wait(3.2 / dm);
         }
     }
 
     /**
-     * スペル1を発動の攻撃を実働させる
-     * @param {instance} EnemyBulletArray - 弾のベクタ
-     * @param {instance} TargetPlayer - プレイヤーのインスタンス
+     * スペル1: 輪音「バームクーヘン」
      */
-     // TODO 変更:キャラが初期位置に移動，下方向にとても太く速いビームを射出，スキルが終わるまで変動なし，
-     // 壁に当たったビームは光のように当たった端のほうが少し解けて空間に流れ出す．この流れ出した弾(迷光弾)は非常にゆっくりだがキャラを少し追尾してそちらの方向にSinやCosまたはその両方を加えた軌道を描きながら近づいてくる
-     // 弾の太さ．速度は時間により二次関数的に増加，迷光弾の量も増える
     async AttackSkill1(EnemyBulletArray, TargetPlayer) {
-        const DifficultyMultiplier = 1.0 + (DifficultyLevel * 0.5); // 難易度補正
+        const dm = 1.0 + (DifficultyLevel * 0.5);
+        this.CanMoveFlag = false;
 
-        // HPが残っている/Spellが有効な間、ループ
+        let baseAngle = 0;
         while ((this.NowHPGuageHP > 0) && (this.SkillActivate == true)) {
+            const count = 18 + Math.floor(6 * DifficultyLevel);
+            const radius = this.NowPlayAreaWidth * 0.15;
             
-            const BulletNumber = 20 + Math.floor(8 * DifficultyLevel); // 弾の数
-            const MaxHorizontalSpeed = 1700; // 横方向への広がりを決める最大速度
-
-            for (let i = 0; i < BulletNumber; i++) {
-                const StartX = this.x;
-                const StartY = this.y;
-
-                const SpeedStep = (MaxHorizontalSpeed * 2) / (BulletNumber - 1);
-                const BaseHorizontalSpeed = -MaxHorizontalSpeed + i * SpeedStep;
-
-                const RandomOffset = (Math.random() - 0.5) * SpeedStep * 0.8; // 係数0.8で揺らぎを調整
-
-                const FinalHorizontalSpeed = BaseHorizontalSpeed + RandomOffset;
-
-                const IsOchibaMode = true;
-                const sine_wave_enabled = IsOchibaMode;
-                const sine_amplitude = IsOchibaMode ? (Math.random() * 5) * DifficultyMultiplier : 0;
-                const sine_angular_frequency = IsOchibaMode ? Math.PI * (1 + Math.random() * 2) : 0;
-
-                const BulletOptions = {
-                    vx: FinalHorizontalSpeed,
-                    vy: -850 - (Math.random() * 150), 
-                    ax: 0,
-                    ay: 250 + (Math.random() * 100),
-
-                    // ( ... 以下、元のコードと同じ ... )
-                    sine_wave_enabled: sine_wave_enabled,
-                    sine_amplitude: sine_amplitude,
-                    sine_angular_frequency: sine_angular_frequency,
+            // 拡縮するリングを配置
+            for (let i = 0; i < count; i++) {
+                const angleRad = (baseAngle + i * 360 / count) * Math.PI / 180;
+                const sx = this.x + radius * Math.cos(angleRad);
+                const sy = this.y + radius * Math.sin(angleRad);
+                
+                const bulletOptions = {
+                    vx: 60 * dm * Math.cos(angleRad),
+                    vy: 60 * dm * Math.sin(angleRad),
+                    ax: 20 * dm * Math.cos(angleRad),
+                    ay: 20 * dm * Math.sin(angleRad),
+                    sine_wave_enabled: true,
+                    sine_amplitude: 40,
+                    sine_angular_frequency: Math.PI * 1.5,
                     sine_axis: "x",
-                    width: 12, height: 12, damage: 50, life: 20,
-                    BulletImageKey: "BulletTypeA", shape: "circle",
-                    target: TargetPlayer, trackingStrength: 0
+                    width: 14, height: 14, damage: 30, life: 20,
+                    BulletImageKey: "BulletTypeA", shape: "circle"
                 };
-
-                EnemyBulletArray.push(new Bullet(this.EnemyContainer, StartX, StartY, BulletOptions));                
+                EnemyBulletArray.push(new Bullet(this.EnemyContainer, sx, sy, bulletOptions));
             }
-
-            // 次の弾幕までの待機時間
-            await wait(0.8 / DifficultyMultiplier);
+            
+            baseAngle += 15;
+            await wait(1.0 / dm);
         }
-        this.CanMoveFlag  = true;
+        this.CanMoveFlag = true;
     }
 
     /**
-     * スペル2
-     * 画面4ヶ所から円形弾を順番に発射し、HPが減るにつれて発射間隔が短くなる。
-     * @param {instance} EnemyBulletArray - 弾のベクタ
-     * @param {instance} TargetPlayer - プレイヤーのインスタンス
+     * スペル2: 光響「超電磁集束ビーム」
      */
-    // TODO 変更:キャラが初期位置に移動，ある程度に太いビームを十字に放出
-    // その後それを半時計回りに回転，回転するうちに，漏れ出た弾が迷光弾としてゆっくり置いて行かれるように配置
-    // 迷光弾は次のビームが来たら改修されるような仕組み
-    // どんどん回転速度は時間が上がれば高くなる
-    // 難易度により，迷光となる弾の数，回転速度は上がる
     async AttackSkill2(EnemyBulletArray, TargetPlayer) {
-        const difficultyMultiplier = 1.0 + (DifficultyLevel * 0.5);
-        this.CanMoveFlag = true; // このスキル中は敵が動き回る
+        const dm = 1.0 + (DifficultyLevel * 0.5);
+        this.CanMoveFlag = false;
 
-        // --- スキル固有パラメータ ---
-        const bulletNumberPerShot = 12 + Math.floor(2 * DifficultyLevel); // 1回に発射する円形弾の数
-        const minDelay = 1.6 * (DifficultyLevel / 2); // スキル終了直前の、最小待機時間（秒）
-        const maxDelay = minDelay * 1.8; // スキル開始時の、次の発射までの最大待機時間（秒）
-        
-        // 弾の基本設定
-        const bulletOptions = {
-            vx: 150 * difficultyMultiplier, vy: 150 * difficultyMultiplier,
-            ax: 0, ay: 0, jx: 0, jy: 0,
-            width: 10, height: 10, damage: 20, life: 15,
-            target: TargetPlayer, trackingStrength: 0,
-            BulletImageKey: "BulletTypeA", shape: "circle"
-        };
-        
-        // --- 発射位置の定義 ---
-        const positions = [
-            { x: this.StartAreaX + this.NowPlayAreaWidth / 4, y: this.StartAreaY + this.NowPlayAreaHeight / 4 },
-            { x: this.StartAreaX + this.NowPlayAreaWidth * 3 / 4, y: this.StartAreaY + this.NowPlayAreaHeight / 4 },
-            { x: this.StartAreaX + this.NowPlayAreaWidth / 4, y: this.StartAreaY + this.NowPlayAreaHeight * 3 / 4 },
-            { x: this.StartAreaX + this.NowPlayAreaWidth * 3 / 4, y: this.StartAreaY + this.NowPlayAreaHeight * 3 / 4 }
-        ];
-
-        let currentPositionIndex = 0; // 次に発射する位置のインデックス
-
-        // HPが残っている/Spellが有効な間、ループ
+        let elapsed = 0;
         while ((this.NowHPGuageHP > 0) && (this.SkillActivate == true)) {
-
-            // ■ ポイント1: HPゲージの減少率(0.0～1.0)を計算 ■
-            // HP満タンで0.0、HPが0で1.0になる
-            const HpProgress = 1.0 - (this.NowHPGuageHP / this.MaxHPGuageHP);
-            const  ButtetNumbe = bulletNumberPerShot * HpProgress;
-            // 次の発射までの待機時間(Delay)を計算 
-            const currentDelay = maxDelay + (minDelay - maxDelay) * HpProgress;
-            
-            // 現在のインデックスの位置から弾を発射
-            const currentPos = positions[currentPositionIndex];
-            RoundShotFunc(
-                EnemyBulletArray, 
-                currentPos.x, 
-                currentPos.y, 
-                ButtetNumbe, 
-                0, // 開始角度
-                bulletOptions, 
-                360, // 終了角度
-                this.EnemyContainer
+            // 予測線を表示
+            await showAreaWarning(
+                this.EnemyContainer,
+                this.x - 30,
+                this.StartAreaY,
+                60,
+                this.NowPlayAreaHeight,
+                0.5
             );
 
-            // 次の発射位置インデックスを更新
-            currentPositionIndex = (currentPositionIndex + 1) % positions.length; // 0, 1, 2, 3 とループさせる
+            if (this.NowHPGuageHP <= 0 || !this.SkillActivate) break;
 
-            // 計算した待機時間だけ待つ
-            await wait(currentDelay);
-        }
+            const beamDuration = 2.0;
+            const beamSteps = 40;
+            const stepDelay = beamDuration / beamSteps;
 
-        // ループが終了したら（スキル終了後）、再度移動を許可（念のため）
-        this.CanMoveFlag = true;
-    }
+            for (let step = 0; step < beamSteps; step++) {
+                if (this.NowHPGuageHP <= 0 || !this.SkillActivate) break;
 
-    /**
-     * スペル3
-     * キャラを中心に移動、4方向に弾を連続発射し、それを回転(難易度によって回転速度が変化)
-     * @param {instance} EnemyBulletArray - 弾のベクタ
-     * @param {instance} TargetPlayer - プレイヤーのインスタンス
-     */
-    // TODO変更：
-    async AttackSkill3(EnemyBulletArray, TargetPlayer) {
-        const difficultyMultiplier = 1.0 + 0.5 * DifficultyLevel;
-        const AngleSpeedMag = 0.05 * (10 * difficultyMultiplier); // 角度速度 // 一番右を基準
-        let Angle = 0;
-        let NowCnt = 1; // log(1) = 0
-        // HPが残っている/Spellが有効な間、ループ
-        while ((this.NowHPGuageHP > 0) && (this.SkillActivate == true)) {
-
-            const BulletSpeed = 150;
-            // 4方向に打ち出し
-            for (let i = 0; i < 4; i++) {
-                const StartX = this.x;
-                const StartY = this.y;
-
-                let NowAngle = Angle +  i * Math.PI / 2; // 直交
-                const SpeedX = BulletSpeed * Math.cos(NowAngle);
-                const SpeedY = BulletSpeed * Math.sin(NowAngle);
-
-                const BulletOptions = {
-                    vx: SpeedX,
-                    vy: SpeedY,
-                    width: 12, height: 12, damage: 50, life: 20,
-                    BulletImageKey: "BulletTypeA", shape: "circle",
-                    target: TargetPlayer, trackingStrength: 0
+                // ビームの連続発射
+                const beamWidth = 40 + Math.sin(elapsed * 5) * 15;
+                const bulletOptionsBeam = {
+                    vx: 0,
+                    vy: 850,
+                    width: beamWidth, height: 30, damage: 35, life: 1,
+                    BulletImageKey: "BulletTypeA", shape: "circle"
                 };
+                EnemyBulletArray.push(new Bullet(this.EnemyContainer, this.x, this.y, bulletOptionsBeam));
 
-                EnemyBulletArray.push(new Bullet(this.EnemyContainer, StartX, StartY, BulletOptions));                
+                // 激突箇所から散らばる迷光弾 (Sin波でうねりながら自機を追尾)
+                const strayX = this.x + (Math.random() - 0.5) * 60;
+                const strayY = this.StartAreaY + this.NowPlayAreaHeight * 0.95;
+                const strayOptions = {
+                    vx: 0,
+                    vy: -150 - Math.random() * 100,
+                    ax: 0, ay: 0,
+                    sine_wave_enabled: true,
+                    sine_amplitude: 40 + Math.random() * 30,
+                    sine_angular_frequency: Math.PI * (1.5 + Math.random()),
+                    sine_axis: "x",
+                    width: 12, height: 12, damage: 20, life: 25,
+                    target: TargetPlayer, trackingStrength: 0.6 * dm,
+                    BulletImageKey: "BulletTypeA", shape: "circle"
+                };
+                EnemyBulletArray.push(new Bullet(this.EnemyContainer, strayX, strayY, strayOptions));
+
+                elapsed += stepDelay;
+                await wait(stepDelay);
             }
-            
-            // 片対数で速度を向上
-            const RotationAmount = AngleSpeedMag * Math.log(NowCnt);
-            Angle += RotationAmount * (Math.PI / 180);
-            NowCnt += 1;
-            // 出すぎを防ぐためある程度の間隔をあける
-            await wait(0.15);
+            await wait(1.5 / dm);
         }
-
-        // ループが終了したら（スキル終了後）、再度移動を許可（念のため）
         this.CanMoveFlag = true;
     }
 
     /**
- 	 * キャラクターの画像を当たり判定の座標軸と一致させる
-	 */
+     * スペル3: 旋律「回転十字ビームと残光」（Hard以上限定）
+     */
+    async AttackSkill3(EnemyBulletArray, TargetPlayer) {
+        const dm = 1.0 + (DifficultyLevel * 0.5);
+        this.CanMoveFlag = false;
+
+        let angleRad = 0;
+        const beamLengths = 8;
+        const rotationSpeed = 0.5 * dm; // 回転角速度
+
+        while ((this.NowHPGuageHP > 0) && (this.SkillActivate == true)) {
+            // 十字ビームを連続配置
+            for (let dist = 1; dist <= beamLengths; dist++) {
+                const len = dist * 40;
+                for (let b = 0; b < 4; b++) {
+                    const finalAngle = angleRad + (b * Math.PI / 2);
+                    const sx = this.x + len * Math.cos(finalAngle);
+                    const sy = this.y + len * Math.sin(finalAngle);
+                    
+                    // 静止する「残光弾」を設置
+                    const bulletOptionsStray = {
+                        vx: 0, vy: 0, ax: 0, ay: 0,
+                        width: 12, height: 12, damage: 20, life: 10,
+                        BulletImageKey: "BulletTypeA", shape: "circle"
+                    };
+                    const bullet = new Bullet(this.EnemyContainer, sx, sy, bulletOptionsStray);
+                    EnemyBulletArray.push(bullet);
+
+                    // 数秒後に残光弾を消滅させるタイマーをセット
+                    setTimeout(() => {
+                        if (bullet && !bullet.isHit) bullet.destroy();
+                    }, 2500);
+                }
+            }
+
+            angleRad += rotationSpeed * 0.1;
+            await wait(0.1);
+        }
+        this.CanMoveFlag = true;
+    }
+
+    /**
+     * スペル4: 反響「多重反射レーザー」（Normal / Lunatic用）
+     */
+    async AttackSkill4(EnemyBulletArray, TargetPlayer) {
+        const dm = 1.0 + (DifficultyLevel * 0.5);
+        this.CanMoveFlag = false;
+
+        let fireAngle = 45;
+        while ((this.NowHPGuageHP > 0) && (this.SkillActivate == true)) {
+            const count = 4 + Math.floor(DifficultyLevel);
+            
+            // 扇状に反射レーザーを射出
+            const spread = 40;
+            const startA = fireAngle - spread / 2;
+            const oneStep = spread / (count - 1 || 1);
+
+            for (let i = 0; i < count; i++) {
+                const curAngleRad = (startA + i * oneStep) * Math.PI / 180;
+                const speed = 250 * dm;
+
+                const bulletOptions = {
+                    vx: speed * Math.cos(curAngleRad),
+                    vy: speed * Math.sin(curAngleRad),
+                    ax: 0, ay: 0, jx: 0, jy: 0,
+                    width: 14, height: 14, damage: 25, life: 30,
+                    BulletImageKey: "BulletTypeA", shape: "circle",
+                    // 反射の設定
+                    bounce: true,
+                    minXArea: this.StartAreaX,
+                    maxXArea: this.StartAreaX + this.NowPlayAreaWidth,
+                    minYArea: this.StartAreaY,
+                    maxYArea: this.StartAreaY + this.NowPlayAreaHeight,
+                    bounceCount: 4 // 4回まで反射
+                };
+                EnemyBulletArray.push(new Bullet(this.EnemyContainer, this.x, this.y, bulletOptions));
+            }
+
+            fireAngle = (fireAngle + 35) % 360;
+            await wait(0.8 / dm);
+        }
+        this.CanMoveFlag = true;
+    }
+
     DrawEnemyImagedraw() {
         super.DrawEnemyImage()
     }
 
-    /**
-     * 【実装】EnemyBaseから呼ばれる、スキル定義を返すためのメソッド
-     * @param {number} phase 
-     * @returns スキル定義
-     */
     _getSkillDefinitionForPhase(phase) {
-        // 自身の SkillDefinitions から対応する定義を返す
         return this.SkillDefinitions[phase];
     }
 }

@@ -205,42 +205,41 @@ async function UpdateLoadingLogic() {
         switch(UpdateLoadingLigicState){  
             case 0:
                 const logoScreen = new LogoScreen.LogoScreen(App, BaseScreen.SCREEN_STATE.LOGO_SCREEN);
-                ScreenList.push(logoScreen);
                 await logoScreen.InitializeScreen(MainScaleFactor);
+                ScreenList.push(logoScreen);
                 break;
             case 1:
                 const waitingScreen = new WatingScreen.WaitingScreen(App, BaseScreen.SCREEN_STATE.WATING_SCREEN);
-                ScreenList.push(waitingScreen);
                 await waitingScreen.InitializeScreen(MainScaleFactor);
+                ScreenList.push(waitingScreen);
                 break;
             case 2:
                 const titleScreen = new TitileScreen.TitileScreen(App, BaseScreen.SCREEN_STATE.GAME_TITLE);
-                ScreenList.push(titleScreen);
                 await titleScreen.InitializeScreen(MainScaleFactor);
+                ScreenList.push(titleScreen);
                 break;  
             case 3:
                 const DifficultySelectScreen = new DifficultyScreen.DifficultySelectScreen(App, BaseScreen.SCREEN_STATE.DIFFICULTY_SELECT);
-                ScreenList.push(DifficultySelectScreen);
                 await DifficultySelectScreen.InitializeScreen(MainScaleFactor);
+                ScreenList.push(DifficultySelectScreen);
                 break;
 
             case 4:
                 const mapScreen = new MapScreen.MapScreen(App, BaseScreen.SCREEN_STATE.STAGE_SELECT);
-                ScreenList.push(mapScreen);
                 await mapScreen.InitializeScreen(MainScaleFactor);
-
+                ScreenList.push(mapScreen);
                 break;
 
             case 5:
                 const charaSelectScreen = new CharaSelectScreen.CharaSelectScreen(App, BaseScreen.SCREEN_STATE.CHARACTER_SELECT);
-                ScreenList.push(charaSelectScreen);
                 await charaSelectScreen.InitializeScreen(MainScaleFactor);
+                ScreenList.push(charaSelectScreen);
                 break;
 
             case 6:
                 const gameScreen = new GameScreen.GameScreen(App, BaseScreen.SCREEN_STATE.GAMEPLAY);
-                ScreenList.push(gameScreen);
                 await gameScreen.InitializeScreen(MainScaleFactor);
+                ScreenList.push(gameScreen);
                 break;
 
             case 7:

@@ -4,6 +4,7 @@ import { CharacterTypeEnum, SkillTypeEnum, UltTypeEnum, MainBulletEnum, SubBulle
 
 export const ChangeActivation = Object.freeze({
     Activate1: "一意の相手方向へ移動",
+    ActivateFixed: "固定速度へ変更",
     CharaSelect2: "CharaSelect2",
     CharaSelect3: "CharaSelect3",
     CharaSelect4: "CharaSelect4",
@@ -112,6 +113,16 @@ export class Bullet {
         
         this.bulletLifeTimer = 0; // 弾が生成されてからの経過時間（サイン関数の時間入力に使う）
 
+        // 反射設定
+        this.bounce = options.bounce || false;
+        if (this.bounce) {
+            this.minXArea = options.minXArea !== undefined ? options.minXArea : null;
+            this.maxXArea = options.maxXArea !== undefined ? options.maxXArea : null;
+            this.minYArea = options.minYArea !== undefined ? options.minYArea : null;
+            this.maxYArea = options.maxYArea !== undefined ? options.maxYArea : null;
+            this.bounceCount = options.bounceCount !== undefined ? options.bounceCount : Infinity;
+            this.currentBounceCount = 0;
+        }
     }
 
     /**
@@ -156,6 +167,20 @@ export class Bullet {
                     this.ay = ActivateAccelY;
                     this.jx = ActivateJeakX;
                     this.jy = ActivateJeakY;
+                }
+                break;
+            case ChangeActivation.ActivateFixed:
+                this.vx = this.PostActivationOptions.vx !== undefined ? this.PostActivationOptions.vx : this.vx;
+                this.vy = this.PostActivationOptions.vy !== undefined ? this.PostActivationOptions.vy : this.vy;
+                this.ax = this.PostActivationOptions.ax !== undefined ? this.PostActivationOptions.ax : this.ax;
+                this.ay = this.PostActivationOptions.ay !== undefined ? this.PostActivationOptions.ay : this.ay;
+                this.jx = this.PostActivationOptions.jx !== undefined ? this.PostActivationOptions.jx : this.jx;
+                this.jy = this.PostActivationOptions.jy !== undefined ? this.PostActivationOptions.jy : this.jy;
+                if (this.PostActivationOptions.maxSpeed !== undefined) {
+                    this.maxSpeed = this.PostActivationOptions.maxSpeed;
+                }
+                if (this.PostActivationOptions.trackingStrength !== undefined) {
+                    this.trackingStrength = this.PostActivationOptions.trackingStrength;
                 }
                 break;
         }
@@ -244,6 +269,38 @@ export class Bullet {
         // sin値による値の変化
         this.pathCenterX += this.vx * deltaTime;
         this.pathCenterY += this.vy * deltaTime;
+
+        // 反射（バウンド）の境界チェックと反射処理
+        if (this.bounce) {
+            const halfW = this.width / 2;
+            const halfH = this.height / 2;
+            if (this.minXArea !== null && this.pathCenterX - halfW < this.minXArea) {
+                this.vx = Math.abs(this.vx);
+                this.ax = Math.abs(this.ax);
+                this.pathCenterX = this.minXArea + halfW;
+                this.currentBounceCount++;
+            } else if (this.maxXArea !== null && this.pathCenterX + halfW > this.maxXArea) {
+                this.vx = -Math.abs(this.vx);
+                this.ax = -Math.abs(this.ax);
+                this.pathCenterX = this.maxXArea - halfW;
+                this.currentBounceCount++;
+            }
+            if (this.minYArea !== null && this.pathCenterY - halfH < this.minYArea) {
+                this.vy = Math.abs(this.vy);
+                this.ay = Math.abs(this.ay);
+                this.pathCenterY = this.minYArea + halfH;
+                this.currentBounceCount++;
+            } else if (this.maxYArea !== null && this.pathCenterY + halfH > this.maxYArea) {
+                this.vy = -Math.abs(this.vy);
+                this.ay = -Math.abs(this.ay);
+                this.pathCenterY = this.maxYArea - halfH;
+                this.currentBounceCount++;
+            }
+
+            if (this.currentBounceCount >= this.bounceCount) {
+                this.bounce = false;
+            }
+        }
 
         // 3. 最終的な描画位置 (this.x, this.y は左上) を計算
         let finalDrawX = this.pathCenterX - this.width / 2;
