@@ -2,7 +2,7 @@
 
 import { CustomButton } from "../Buttons/ButtonBase.js";
 import { ImageAssetPaths } from '../game_status.js'; 
-import { BaseScreen, FRAME_DURATION, SCREEN_STATE, MapIndex,  CharaIndex} from './BaseScreen.js';
+import { BaseScreen, FRAME_DURATION, SCREEN_STATE, MapIndex, CharaIndex, SetLastResult} from './BaseScreen.js';
 import {PlayerType1} from "../Player/Type1Player.js";
 import {EnemyType1} from "../Enemy/EnemyType1.js";
 import {EnemyType2} from "../Enemy/EnemyType2.js";
@@ -463,7 +463,7 @@ export class GameScreen extends BaseScreen{
         }
 
 		if (this.IsGameOver || this.IsGameClear) {
-			// ENTERキーまたはゲームパッドの決定ボタンでタイトル画面へ戻る
+			// ENTERキーまたはゲームパッドの決定ボタンでリザルト画面へ
 			let confirmed = false;
 			if (InputCurrentState) {
 				if (InputCurrentState.gamepad?.confirm || InputCurrentState.keys.has('Enter')) {
@@ -472,7 +472,8 @@ export class GameScreen extends BaseScreen{
 			}
 			if (confirmed && this.InputCooldown <= 0) {
 				this.InputCooldown = this.COOLDOWN_TIME;
-				return SCREEN_STATE.GAME_TITLE;
+				SetLastResult(this.NowScore, this.IsGameClear);
+				return SCREEN_STATE.RESULT_SCREEN;
 			}
 			return this.ScreenState;
 		}
@@ -719,16 +720,9 @@ export class GameScreen extends BaseScreen{
 		const ShootingStartY = this.ShootingBackgroundImage.y;
 		const ShootingWidht = this.ShootingBackgroundImage.width;
 		const ShootingHeight = this.ShootingBackgroundImage.height;
-		switch(CharaIndex){
-			case 0:
-				this.PlayerInstance =  new PlayerType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
-				await this.PlayerInstance.Initialize();
-				this.PlayerInstance.updateScale(this.NowScale, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
-				break;
-			default:
-				this.PlayerInstance =  new PlayerType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
-				break;
-		}
+		this.PlayerInstance =  new PlayerType1(this.ShootingContainer, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
+		await this.PlayerInstance.Initialize();
+		this.PlayerInstance.updateScale(this.NowScale, ShootingStartX, ShootingStartY, ShootingWidht, ShootingHeight);
 
 
 		switch(MapIndex){

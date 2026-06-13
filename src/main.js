@@ -24,6 +24,7 @@ import * as DifficultyScreen from './Screens/DifficultySelectScreen.js';
 import * as MapScreen from './Screens/MapScreen.js';
 import * as CharaSelectScreen from './Screens/CharaSelectScreen.js';
 import * as GameScreen from './Screens/GameScreen.js';
+import * as ResultScreen from './Screens/ResultScreen.js';
 import * as Bullet from './bullet.js';
 
 
@@ -243,7 +244,9 @@ async function UpdateLoadingLogic() {
                 break;
 
             case 7:
-
+                const resultScreen = new ResultScreen.ResultScreen(App, BaseScreen.SCREEN_STATE.RESULT_SCREEN);
+                await resultScreen.InitializeScreen(MainScaleFactor);
+                ScreenList.push(resultScreen);
                 break;
             case 8:
 

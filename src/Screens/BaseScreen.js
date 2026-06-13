@@ -13,13 +13,23 @@ export const SCREEN_STATE = Object.freeze({
     DIFFICULTY_SELECT: 'difficulty_setting', // これは他の画面上のポップアップとしても実装可能
     STAGE_SELECT: 'stage_select',
     CHARACTER_SELECT: 'character_select',
-    GAMEPLAY: 'gameplay'
+    GAMEPLAY: 'gameplay',
+    RESULT_SCREEN: 'result_screen'
 });
 
 // ここに選んだマップ情報や，選んだキャラの情報を置いておく
 export let MapIndex = 0;
 export let CharaIndex = 0;
 export let DifficultyLevel = 1; // 0がeasy
+
+// リザルト画面に渡すゲーム結果
+export let LastScore = 0;
+export let LastIsGameClear = false;
+
+export function SetLastResult(score, isGameClear){
+	LastScore = score;
+	LastIsGameClear = isGameClear;
+}
 
 export function ChangeMapIndex(number){
 	MapIndex = number;
