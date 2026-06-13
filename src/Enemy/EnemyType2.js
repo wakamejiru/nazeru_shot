@@ -203,7 +203,9 @@ export class EnemyType2 extends EnemyBase {
                     await wait(stepDelay);
                 }
                 
-                this.CanMoveFlag = true;
+                if (!this.SkillActivate) {
+                    this.CanMoveFlag = true;
+                }
             }
             await wait(4.5 / dm);
         }
@@ -445,6 +447,37 @@ export class EnemyType2 extends EnemyBase {
             await wait(0.8 / dm);
         }
         this.CanMoveFlag = true;
+    }
+
+    /**
+     * スキルを発動する
+     */
+    async _skilrun(DeltaTime, TargetPlayer, EnemyBulletArray) {
+        super._skilrun(DeltaTime);
+        if((this.SkillActivate == true) && (this.IsSkillTextShown == false)){
+            
+            this.IsSkillTextShown = true; 
+            this.EnemyContainer.emit('skillActivated', true, 5, 0.1);
+
+            const currentPhase = this.MaxEnemyHPGuage - this.NowEnemyHPGuage;
+            const definition = this._getSkillDefinitionForPhase(currentPhase);
+
+            if (definition) {
+                this._executeSkill(definition, EnemyBulletArray, TargetPlayer);
+            } else {
+                console.warn(`Skill definition for phase ${currentPhase} not found.`);
+                this.CanMoveFlag = true;
+            }
+            
+            this.SkillText.visible = true;
+            this.SkillTimerText.visible = true;
+            const finalSafeY = this.SkillText.y;
+            const startY = finalSafeY + 20;
+            gsap.fromTo(this.SkillText, { y: startY, alpha: 0 }, { y: finalSafeY, alpha: 1, duration: 0.8, ease: "power2.out" });
+            const finalTimerY = this.SkillTimerText.y;
+            const startTimerY = finalTimerY + 20;
+            gsap.fromTo(this.SkillTimerText, { y: startTimerY, alpha: 0 }, { y: finalTimerY, alpha: 1, duration: 0.8, ease: "power2.out" });
+        }
     }
 
     DrawEnemyImagedraw() {

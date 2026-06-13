@@ -92,6 +92,7 @@ export class EnemyBase {
         this.SkillActiveFlag = false;
 
         this.CanMoveFlag = true; // trueの時は移動OK,false時は移動不可
+        this.IsEmphasisEffectPlaying = false;
             
         this.NowAttackLimitCnt = 0; // 攻撃の継続時間の情報 
 
@@ -545,6 +546,7 @@ export class EnemyBase {
 	 * @param {number} DamageParam - 受けたダメージ
      */
 	DamageHit(DamageParam){
+        if (this.IsEmphasisEffectPlaying) return;
 		// ダメージを受けた処理を行う
 		this.NowHPGuageHP -= DamageParam;
         this.flashDamage(); // 被弾フラッシュを再生
@@ -607,6 +609,9 @@ export class EnemyBase {
         // 敵の画像を白く点滅させるアニメーションを作成
         if (!this.FlashOverlay) return; // オーバーレイがなければ何もしない
 
+        this.IsEmphasisEffectPlaying = true;
+        gsap.killTweensOf(this.FlashOverlay);
+
         // flashCountの回数だけ「白くなる -> 元に戻る」を繰り返す
         const tween = gsap.to(this.FlashOverlay, {
             alpha: 1,
@@ -618,7 +623,10 @@ export class EnemyBase {
 
         // アニメーションが終わるまで待機
         return new Promise(resolve => {
-            tween.eventCallback('onComplete', resolve);
+            tween.eventCallback('onComplete', () => {
+                this.IsEmphasisEffectPlaying = false;
+                resolve();
+            });
         });
     }
 
@@ -626,7 +634,7 @@ export class EnemyBase {
      * 被弾時のフラッシュ演出を再生するメソッド
      */
     flashDamage() {
-        if (!this.FlashOverlay) return;
+        if (!this.FlashOverlay || this.IsEmphasisEffectPlaying) return;
         gsap.killTweensOf(this.FlashOverlay);
         this.FlashOverlay.alpha = 0.8;
         gsap.to(this.FlashOverlay, {
